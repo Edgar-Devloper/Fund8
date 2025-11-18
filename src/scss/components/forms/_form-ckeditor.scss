@@ -1,0 +1,16 @@
+.custom-ekeditor{
+	ul{
+		padding-left:20px;
+		li{
+			list-style:unset;
+		}
+	}
+	ol{
+		li{
+			list-style:decimal;
+		}
+	}
+}
+.ck.ck-editor .ck-content{
+	min-height: 12.5rem;;
+}
