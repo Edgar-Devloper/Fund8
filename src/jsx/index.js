@@ -15,7 +15,6 @@ import Footer from "./layouts/Footer";
 import ScrollToTop from './pages/ScrollToTop';
 /// Dashboard
 import Home from "./components/Dashboard/Home";
-import DashboardDark from "./components/Dashboard/DashboardDark";
 import CoinDetails from "./components/Dashboard/CoinDetails";
 import MyWallet from "./components/Dashboard/MyWallet";
 import Transactions from "./components/Dashboard/Transactions";
@@ -121,7 +120,6 @@ const Markup = () => {
     /// Dashboard
     { url: "", component: <Home /> },
     { url: "dashboard", component: <Home /> },
-    { url: "dashboard-dark", component: <DashboardDark /> },
     { url: "coin-details", component: <CoinDetails/> },
     { url: "my-wallet", component: <MyWallet /> },
     { url: "transactions", component: <Transactions /> },
@@ -253,18 +251,17 @@ const Markup = () => {
         {!pagePath && <Footer />}
       </div> */}
       <Routes>
-          <Route path='page-lock-screen' element= {<LockScreen />} />
-          <Route path='page-error-400' element={<Error400/>} />
-          <Route path='page-error-403' element={<Error403/>} />
-          <Route path='page-error-404' element={<Error404/>} />
-          <Route path='page-error-500' element={<Error500/>} />
-          <Route path='page-error-503' element={<Error503/>} />
-          <Route  element={<MainLayout />} > 
+          <Route path='/page-lock-screen' element= {<LockScreen />} />
+          <Route path='/page-error-400' element={<Error400/>} />
+          <Route path='/page-error-403' element={<Error403/>} />
+          <Route path='/page-error-404' element={<Error404/>} />
+          <Route path='/page-error-500' element={<Error500/>} />
+          <Route path='/page-error-503' element={<Error503/>} />
+          <Route element={<MainLayout />} > 
               {allroutes.map((data, i) => (
                 <Route
                   key={i}
-                  exact
-                  path={`${data.url}`}
+                  path={data.url === "" ? "/" : `/${data.url}`}
                   element={data.component}
                 />
               ))}

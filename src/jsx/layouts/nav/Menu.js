@@ -6,12 +6,8 @@ export const MenuList = [
         iconStyle: <i className="flaticon-025-dashboard"></i>,
         content: [
             {
-                title: 'Dashboard Light',
+                title: 'Dashboard',
                 to: 'dashboard',					
-            },
-            {
-                title: 'Dashboard Dark',
-                to: 'dashboard-dark',
             },
             {
                 title: 'Coin Details',
