@@ -2,8 +2,37 @@ import React, { useState, useRef, useEffect } from "react";
 import { Dropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {  Sparklines, SparklinesLine } from 'react-sparklines';
-import {CoinIcon5,CoinIcon6, CoinIcon7, CoinIcon8} from "../Boltz/Transactions/TableData";
 import { useMarketOverview } from "../../../hooks/useMarketOverview";
+// Importar iconos de criptomonedas
+import btcIcon from '../../../images/icons/btc.png';
+import ethIcon from '../../../images/icons/eth.png';
+import ltcIcon from '../../../images/icons/ltc.png';
+import solIcon from '../../../images/icons/sol.png';
+import atomIcon from '../../../images/icons/atom.png';
+import maticIcon from '../../../images/icons/matic.png';
+import dydxIcon from '../../../images/icons/dydx.png';
+import avaxIcon from '../../../images/icons/avax.png';
+import bnbIcon from '../../../images/icons/bnb.png';
+import moneroIcon from '../../../images/icons/monero.png';
+
+// Helper para obtener icono de moneda
+const getCoinIcon = (symbol) => {
+	const normalized = symbol?.toUpperCase() || '';
+	switch(normalized) {
+		case 'BTC': return btcIcon;
+		case 'ETH': return ethIcon;
+		case 'LTC': return ltcIcon;
+		case 'SOL': return solIcon;
+		case 'XMR': 
+		case 'MONERO': return moneroIcon;
+		case 'ATOM': return atomIcon;
+		case 'MATIC': return maticIcon;
+		case 'DYDX': return dydxIcon;
+		case 'AVAX': return avaxIcon;
+		case 'BNB': return bnbIcon;
+		default: return btcIcon; // fallback
+	}
+};
 
 const sampleData1 = [2,2,2,4,4,5,4,6,5,7,6,8,7,9,8,4,7,6,8,7];
 const sampleData2 = [2,3,4,5,6,5,4,6,5,7,2,3,4,5,3,2,5,4,5,7];
@@ -169,10 +198,33 @@ const MarketCapital = () => {
 											<td className="wspace-no">
 												<div className="d-flex align-items-center">
 													<div className="coin-icon me-2">
-														{index % 4 === 0 && <CoinIcon5 />}
-														{index % 4 === 1 && <CoinIcon6 />}
-														{index % 4 === 2 && <CoinIcon7 />}
-														{index % 4 === 3 && <CoinIcon8 />}
+														{getCoinIcon(coin.coin) === btcIcon && !['BTC', 'ETH', 'LTC', 'SOL', 'XMR', 'MONERO', 'ATOM', 'MATIC', 'DYDX', 'AVAX', 'BNB'].includes(coin.coin?.toUpperCase()) ? (
+															// Mostrar inicial de la moneda como fallback si no hay icono
+															<div 
+																style={{ 
+																	width: '24px', 
+																	height: '24px', 
+																	borderRadius: '50%', 
+																	backgroundColor: '#f0f0f0',
+																	display: 'flex',
+																	alignItems: 'center',
+																	justifyContent: 'center',
+																	fontSize: '12px',
+																	fontWeight: 'bold',
+																	color: '#666'
+																}}
+															>
+																{coin.coin?.charAt(0) || '?'}
+															</div>
+														) : (
+															<img 
+																src={getCoinIcon(coin.coin)} 
+																alt={coin.coin} 
+																width="24" 
+																height="24" 
+																style={{ borderRadius: '50%' }}
+															/>
+														)}
 													</div>
 													<span className="font-w600 text-black">{coin.coin}</span>
 												</div>
