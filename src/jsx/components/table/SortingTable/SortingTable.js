@@ -35,10 +35,10 @@ export const SortingTable = () => {
 						<div className="dataTables_wrapper">
 							<table {...getTableProps()} className="table dataTable display">
 								<thead>
-								   {headerGroups.map(headerGroup => (
-										<tr {...headerGroup.getHeaderGroupProps()}>
-											{headerGroup.headers.map(column => (
-												<th {...column.getHeaderProps(column.getSortByToggleProps())}>
+								   {headerGroups.map((headerGroup, idx) => (
+										<tr key={idx} {...headerGroup.getHeaderGroupProps()}>
+											{headerGroup.headers.map((column, colIdx) => (
+												<th key={colIdx} {...column.getHeaderProps(column.getSortByToggleProps())}>
 													{column.render('Header')}
 													<span className="ml-1">
 														{column.isSorted ? (column.isSortedDesc ?  <i className="fa fa-arrow-down" /> :  <i className="fa fa-arrow-up" /> ) : '' }
@@ -50,12 +50,12 @@ export const SortingTable = () => {
 								</thead> 
 								<tbody {...getTableBodyProps()}>
 								
-									{rows.map((row) => {
+									{rows.map((row, rowIdx) => {
 										prepareRow(row)
 										return(
-											<tr {...row.getRowProps()}>
-												{row.cells.map((cell) => {
-													return <td {...cell.getCellProps()}> {cell.render('Cell')} </td>
+											<tr key={rowIdx} {...row.getRowProps()}>
+												{row.cells.map((cell, cellIdx) => {
+													return <td key={cellIdx} {...cell.getCellProps()}> {cell.render('Cell')} </td>
 												})}
 												
 											</tr>
@@ -64,10 +64,10 @@ export const SortingTable = () => {
 								</tbody>
 								{/* This is only for footer if u require */}
 								 <tfoot>
-									{footerGroups.map(footerGroup =>(
-										<tr {...footerGroup.getFooterGroupProps()}>
-											{footerGroup.headers.map(column =>(
-												<td {...column.getFooterProps()}>{column.render('Footer')}</td>
+									{footerGroups.map((footerGroup, idx) =>(
+										<tr key={idx} {...footerGroup.getFooterGroupProps()}>
+											{footerGroup.headers.map((column, colIdx) =>(
+												<td key={colIdx} {...column.getFooterProps()}>{column.render('Footer')}</td>
 											))}
 										</tr>		
 									))}

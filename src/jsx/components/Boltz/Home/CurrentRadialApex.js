@@ -5,8 +5,13 @@ class CurrentRadialApex extends React.Component {
   constructor(props) {
     super(props);
 
+    const incomePercent = props.incomePercent || 0;
+    const spendsPercent = props.spendsPercent || 0;
+    const feesPercent = props.feesPercent || 0;
+    const investPercent = props.investPercent || 0;
+
     this.state = {
-	    series: [85, 60, 67, 50],
+	    series: [incomePercent, spendsPercent, feesPercent, investPercent],
 		options: {
 			chart: {
 				height: 350,
@@ -29,11 +34,27 @@ class CurrentRadialApex extends React.Component {
 			stroke:{
 				lineCap: 'round',
 			},
-			labels: ['Income', 'Income', 'Imcome', 'Income'],
+			labels: ['Income', 'Spends', 'Fees', 'Invest'],
 			colors:['#FFAF65', '#4441DE','#60C695','#F34F80'],
 		},
       
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.incomePercent !== this.props.incomePercent ||
+        prevProps.spendsPercent !== this.props.spendsPercent ||
+        prevProps.feesPercent !== this.props.feesPercent ||
+        prevProps.investPercent !== this.props.investPercent) {
+      const incomePercent = this.props.incomePercent || 0;
+      const spendsPercent = this.props.spendsPercent || 0;
+      const feesPercent = this.props.feesPercent || 0;
+      const investPercent = this.props.investPercent || 0;
+      
+      this.setState({
+        series: [incomePercent, spendsPercent, feesPercent, investPercent]
+      });
+    }
   }
 
 	render() {

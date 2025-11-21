@@ -44,7 +44,26 @@ function IconBlog2(){
 	)
 }
 
-export default function SwiperSlider2() {
+export default function SwiperSlider2({ accountValue, walletAddress, loading }) {
+	// Formatear dirección
+	const formatAddress = (addr) => {
+		if (!addr) return 'Not Connected';
+		return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+	};
+	
+	// Formatear moneda
+	const formatCurrency = (value) => {
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD',
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		}).format(value);
+	};
+	
+	const displayValue = loading ? 'Cargando...' : formatCurrency(accountValue || 0);
+	const displayAddress = loading ? '...' : formatAddress(walletAddress);
+	
   return (
     <>
     	<Swiper direction={'vertical'} slidesPerView={'auto'} freeMode={true} scrollbar={true} mousewheel={true} 
@@ -77,19 +96,19 @@ export default function SwiperSlider2() {
 					<div className="card-bx stacked card">
 						<img src={data.image} alt="" />
 						<div className="card-info">
-							<p className="mb-1 text-white fs-14">Main Balance</p>
+							<p className="mb-1 text-white fs-14">Account Value</p>
 							<div className="d-flex justify-content-between">
-								<h2 className="num-text text-white mb-5 font-w600">$673,412.66</h2>
+								<h2 className="num-text text-white mb-5 font-w600">{displayValue}</h2>
 									{data.icon} 
 							</div>
 							<div className="d-flex">
 								<div className="me-4 text-white">
-									<p className="fs-12 mb-1 op6">VALID THRU</p>
-									<span>08/21</span>
+									<p className="fs-12 mb-1 op6">NETWORK</p>
+									<span>Hyperliquid</span>
 								</div>
 								<div className="text-white">
-									<p className="fs-12 mb-1 op6">CARD HOLDER</p>
-									<span>Marquezz Silalahi</span>
+									<p className="fs-12 mb-1 op6">WALLET</p>
+									<span>{displayAddress}</span>
 								</div>
 							</div>
 						</div>

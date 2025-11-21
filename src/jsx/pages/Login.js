@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { connect, useDispatch } from 'react-redux';
-import { Link,  useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { loadingToggleAction,loginAction,
 } from '../../store/actions/AuthActions';
 
@@ -49,16 +49,16 @@ function Login (props) {
 							<div className="col-lg-6 col-md-6 d-flex">
 								<div className="text-white max-w400 align-self-center">
 									<div className="logo">
-										<Link to={"#"}><img src={logo2} alt="" /></Link>
+										<Link href={"#"}><img src={logo2} alt="" /></Link>
 									</div>
 									<h2 className="mb-2 text-white font-w700">Login To You Now</h2>
 									<p className="mb-4">Lorem Ipsum is simply dummy text of the printing and typesetting industry has been the industry.</p>
 									<ul className="d-flex ">
-										<li><Link to={''} className="me-3 text-white "><i className="fa fa-facebook"></i></Link></li>
-										<li><Link to={''} className="me-3 text-white "><i className="fa fa-google-plus"></i></Link></li>
-										<li><Link to={''} className="me-3 text-white "><i className="fa fa-linkedin"></i></Link></li>
-										<li><Link to={''} className="me-3 text-white "><i className="fa fa-instagram"></i></Link></li>
-										<li><Link to={''} className="me-3 text-white"><i className="fa fa-twitter"></i></Link></li>
+										<li><Link href={''} className="me-3 text-white "><i className="fa fa-facebook"></i></Link></li>
+										<li><Link href={''} className="me-3 text-white "><i className="fa fa-google-plus"></i></Link></li>
+										<li><Link href={''} className="me-3 text-white "><i className="fa fa-linkedin"></i></Link></li>
+										<li><Link href={''} className="me-3 text-white "><i className="fa fa-instagram"></i></Link></li>
+										<li><Link href={''} className="me-3 text-white"><i className="fa fa-twitter"></i></Link></li>
 									</ul>
 								</div>
 							</div>
@@ -105,7 +105,7 @@ function Login (props) {
 											</div>
 											<div className="text-center">
 												<button className="btn btn-primary btn-md float-start">login</button>
-												<Link  to="/page-register" className="btn-link forget-pass mt-3 float-end"><i className="fa fa-unlock-alt"></i>  Sign up</Link> 
+												<Link  href="/page-register" className="btn-link forget-pass mt-3 float-end"><i className="fa fa-unlock-alt"></i>  Sign up</Link> 
 											</div>
 										</form>
 									</div>
@@ -120,7 +120,7 @@ function Login (props) {
 						<div className="row m-0">
 							<div className="col-12 p-0 text-center text-white op8">
 								<span className="float-sm-start float-none mb-sm-0 mb-1 d-sm-inline-block d-block">© Copyright by <i className="fa fa-heart mx-3 text-red"></i>
-								<Link className=" text-white op8" to={"#"}>DexignZone </Link> </span>
+								<Link className=" text-white op8" href={"#"}>DexignZone </Link> </span>
 								<span className="float-sm-end float-none">
 									All rights reserved.
 								</span>

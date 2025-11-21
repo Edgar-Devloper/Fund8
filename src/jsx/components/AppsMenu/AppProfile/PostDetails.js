@@ -385,7 +385,7 @@ const PostDetails = () => {
                   </p>
                   <blockquote>
                     Lorem Ipsum is simply dummy text of the printing and
-                    typesetting industry. Has been the industry's standard text
+                    typesetting industry. Has been the industry&apos;s standard text
                     ever since the 1500s, when an unknown printer took a galley
                     of type and scrambled it to make a type specimencenturies.
                   </blockquote>

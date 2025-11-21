@@ -121,7 +121,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"
@@ -147,7 +147,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"
@@ -171,7 +171,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"
@@ -195,7 +195,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"
@@ -219,7 +219,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"
@@ -243,7 +243,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"
@@ -267,7 +267,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button as="a" variant="dark" href="#" className="btn-card mt-3">
                 Go somewhere
@@ -286,7 +286,7 @@ const UiCards = () => {
             <Card.Body className=" mb-0">
               <Card.Text>
                 Some quick example text to build on the card title and make up
-                the bulk of the card's content.
+                the bulk of the card&apos;s content.
               </Card.Text>
               <Button
                 as="a"

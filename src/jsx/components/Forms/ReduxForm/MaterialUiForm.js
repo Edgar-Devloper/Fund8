@@ -46,9 +46,10 @@ const renderSelectField = (
     errorText={touched && error}
     {...input}
     onChange={(event, index, value) => input.onChange(value)}
-    children={children}
     {...custom}
-  />
+  >
+    {children}
+  </SelectField>
 );
 
 const MaterialUiForm = props => {

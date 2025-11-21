@@ -50,10 +50,10 @@ export const FilteringTable = () => {
 						<GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
 						<table {...getTableProps()} className="table dataTable display">
 							<thead>
-							   {headerGroups.map(headerGroup => (
-									<tr {...headerGroup.getHeaderGroupProps()}>
-										{headerGroup.headers.map(column => (
-											<th {...column.getHeaderProps()}>
+							   {headerGroups.map((headerGroup, idx) => (
+									<tr key={idx} {...headerGroup.getHeaderGroupProps()}>
+										{headerGroup.headers.map((column, colIdx) => (
+											<th key={colIdx} {...column.getHeaderProps()}>
 												{column.render('Header')}
 												{column.canFilter ? column.render('Filter') : null}
 											</th>
@@ -63,12 +63,12 @@ export const FilteringTable = () => {
 							</thead> 
 							<tbody {...getTableBodyProps()} className="" >
 							
-								{page.map((row) => {
+								{page.map((row, rowIdx) => {
 									prepareRow(row)
 									return(
-										<tr {...row.getRowProps()}>
-											{row.cells.map((cell) => {
-												return <td {...cell.getCellProps()}> {cell.render('Cell')} </td>
+										<tr key={rowIdx} {...row.getRowProps()}>
+											{row.cells.map((cell, cellIdx) => {
+												return <td key={cellIdx} {...cell.getCellProps()}> {cell.render('Cell')} </td>
 											})}
 										</tr>
 									)

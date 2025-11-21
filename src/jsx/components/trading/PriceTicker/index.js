@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTradingData } from '../context/MockTradingDataProvider';
+import { useTradingData } from '../context/HyperliquidTradingProvider';
 
 /**
  * PriceTicker (placeholder)

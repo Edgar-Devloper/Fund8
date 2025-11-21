@@ -27,7 +27,7 @@ const SingleProductList = (props) => {
                      <div className="new-arrival-content position-relative">
                         <h4>
                            <Link to="/ecom-product-detail">
-                              Solid Women's V-neck Dark T-Shirt
+                              Solid Women&apos;s V-neck Dark T-Shirt
                            </Link>
                         </h4>
                         <p className="price">${price}</p>

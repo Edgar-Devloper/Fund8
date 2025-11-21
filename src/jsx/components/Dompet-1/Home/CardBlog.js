@@ -15,7 +15,7 @@ const CardBlog = () => {
 							<div>
 								<h3 className="text-white">Get managed by Dompet’s Virtual Assistant</h3>
 								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim </p>
-								<Link to={"#"} className="text-white" >Learn more >> </Link>
+								<Link to={"#"} className="text-white" >Learn more &gt;&gt; </Link>
 							</div>
 						</div>
 					</div>

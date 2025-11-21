@@ -240,9 +240,9 @@ const Select2 = () => {
               <div className="mb-4">
                 <h4 className="card-title">Ajax (remote data)</h4>
                 <p>
-                  Select2 comes with AJAX support built in, using jQuery's AJAX
+                  Select2 comes with AJAX support built in, using jQuery&apos;s AJAX
                   methods. In this example, we can search for repositories using
-                  GitHub's API:
+                  GitHub&apos;s API:
                 </p>
               </div>
 
@@ -393,7 +393,7 @@ const Select2 = () => {
                 <p>
                   In addition to a prepopulated menu of options, Select2 can
                   dynamically create new options from text input by the user in
-                  the search box. This feature is called "tagging". To enable
+                  the search box. This feature is called &quot;tagging&quot;. To enable
                   tagging, set the
                   <code>tags</code> option to
                   <code>true</code>:
@@ -423,7 +423,7 @@ const Select2 = () => {
                 <p>
                   Tagging can also be used in multi-value select boxes. In the
                   example below, we set the
-                  <code>multiple="multiple"</code> attribute on a Select2
+                  <code>multiple=&quot;multiple&quot;</code> attribute on a Select2
                   control that also has <code>tags: true</code>
                   enabled:
                 </p>
@@ -514,7 +514,7 @@ const Select2 = () => {
                 </h4>
                 <p>
                   When users filter down the results by entering search terms
-                  into the search box, Select2 uses an internal "matcher" to
+                  into the search box, Select2 uses an internal &quot;matcher&quot; to
                   match search terms to results. You may customize the way that
                   Select2 matches search terms by specifying a callback for the{" "}
                   <code>matcher</code>
@@ -696,7 +696,7 @@ const Select2 = () => {
                     title="Copy to clipboard"
                   ></span>
                   or any parents of it. You can also initialize Select2 with the{" "}
-                  <code>dir: "rtl"</code>
+                  <code>dir: &quot;rtl&quot;</code>
                   <span
                     className="copy-to-clipboard"
                     title="Copy to clipboard"
@@ -849,7 +849,7 @@ const Select2 = () => {
                 className="js-programmatic-set-val btn btn-primary mb-2 me-1"
                 aria-label="Set Select2 option"
               >
-                Set "California"
+                Set &quot;California&quot;
               </button>
               <button className="js-programmatic-open btn btn-primary mb-2 me-1">
                 Open

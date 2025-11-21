@@ -5,7 +5,7 @@ import TradesTicker from "../../components/trading/TradesTicker";
 import PriceTicker from "../../components/trading/PriceTicker";
 import ChartWrapper from "../../components/trading/ChartWrapper";
 import PairsModal from "../../components/trading/PairsModal";
-import { MockTradingDataProvider } from "../../components/trading/context/MockTradingDataProvider";
+import { HyperliquidTradingProvider } from "../../components/trading/context/HyperliquidTradingProvider";
 
 const TradingPage = () => {
   const [showPairs, setShowPairs] = useState(false);
@@ -21,7 +21,7 @@ const TradingPage = () => {
   }, []);
 
   return (
-    <MockTradingDataProvider>
+    <HyperliquidTradingProvider>
       <div className="page-content">
         {/* Header */}
         <div className="d-flex align-items-center mb-3 flex-wrap gap-3">
@@ -69,14 +69,13 @@ const TradingPage = () => {
         </div>
 
         <p className="text-muted small mt-3">
-          Datos simulados actualizándose para validar layout y UX. Layout
-          vertical (chart arriba) en iteración inicial responsive.
+          Trading en tiempo real con datos de Hyperliquid. Conecta tu wallet para colocar órdenes.
         </p>
 
         {/* Modal Pares & Precio */}
         {showPairs && <PairsModal onClose={togglePairs} />}
       </div>
-    </MockTradingDataProvider>
+    </HyperliquidTradingProvider>
   );
 };
 

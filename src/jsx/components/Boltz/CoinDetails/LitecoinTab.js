@@ -6,7 +6,7 @@ import DateRangePicker from "react-bootstrap-daterangepicker";
 import "bootstrap-daterangepicker/daterangepicker.css";
 
 //import
-import ltc from './../../../../images/svg/ltc.svg';
+import ltc from './../../../../images/icons/ltc.png';
 import {QuickTradeTab4} from './QuickTradeTab';
 import {Sellorder, Buyorder, DropDownBlog} from './OrderBlog';
 const CoinLineChart4 = loadable(() =>
@@ -35,8 +35,8 @@ const LitecoinTab = () =>{
 									<span>1 BTC = 68.48 USD</span>
 								</div>	
 							</div>
-							<p className="fs-14">Dash is an open source cryptocurrency. It is an altcoin that was forked from the Bitcoin protocol. It is also a decentralized autonomous organization (DAO) run by a subset of its users, which are called "masternodes". The currency permits transactions that can be untraceable.</p>
-							<p className="fs-14">Dash is an open source cryptocurrency. It is an altcoin that was forked from the Bitcoin protocol. It is also a decentralized autonomous organization (DAO) run by a subset of its users, which are called "masternodes". The currency permits transactions that can be untraceable.</p>
+							<p className="fs-14">Dash is an open source cryptocurrency. It is an altcoin that was forked from the Bitcoin protocol. It is also a decentralized autonomous organization (DAO) run by a subset of its users, which are called &quot;masternodes&quot;. The currency permits transactions that can be untraceable.</p>
+							<p className="fs-14">Dash is an open source cryptocurrency. It is an altcoin that was forked from the Bitcoin protocol. It is also a decentralized autonomous organization (DAO) run by a subset of its users, which are called &quot;masternodes&quot;. The currency permits transactions that can be untraceable.</p>
 						</div>
 					</div>
 				</div>

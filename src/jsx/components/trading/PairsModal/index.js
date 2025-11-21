@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import PairSelector from '../PairSelector';
 import PriceTicker from '../PriceTicker';
-import { useTradingData } from '../context/MockTradingDataProvider';
+import { useTradingData } from '../context/HyperliquidTradingProvider';
 
 /**
  * PairsModal

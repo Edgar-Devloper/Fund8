@@ -1,15 +1,6 @@
 import React from 'react';
 import {Dropdown} from 'react-bootstrap';
-const tableBlog = [
-	{price:'82.3', amount:'10.15', totle:'104,12',	},
-	{price:'84.4', amount:'11.16', totle:'107,13',	},
-	{price:'86.5', amount:'15.17', totle:'110,14',	},
-	{price:'88.6', amount:'16.18', totle:'112,15',	},
-	{price:'90.7', amount:'19.19', totle:'114,22',	},
-	{price:'92.8', amount:'20.21', totle:'118,23',	},
-	{price:'94.9', amount:'21.23', totle:'121,24',	},
-	{price:'96.1', amount:'23.25', totle:'125,26',	},
-]; 
+import { useOrderBook } from '../../../../hooks/useOrderBook.js';
 
 const DropDownBlog = ()=>{
 	return(
@@ -31,42 +22,108 @@ const DropDownBlog = ()=>{
 	)
 }
 
-function Sellorder(){
+function Sellorder({ coinId = 'bitcoin' }){
+	const { orderBook, loading, error } = useOrderBook(coinId, 30000);
+	const asks = orderBook?.asks || [];
+
+	const formatPrice = (price) => {
+		if (price === undefined || price === null || isNaN(price)) return '0.00';
+		return parseFloat(price).toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+	};
+
+	const formatAmount = (amount) => {
+		if (amount === undefined || amount === null || isNaN(amount)) return '0.0000';
+		return parseFloat(amount).toFixed(4);
+	};
+
+	const calculateTotal = (price, amount) => {
+		if (price === undefined || price === null || amount === undefined || amount === null || isNaN(price) || isNaN(amount)) {
+			return '0.00';
+		}
+		return (parseFloat(price) * parseFloat(amount)).toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+	};
+
 	return(
 		<>
 			<div className="card">
 				<div className="card-header border-0 pb-0">
 					<h4 className="mb-0 fs-20 text-black">Sell Order</h4>
-						<DropDownBlog />
+					<DropDownBlog />
 				</div>
 				<div className="card-body pt-3 pb-0">
-					<div className="table-responsive">
-						<table className="table text-center bg-warning-hover tr-rounded order-tbl">
-							<thead>
-								<tr>
-									<th className="text-left">Price</th>
-									<th className="text-center">Amount</th>
-									<th className="text-right">Total</th>
-								</tr>
-							</thead>
-							<tbody>
-								{tableBlog.map((item,index)=>(
-									<tr key={index}>
-										<td className="text-left">{item.price}</td>
-										<td>{item.amount}</td>
-										<td className="text-right">${item.totle}</td>
+					{loading && asks.length === 0 ? (
+						<div className="text-center py-3">
+							<div className="spinner-border spinner-border-sm text-primary" role="status"></div>
+						</div>
+					) : error && asks.length === 0 ? (
+						<div className="text-center py-3 text-muted small">Error cargando datos</div>
+					) : asks.length === 0 ? (
+						<div className="text-center py-3 text-muted small">Sin órdenes de venta</div>
+					) : (
+						<div className="table-responsive">
+							<table className="table text-center bg-warning-hover tr-rounded order-tbl">
+								<thead>
+									<tr>
+										<th className="text-left">Price</th>
+										<th className="text-center">Amount</th>
+										<th className="text-right">Total</th>
 									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+								</thead>
+								<tbody>
+									{asks.slice(0, 8).map((order, index) => {
+										const price = order?.price || 0;
+										const quantity = order?.quantity || order?.size || 0;
+										return (
+											<tr key={index}>
+												<td className="text-left">{formatPrice(price)}</td>
+												<td>{formatAmount(quantity)}</td>
+												<td className="text-right">${calculateTotal(price, quantity)}</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					)}
 				</div>
 			</div>	
 		</>
 	)
 } 
 
-function Buyorder(){
+function Buyorder({ coinId = 'bitcoin' }){
+	const { orderBook, loading, error } = useOrderBook(coinId, 30000);
+	const bids = orderBook?.bids || [];
+
+	const formatPrice = (price) => {
+		if (price === undefined || price === null || isNaN(price)) return '0.00';
+		return parseFloat(price).toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+	};
+
+	const formatAmount = (amount) => {
+		if (amount === undefined || amount === null || isNaN(amount)) return '0.0000';
+		return parseFloat(amount).toFixed(4);
+	};
+
+	const calculateTotal = (price, amount) => {
+		if (price === undefined || price === null || amount === undefined || amount === null || isNaN(price) || isNaN(amount)) {
+			return '0.00';
+		}
+		return (parseFloat(price) * parseFloat(amount)).toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+	};
+
 	return(
 		<>
 			<div className="card">
@@ -75,26 +132,40 @@ function Buyorder(){
 					<DropDownBlog />
 				</div>
 				<div className="card-body pb-0 pt-3">
-					<div className="table-responsive">
-						<table className="table text-center bg-warning-hover tr-rounded order-tbl">
-							<thead>
-								<tr>
-									<th className="text-left">Price</th>
-									<th className="text-center">Amount</th>
-									<th className="text-right">Total</th>
-								</tr>
-							</thead>
-							<tbody>
-								{tableBlog.map((item,index)=>(
-									<tr key={index}>
-										<td className="text-left">{item.price}</td>
-										<td>{item.amount}</td>
-										<td className="text-right">${item.totle}</td>
+					{loading && bids.length === 0 ? (
+						<div className="text-center py-3">
+							<div className="spinner-border spinner-border-sm text-primary" role="status"></div>
+						</div>
+					) : error && bids.length === 0 ? (
+						<div className="text-center py-3 text-muted small">Error cargando datos</div>
+					) : bids.length === 0 ? (
+						<div className="text-center py-3 text-muted small">Sin órdenes de compra</div>
+					) : (
+						<div className="table-responsive">
+							<table className="table text-center bg-warning-hover tr-rounded order-tbl">
+								<thead>
+									<tr>
+										<th className="text-left">Price</th>
+										<th className="text-center">Amount</th>
+										<th className="text-right">Total</th>
 									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+								</thead>
+								<tbody>
+									{bids.slice(0, 8).map((order, index) => {
+										const price = order?.price || 0;
+										const quantity = order?.quantity || order?.size || 0;
+										return (
+											<tr key={index}>
+												<td className="text-left">{formatPrice(price)}</td>
+												<td>{formatAmount(quantity)}</td>
+												<td className="text-right">${calculateTotal(price, quantity)}</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					)}
 				</div>
 			</div>
 		</>

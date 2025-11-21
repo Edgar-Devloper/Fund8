@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Link ,useNavigate} from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 import { connect, useDispatch } from 'react-redux';
 import {
     loadingToggleAction,
@@ -43,7 +43,7 @@ function Register(props) {
                 <div className="col-xl-12">
                   <div className="auth-form">
                     <div className="text-center mb-3">
-                      <Link to="/login">
+                      <Link to="/page-login">
                         <img src={logo} alt="" />
                       </Link>
                     </div>
@@ -107,7 +107,7 @@ function Register(props) {
                     <div className="new-account mt-3">
                       <p className="">
                         Already have an account?{" "}
-                        <Link className="text-primary" to="/login">
+                        <Link className="text-primary" href="/login">
                           Sign in
                         </Link>
                       </p>

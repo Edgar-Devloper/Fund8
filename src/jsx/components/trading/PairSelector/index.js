@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useTradingData } from '../context/MockTradingDataProvider';
+import { useTradingData } from '../context/HyperliquidTradingProvider';
 
 /**
  * PairSelector (placeholder)

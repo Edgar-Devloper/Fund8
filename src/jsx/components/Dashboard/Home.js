@@ -78,7 +78,8 @@ const Home = () => {
 	const { address } = useWallet();
 	const [country1, setCountry1] = useState("Medan, IDN");		
 	const [duration2, setDuration2] = useState("Weekly");
-	const [selectedCoins, setSelectedCoins] = useState(['ETH', 'BTC']);
+	// Estado para moneda seleccionada (SOLO UNA a la vez)
+	const [selectedCoins, setSelectedCoins] = useState(['ETH']); // Siempre al menos una seleccionada
 	
 	// Estado para monedas seleccionadas en Sell/Buy Order
 	const [sellOrderCoin, setSellOrderCoin] = useState('LTC');
@@ -93,14 +94,11 @@ const Home = () => {
 		return 'Weekly';
 	};
 
+	// Cambiar comportamiento a selección única (radio button)
+	// Si selecciona una moneda, cambia a esa (deselecciona la anterior)
+	// Siempre debe haber al menos una moneda seleccionada
 	const handleCoinToggle = (coin) => {
-		setSelectedCoins(prev => {
-			if (prev.includes(coin)) {
-				return prev.filter(c => c !== coin);
-			} else {
-				return [...prev, coin];
-			}
-		});
+		setSelectedCoins([coin]); // Siempre establecer solo la moneda seleccionada
 	};
 	
 	// obtener lista de monedas disponibles de hyperliquid
@@ -184,10 +182,10 @@ const Home = () => {
 						</h2>
 						<p className="mb-0 invoice-num1">
 							<svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" stroke={prices.bitcoin?.change24h >= 0 ? "#13B440" : "#FF0000"} strokeWidth="2" strokeLinecap="round"/>
+								<path d={prices.bitcoin?.changeWeek >= 0 ? "M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" : "M1 1C1.91797 2.08433 4.89728 5.27228 6.5 7L12.5 4L19.5 13"} stroke={prices.bitcoin?.changeWeek >= 0 ? "#13B440" : "#FF0000"} strokeWidth="2" strokeLinecap="round"/>
 							</svg>
-							<span className={prices.bitcoin?.change24h >= 0 ? "text-success me-1 ms-1" : "text-danger me-1 ms-1"}>
-								{prices.bitcoin?.change24h ? `${prices.bitcoin.change24h.toFixed(2)}%` : '0%'}
+							<span className={prices.bitcoin?.changeWeek >= 0 ? "text-success me-1 ms-1" : "text-danger me-1 ms-1"}>
+								{prices.bitcoin?.changeWeek !== undefined && prices.bitcoin?.changeWeek !== null ? `${Math.abs(prices.bitcoin.changeWeek).toFixed(2)}%` : '0%'}
 							</span> This week
 						</p>
 					</div>
@@ -212,10 +210,10 @@ const Home = () => {
 						</h2>
 						<p className="mb-0">
 							<svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" stroke={prices.ethereum?.change24h >= 0 ? "#13B440" : "#FF0000"} strokeWidth="2" strokeLinecap="round"/>
+								<path d={prices.ethereum?.changeWeek >= 0 ? "M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" : "M1 1C1.91797 2.08433 4.89728 5.27228 6.5 7L12.5 4L19.5 13"} stroke={prices.ethereum?.changeWeek >= 0 ? "#13B440" : "#FF0000"} strokeWidth="2" strokeLinecap="round"/>
 							</svg>
-							<span className={prices.ethereum?.change24h >= 0 ? "text-success  ms-1 me-1" : "text-danger  ms-1 me-1"}>
-								{prices.ethereum?.change24h ? `${prices.ethereum.change24h.toFixed(2)}%` : '0%'}
+							<span className={prices.ethereum?.changeWeek >= 0 ? "text-success  ms-1 me-1" : "text-danger  ms-1 me-1"}>
+								{prices.ethereum?.changeWeek !== undefined && prices.ethereum?.changeWeek !== null ? `${Math.abs(prices.ethereum.changeWeek).toFixed(2)}%` : '0%'}
 							</span> This week
 						</p>
 					</div>
@@ -240,11 +238,11 @@ const Home = () => {
 							</h2>
 							<p className="mb-0">
 								<svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d={prices.litecoin?.change24h >= 0 ? "M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" : "M1 1C1.91797 2.08433 4.89728 5.27228 6.5 7L12.5 4L19.5 13"} stroke={prices.litecoin?.change24h >= 0 ? "#13B440" : "#F04444"} strokeWidth="2" strokeLinecap="round"/>
+									<path d={prices.litecoin?.changeWeek >= 0 ? "M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" : "M1 1C1.91797 2.08433 4.89728 5.27228 6.5 7L12.5 4L19.5 13"} stroke={prices.litecoin?.changeWeek >= 0 ? "#13B440" : "#F04444"} strokeWidth="2" strokeLinecap="round"/>
 								</svg>
 
-								<span className={prices.litecoin?.change24h >= 0 ? "text-success ms-1 me-1" : "text-danger ms-1 me-1"}>
-									{prices.litecoin?.change24h ? `${Math.abs(prices.litecoin.change24h).toFixed(2)}%` : '0%'}
+								<span className={prices.litecoin?.changeWeek >= 0 ? "text-success ms-1 me-1" : "text-danger ms-1 me-1"}>
+									{prices.litecoin?.changeWeek !== undefined && prices.litecoin?.changeWeek !== null ? `${Math.abs(prices.litecoin.changeWeek).toFixed(2)}%` : '0%'}
 								</span> This week
 							</p>
 						</div>
@@ -269,11 +267,11 @@ const Home = () => {
 							</h2>
 							<p className="mb-0">
 								<svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d={prices.solana?.change24h >= 0 ? "M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" : "M1 1C1.91797 2.08433 4.89728 5.27228 6.5 7L12.5 4L19.5 13"} stroke={prices.solana?.change24h >= 0 ? "#13B440" : "#F04444"} strokeWidth="2" strokeLinecap="round"/>
+									<path d={prices.solana?.changeWeek >= 0 ? "M1 13C1.91797 11.9157 4.89728 8.72772 6.5 7L12.5 10L19.5 1" : "M1 1C1.91797 2.08433 4.89728 5.27228 6.5 7L12.5 4L19.5 13"} stroke={prices.solana?.changeWeek >= 0 ? "#13B440" : "#F04444"} strokeWidth="2" strokeLinecap="round"/>
 								</svg>
 
-								<span className={prices.solana?.change24h >= 0 ? "text-success ms-1 me-1" : "text-danger ms-1 me-1"}>
-									{prices.solana?.change24h ? `${Math.abs(prices.solana.change24h).toFixed(2)}%` : '0%'}
+								<span className={prices.solana?.changeWeek >= 0 ? "text-success ms-1 me-1" : "text-danger ms-1 me-1"}>
+									{prices.solana?.changeWeek !== undefined && prices.solana?.changeWeek !== null ? `${Math.abs(prices.solana.changeWeek).toFixed(2)}%` : '0%'}
 								</span> This week
 							</p>
 						</div>
@@ -295,7 +293,8 @@ const Home = () => {
 							<div className="d-flex flex-wrap mb-2">
 								<div className="form-check custom-checkbox me-4 default-checkbox">
 									<input 
-										type="checkbox" 
+										type="radio" 
+										name="selectedCoin" 
 										className="form-check-input" 
 										id="customCheckBox1" 
 										checked={selectedCoins.includes('ETH')}
@@ -305,7 +304,8 @@ const Home = () => {
 								</div>
 								<div className="form-check custom-checkbox me-4 default-checkbox">
 									<input 
-										type="checkbox" 
+										type="radio" 
+										name="selectedCoin" 
 										className="form-check-input" 
 										id="customCheckBox2" 
 									checked={selectedCoins.includes('BTC')}
@@ -315,7 +315,8 @@ const Home = () => {
 								</div>
 								<div className="form-check custom-checkbox me-4 default-checkbox">
 									<input 
-										type="checkbox" 
+										type="radio" 
+										name="selectedCoin" 
 										className="form-check-input" 
 										id="customCheckBox3" 
 										checked={selectedCoins.includes('LTC')}
@@ -325,13 +326,14 @@ const Home = () => {
 								</div>
 								<div className="form-check custom-checkbox me-4 default-checkbox">
 									<input 
-										type="checkbox" 
+										type="radio" 
+										name="selectedCoin" 
 										className="form-check-input" 
 										id="customCheckBox4" 
-										checked={selectedCoins.includes('BTC')}
-										onChange={() => handleCoinToggle('BTC')}
+										checked={selectedCoins.includes('SOL')}
+										onChange={() => handleCoinToggle('SOL')}
 									/>
-									<label className="form-check-label" htmlFor="customCheckBox4">BTC</label>
+									<label className="form-check-label" htmlFor="customCheckBox4">SOL</label>
 								</div>
 							</div>
 							<Dropdown className=" weather-btn mb-2">
@@ -347,7 +349,7 @@ const Home = () => {
 						<div className="card-body pb-0 pt-3">
 							<div id="marketChart" className="market-line">
 								<MarketLineApex 
-									selectedCoins={selectedCoins.length > 0 ? selectedCoins : ['ETH', 'BTC']} 
+									selectedCoins={selectedCoins.length > 0 ? selectedCoins : ['ETH']} 
 									timeframe={getTimeframe(duration2)} 
 								/>
 							</div>

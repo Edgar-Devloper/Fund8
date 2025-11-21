@@ -61,8 +61,8 @@ const PreviousTab = () =>{
 											<div className="table-responsive">
 												<table className="table table-responsive-md card-table transactions-table">
 													<tbody>
-														{TransactionsData2.map((item)=>(
-															<tr>
+														{TransactionsData2.map((item, index)=>(
+															<tr key={index}>
 																<td>
 																	{item.icons}
 																</td>
@@ -86,8 +86,8 @@ const PreviousTab = () =>{
 											<div className="table-responsive">
 												<table className="table table-responsive-md card-table transactions-table">
 													<tbody>
-														{TransactionsData3.map((item)=>(
-															<tr>
+														{TransactionsData3.map((item, index)=>(
+															<tr key={index}>
 																<td>
 																	{item.icons}
 																</td>

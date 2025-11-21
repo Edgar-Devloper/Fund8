@@ -620,7 +620,7 @@
         showProgress = _ref$showProgress === void 0 ? false : _ref$showProgress,
         progressIndicator = _ref.progressIndicator;
     return new Promise(function (resolve, reject) {
-      // eslint-disable-line compat/compat
+      // eslint-disable-next-line
       function poll(duration, cumulativeDuration) {
         setTimeout(function () {
           var result = fn();
@@ -689,8 +689,8 @@
       var diagScriptFun = function diagScriptFun(nodeUnderTestId, testIconId, md5, parentOrigin) {
         parent.FontAwesomeDetection.__pollUntil({
           fn: function fn() {
-            var iEl = document.getElementById(testIconId);
-            var computedStyle = window.getComputedStyle(iEl);
+            var iEl = DOCUMENT.getElementById(testIconId);
+            var computedStyle = WINDOW.getComputedStyle(iEl);
             var fontFamily = computedStyle.getPropertyValue('font-family');
 
             if (!!fontFamily.match(/FontAwesome/) || !!fontFamily.match(/Font Awesome 5/)) {
@@ -700,7 +700,7 @@
             }
           }
         }).then(function () {
-          var node = document.getElementById(nodeUnderTestId);
+          var node = DOCUMENT.getElementById(nodeUnderTestId);
           parent.postMessage({
             type: 'fontawesome-conflict',
             technology: 'webfont',
@@ -710,7 +710,7 @@
             md5: md5
           }, parentOrigin);
         }).catch(function (e) {
-          var node = document.getElementById(nodeUnderTestId);
+          var node = DOCUMENT.getElementById(nodeUnderTestId);
 
           if (e === 'timeout') {
             parent.postMessage({
@@ -799,10 +799,10 @@
       var diagScriptFun = function diagScriptFun(nodeUnderTestId, md5, parentOrigin) {
         parent.FontAwesomeDetection.__pollUntil({
           fn: function fn() {
-            return !!window.FontAwesomeConfig || !!window.FontAwesomeKitConfig;
+            return !!WINDOW.FontAwesomeConfig || !!WINDOW.FontAwesomeKitConfig;
           }
         }).then(function () {
-          var scriptNode = document.getElementById(nodeUnderTestId);
+          var scriptNode = DOCUMENT.getElementById(nodeUnderTestId);
           parent.postMessage({
             type: 'fontawesome-conflict',
             technology: 'js',
@@ -812,7 +812,7 @@
             md5: md5
           }, parentOrigin);
         }).catch(function (e) {
-          var scriptNode = document.getElementById(nodeUnderTestId);
+          var scriptNode = DOCUMENT.getElementById(nodeUnderTestId);
 
           if (e === 'timeout') {
             parent.postMessage({
@@ -987,7 +987,7 @@
 
   bunker(function () {
     if (IS_BROWSER && IS_DOM) {
-      conflictDetection(window.FontAwesomeDetection.report);
+      conflictDetection(WINDOW.FontAwesomeDetection && WINDOW.FontAwesomeDetection.report);
     }
   });
 

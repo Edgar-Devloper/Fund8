@@ -1,24 +1,30 @@
 {
   "name": "boltz",
   "version": "0.1.0",
-  "homepage": "https://boltz.dexignzone.com",
   "private": true,
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject",
+    "sass:watch": "sass src/scss:src/css --embed-source-map --no-error-css",
+    "sass:build": "sass src/scss:src/css --no-source-map",
+    "sass": "npm run sass:watch"
+  },
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^35.3.2",
     "@ckeditor/ckeditor5-react": "^5.1.0",
     "@fullcalendar/daygrid": "^5.11.3",
     "@fullcalendar/interaction": "^5.11.3",
-    "@fullcalendar/react": "^5.11.3",
+    "@fullcalendar/react": "^5.1.0",
     "@fullcalendar/timegrid": "^5.11.3",
     "@loadable/component": "^5.15.2",
     "@n8tb1t/use-scroll-position": "^2.0.3",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "apexcharts": "^3.49.1",
+    "apexcharts": "^4.0.0",
     "axios": "^1.2.0",
     "bootstrap-daterangepicker": "^3.1.0",
     "chart.js": "^4.4.6",
+    "ethers": "^5.8.0",
     "formik": "^2.2.9",
     "framer-motion": "^8.5.5",
     "lightgallery": "^2.8.3",
@@ -41,8 +47,7 @@
     "react-multiselect-dropdown-bootstrap": "^1.1.0",
     "react-perfect-scrollbar": "^1.5.8",
     "react-redux": "^8.1.3",
-    "react-router-dom": "^6.30.1",
-    "react-scripts": "5.0.1",
+    "react-router-dom": "^6.8.0",
     "react-select": "^5.7.0",
     "react-simple-maps": "^3.0.0",
     "react-slick": "^0.29.0",
@@ -59,33 +64,33 @@
     "sweetalert": "^2.1.2",
     "sweetalert2": "^11.6.15",
     "swiper": "^8.4.5",
-    "web-vitals": "^2.1.4",
     "yup": "^0.32.11"
+  },
+  "devDependencies": {
+    "@types/loadable__component": "^5.13.10",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "assert": "^2.1.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "eslint": "^8.57.0",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "react-app-rewired": "^2.2.1",
+    "react-scripts": "5.0.1",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "string-replace-loader": "^3.2.0",
+    "typescript": "^5.5.0",
+    "url": "^0.11.4"
   },
   "engines": {
     "node": ">=18.17.0 <23",
     "npm": ">=9"
-  },
-  "packageManager": "npm@10.9.3",
-  "scripts": {
-    "start": "react-scripts start",
-    "dev": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "sass:watch": "sass --watch src/scss:src/css --embed-source-map --no-error-css",
-    "sass:build": "sass src/scss:src/css --no-source-map",
-    "sass": "npm run sass:watch",
-    "clean": "rimraf node_modules pnpm-lock.yaml package-lock.json",
-    "use-node": "nvm use 22.19.0",
-    "check-engines": "node -e \"const p=require('./package.json');const[major]=process.versions.node.split('.');if(!(parseInt(major)>=18 && parseInt(major)<23)){console.error('Node version incompatible.');process.exit(1)}\"",
-    "deploy": "vercel"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [

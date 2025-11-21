@@ -981,7 +981,7 @@ const Element = () => {
                         disabled
                       />
                       <label className="form-check-label">
-                        Can't check this
+                        Can&apos;t check this
                       </label>
                     </div>
                     <button type="submit" className="btn btn-primary mt-3">

@@ -595,7 +595,7 @@ const UiButton = () => {
               <Card.Header className="d-block">
                 <Card.Title>Disabled Button</Card.Title>
                 <Card.Text className="mb-0 subtitle">
-                  add <code>disabled="disabled"</code> to change the style
+                  add <code>disabled=&quot;disabled&quot;</code> to change the style
                 </Card.Text>
               </Card.Header>
               <div className="card-body">

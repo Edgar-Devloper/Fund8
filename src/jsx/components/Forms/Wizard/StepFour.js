@@ -23,7 +23,7 @@ const StepFour = () => {
                            aria-hidden="true"
                         ></i>
                      </span>
-                     <span className="mail-text">I'm using Gmail</span>
+                     <span className="mail-text">I&apos;m using Gmail</span>
                   </label>
                </div>
             </div>
@@ -42,7 +42,7 @@ const StepFour = () => {
                      <span className="mail-icon">
                         <i className="mdi mdi-office" aria-hidden="true"></i>
                      </span>
-                     <span className="mail-text">I'm using Office</span>
+                     <span className="mail-text">I&apos;m using Office</span>
                   </label>
                </div>
             </div>
@@ -64,7 +64,7 @@ const StepFour = () => {
                            aria-hidden="true"
                         ></i>
                      </span>
-                     <span className="mail-text">I'm using Drive</span>
+                     <span className="mail-text">I&apos;m using Drive</span>
                   </label>
                </div>
             </div>

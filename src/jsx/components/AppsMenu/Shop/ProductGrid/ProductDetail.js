@@ -78,7 +78,7 @@ const ProductDetail = () => {
                   <div className="product-detail-content">
                     {/*Product details*/}
                     <div className="new-arrival-content pr">
-                      <h4>Solid Women's V-neck Dark T-Shirt</h4>
+                      <h4>Solid Women&apos;s V-neck Dark T-Shirt</h4>
 						<div className="comment-review star-rating d-flex">
 							<ul>
 								{" "}<li> <i className="fa fa-star" /></li>
@@ -107,9 +107,9 @@ const ProductDetail = () => {
 							There are many variations of passages of Lorem Ipsum
 							available, but the majority have suffered alteration in
 							some form, by injected humour, or randomised words which
-							don't look even slightly believable. If you are going to
+							don&apos;t look even slightly believable. If you are going to
 							use a passage of Lorem Ipsum, you need to be sure there
-							isn't anything embarrassing.
+							isn&apos;t anything embarrassing.
 						</p>
 						<div className="d-flex align-items-end flex-wrap mt-4">
 							<div className="filtaring-area me-3">

@@ -136,29 +136,87 @@ export const apiService = {
     const metaDataResponse = metaData.data || metaData;
     const [universe, assetCtxs] = Array.isArray(metaDataResponse) ? metaDataResponse : [metaDataResponse?.universe || [], metaDataResponse?.assetCtxs || {}];
 
-    const getPriceData = (symbol, coinId) => {
-      // calculates price and 24h change from previous day price
+    // Helper function to get weekly change using candles
+    const getWeeklyChange = async (symbol, currentPrice) => {
+      try {
+        // Get candles for the past 7 days (1 day = 1440 minutes, 7 days = ~10080 minutes)
+        // Using 1h interval to get last ~168 candles (7 days * 24 hours)
+        const endTime = Date.now();
+        const startTime = endTime - (7 * 24 * 60 * 60 * 1000); // 7 days ago in milliseconds
+        
+        const candlesResponse = await getCandles(symbol, '1h', startTime, endTime);
+        const candlesData = candlesResponse.data || candlesResponse || [];
+        
+        // If we have candles, find the price 7 days ago
+        if (Array.isArray(candlesData) && candlesData.length > 0) {
+          // Get the first candle (oldest) close price as the price 7 days ago
+          const weekAgoPrice = Array.isArray(candlesData[0]) 
+            ? parseFloat(candlesData[0][4] || candlesData[0][1] || '0') // [time, open, high, low, close]
+            : parseFloat(candlesData[0].close || candlesData[0].c || candlesData[0][1] || '0');
+          
+          if (weekAgoPrice > 0 && currentPrice > 0) {
+            return ((currentPrice - weekAgoPrice) / weekAgoPrice) * 100;
+          }
+        }
+        
+        // Fallback: try using prevDayPx if candles are not available
+        const ctx = assetCtxs?.[symbol];
+        const prevDayPx = parseFloat(ctx?.prevDayPx || '0');
+        if (prevDayPx > 0 && currentPrice > 0) {
+          return ((currentPrice - prevDayPx) / prevDayPx) * 100;
+        }
+        
+        return 0;
+      } catch (err) {
+        console.error(`[fetchDashboardPrices] Error getting weekly change for ${symbol}:`, err);
+        // Fallback to 24h change if weekly calculation fails
+        const ctx = assetCtxs?.[symbol];
+        const prevDayPx = parseFloat(ctx?.prevDayPx || '0');
+        if (prevDayPx > 0 && currentPrice > 0) {
+          return ((currentPrice - prevDayPx) / prevDayPx) * 100;
+        }
+        return 0;
+      }
+    };
+
+    const getPriceData = async (symbol, coinId) => {
+      // calculates price and weekly change from 7 days ago price
       const price = parseFloat(prices[symbol] || '0');
+      
+      if (price <= 0) return null;
+      
+      // Get weekly change
+      const changeWeek = await getWeeklyChange(symbol, price);
+      
       const ctx = assetCtxs?.[symbol];
       const prevDayPx = parseFloat(ctx?.prevDayPx || '0');
       const change24h = prevDayPx > 0 ? ((price - prevDayPx) / prevDayPx) * 100 : 0;
 
-      return price > 0 ? {
+      return {
         id: coinId,
         symbol,
         price,
         change24h,
+        changeWeek,
         volume24h: parseFloat(ctx?.dayNtlVlm || '0'),
         marketCap: 0,
         lastUpdated: new Date().toISOString()
-      } : null;
+      };
     };
 
+    // Get all price data in parallel
+    const [bitcoin, ethereum, litecoin, solana] = await Promise.all([
+      getPriceData('BTC', 'bitcoin'),
+      getPriceData('ETH', 'ethereum'),
+      getPriceData('LTC', 'litecoin'),
+      getPriceData('SOL', 'solana'),
+    ]);
+
     return {
-      bitcoin: getPriceData('BTC', 'bitcoin'),
-      ethereum: getPriceData('ETH', 'ethereum'),
-      litecoin: getPriceData('LTC', 'litecoin'),
-      solana: getPriceData('SOL', 'solana'),
+      bitcoin,
+      ethereum,
+      litecoin,
+      solana,
     };
   },
 

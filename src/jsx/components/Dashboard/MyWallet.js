@@ -6,6 +6,8 @@ import pMinDelay from "p-min-delay";
 
 //Import
 import { ThemeContext } from "../../../context/ThemeContext";
+import { useWallet } from "../../../context/WalletContext.js";
+import { useUserBalance } from "../../../hooks/useUserBalance.js";
 import Donut from "../Boltz/MyWallet/Donut";
 import WalletTab from "../Boltz/MyWallet/WalletTab";
 import SwiperSlider2 from "../Boltz/MyWallet/SwiperSlider2";
@@ -18,6 +20,32 @@ const CoinChart = loadable(() =>
 const MyWallet = () => {
 	const { background } = useContext(ThemeContext);
 	const [crrency1, setCrrency1] = useState("Monthly (2021)");
+	
+	// Obtener wallet conectado y datos del usuario
+	const { address, isConnected } = useWallet();
+	const { userState, loading: balanceLoading } = useUserBalance();
+	
+	// Extraer datos reales
+	const accountValue = parseFloat(userState?.crossMarginSummary?.accountValue || 0);
+	const totalMarginUsed = parseFloat(userState?.crossMarginSummary?.totalMarginUsed || 0);
+	const withdrawable = parseFloat(userState?.withdrawable || 0);
+	
+	// Formatear dirección
+	const formatAddress = (addr) => {
+		if (!addr) return 'Not Connected';
+		return `${addr.slice(0, 8)}...${addr.slice(-6)}`;
+	};
+	
+	// Formatear moneda
+	const formatCurrency = (value) => {
+		return new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD',
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		}).format(value);
+	};
+	
 	return(
 		<Fragment>
 			<div className="form-head mb-sm-3 mb-3 d-flex align-items-center flex-wrap mt-3 text-head">
@@ -28,7 +56,11 @@ const MyWallet = () => {
 			<div className="row">
 				<div className="col-xl-3 col-xxl-4">
 					<div className="swiper-box">
-						<SwiperSlider2 />
+						<SwiperSlider2 
+							accountValue={accountValue}
+							walletAddress={address}
+							loading={balanceLoading}
+						/>
 					</div>
 				</div>
 				<div className="col-xl-9 col-xxl-8">
@@ -50,26 +82,34 @@ const MyWallet = () => {
 											<div className="row">
 												<div className="col-sm-6">
 													<div className="mb-4">
-														<p className="mb-2">Card Name</p>
-														<h4 className="text-black">Main Balance</h4>
+														<p className="mb-2">Wallet Address</p>
+														<h4 className="text-black">
+															{balanceLoading ? 'Cargando...' : formatAddress(address)}
+														</h4>
 													</div>
 													<div className="mb-4">
-														<p className="mb-2">Valid Date</p>
-														<h4 className="text-black">08/21</h4>
+														<p className="mb-2">Account Value</p>
+														<h4 className="text-black">
+															{balanceLoading ? 'Cargando...' : formatCurrency(accountValue)}
+														</h4>
 													</div>
 													<div>
-														<p className="mb-2">Card Number</p>
-														<h4 className="text-black">**** **** **** 1234</h4>
+														<p className="mb-2">Network</p>
+														<h4 className="text-black">Arbitrum (Hyperliquid)</h4>
 													</div>
 												</div>
 												<div className="col-sm-6">
 													<div className="mb-4">
-														<p className="mb-2">Bank Name</p>
-														<h4 className="text-black">ABC Center Bank</h4>
+														<p className="mb-2">Total Margin Used</p>
+														<h4 className="text-black">
+															{balanceLoading ? 'Cargando...' : formatCurrency(totalMarginUsed)}
+														</h4>
 													</div>
 													<div className="mb-4">
-														<p className="mb-2">Card Holder</p>
-														<h4 className="text-black">Marquezz Silalahi</h4>
+														<p className="mb-2">Withdrawable</p>
+														<h4 className="text-black">
+															{balanceLoading ? 'Cargando...' : formatCurrency(withdrawable)}
+														</h4>
 													</div>
 													<div>
 														<p className="mb-2">Card Theme</p>
@@ -96,55 +136,61 @@ const MyWallet = () => {
 													<div className="d-inline-block position-relative donut-chart-sale mb-3">
 														{background.value === "dark" ? (
 														  <Donut
-															value={66}
+															value={accountValue > 0 ? Math.min((totalMarginUsed / accountValue) * 100, 100) : 0}
 															backgroundColor="#FF6826"
 															backgroundColor2="#F0F0F0"
 														  />
 														) : (
-														  <Donut value={66} backgroundColor="#2258bf" 
+														  <Donut 
+															value={accountValue > 0 ? Math.min((totalMarginUsed / accountValue) * 100, 100) : 0}
+															backgroundColor="#2258bf" 
 															backgroundColor2="rgba(240, 240, 240,1)"
 														  />
 														)}
-														<small>66%</small>
+														<small>{accountValue > 0 ? Math.round((totalMarginUsed / accountValue) * 100) : 0}%</small>
 													</div>
-													<h5 className="fs-18 text-black">Main Limits</h5>
-													<span>$10,000</span>
+													<h5 className="fs-18 text-black">Margin Used</h5>
+													<span>{formatCurrency(totalMarginUsed)}</span>
 												</div>
 												<div className="col-sm-4 mb-sm-0 mb-4 text-center">
 													<div className="d-inline-block position-relative donut-chart-sale mb-3">
 														{background.value === "dark" ? (
 														  <Donut
-															value={31}
+															value={accountValue > 0 ? Math.min((withdrawable / accountValue) * 100, 100) : 0}
 															backgroundColor="#1DC624"
 															backgroundColor2="#F0F0F0"
 														  />
 														) : (
-														  <Donut value={31} backgroundColor="#1DC624" 
-																backgroundColor2="rgba(240, 240, 240,1)"
+														  <Donut 
+															value={accountValue > 0 ? Math.min((withdrawable / accountValue) * 100, 100) : 0}
+															backgroundColor="#1DC624" 
+															backgroundColor2="rgba(240, 240, 240,1)"
 														  />
 														)}
-														<small>31%</small>
+														<small>{accountValue > 0 ? Math.round((withdrawable / accountValue) * 100) : 0}%</small>
 													</div>
-													<h5 className="fs-18 text-black">Seconds</h5>
-													<span>$500</span>
+													<h5 className="fs-18 text-black">Available</h5>
+													<span>{formatCurrency(withdrawable)}</span>
 												</div>
 												<div className="col-sm-4 text-center">
 													<div className="d-inline-block position-relative donut-chart-sale mb-3">
 														{background.value === "dark" ? (
 														  <Donut
-															value={25}
-															backgroundColor="#9E9E9E"
+															value={100}
+															backgroundColor="#2258bf"
 															backgroundColor2="#F0F0F0"
 														  />
 														) : (
-														  <Donut value={25} backgroundColor="#f04444" 
+														  <Donut 
+															value={100}
+															backgroundColor="#1DC624" 
 															backgroundColor2="rgba(240, 240, 240,1)"
 														  />
 														)}
-														<small>25%</small>
+														<small>100%</small>
 													</div>
-													<h5 className="fs-18 text-black">Others</h5>
-													<span>$100</span>
+													<h5 className="fs-18 text-black">Total Value</h5>
+													<span>{formatCurrency(accountValue)}</span>
 												</div>
 											</div>
 										</div>
@@ -171,10 +217,19 @@ const MyWallet = () => {
 								<div className="card-body pt-3">
 									<div className="flex-wrap mb-sm-4 mb-2 align-items-center">
 										<div className="d-flex align-items-center">
-											<span className="fs-32 text-black font-w600 pe-3">$557,235.31</span>
-											<span className="fs-22 text-success">7% <i className="fa fa-caret-up scale5 ms-2 text-success" aria-hidden="true"></i></span>
+											<span className="fs-32 text-black font-w600 pe-3">
+												{balanceLoading ? 'Cargando...' : formatCurrency(accountValue)}
+											</span>
+											{!isConnected && (
+												<span className="fs-14 text-warning ms-3">
+													<i className="fa fa-exclamation-triangle me-2"></i>
+													Conecta tu wallet para ver datos reales
+												</span>
+											)}
 										</div>
-										<p className="mb-0 text-black me-auto">Last Week <span className="text-success">$563,443</span></p>
+										<p className="mb-0 text-black me-auto">
+											Account Value <span className="text-success">(Datos en tiempo real de Hyperliquid)</span>
+										</p>
 									</div>
 									<div id="chartTimeline" className="timeline-chart market-line">
 										<CoinChart />	

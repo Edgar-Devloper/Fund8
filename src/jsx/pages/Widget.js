@@ -1472,7 +1472,7 @@ const Widget = () => {
                         ></label>
                       </div>
                       <div className="media-body">
-                        <h5 className="mb-0">Don't give up the fight.</h5>
+                        <h5 className="mb-0">Don&apos;t give up the fight.</h5>
                         <small className="text-muted">
                           29 July 2020 - 02:26 PM
                         </small>
