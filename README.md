@@ -1,6 +1,7 @@
 template-Boltz - https://template-boltz-dev.vercel.app/login
 
 # Frontend Fund8 V3
+#Version 2
 
 Plataforma de trading de criptomonedas integrada con HyperLiquid.
 
