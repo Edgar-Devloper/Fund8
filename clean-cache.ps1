@@ -23,3 +23,4 @@ Write-Host "`nAHORA EJECUTA: npm start" -ForegroundColor Yellow
 Write-Host "El bundle se recompilará sin el código de TradingView" -ForegroundColor Cyan
 
 
+

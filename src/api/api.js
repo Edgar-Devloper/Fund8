@@ -45,10 +45,14 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    if (process.env.NODE_ENV === 'development' && response.config.data?.type !== 'allMids') {
-      console.log('[Hyperliquid API] Response:', response.config.data?.type);
+    const requestType = response.config.data ? JSON.parse(response.config.data).type : 'unknown';
+    
+    if (process.env.NODE_ENV === 'development' && requestType !== 'allMids') {
+      console.log('[Hyperliquid API] Response:', requestType, response.data ? '✓' : '✗ (no data)');
     }
-    return response.data;
+    
+    // Ensure we return data even if it's undefined/null
+    return response.data !== undefined ? response.data : null;
   },
   (error) => {
     console.error('[Hyperliquid API] Response Error:', error.response?.data || error.message);

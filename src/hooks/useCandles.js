@@ -1,10 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiService } from '../api/apiService.js';
+import { useHyperliquidWebSocket } from './useHyperliquidWebSocket.js';
 
-export const useCandles = (coinId, interval = '1h', limit = 200) => {
+export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = true) => {
   const [candles, setCandles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isRealTime, setIsRealTime] = useState(false);
+  
+  const lastUpdateRef = useRef(0);
+  const currentCandleRef = useRef(null);
+
+  // WebSocket connection
+  const ws = useHyperliquidWebSocket({
+    autoConnect: useWebSocket,
+    log: false,
+  });
 
   const fetchCandles = useCallback(async () => {
     if (!coinId) {
@@ -82,14 +93,131 @@ export const useCandles = (coinId, interval = '1h', limit = 200) => {
     }
   }, [coinId, interval, limit]);
 
+  // Normalize symbol (bitcoin -> BTC, ethereum -> ETH, etc)
+  const normalizeSymbol = (symbol) => {
+    if (!symbol) return '';
+    const symbolMap = {
+      bitcoin: 'BTC',
+      btc: 'BTC',
+      ethereum: 'ETH',
+      eth: 'ETH',
+      litecoin: 'LTC',
+      ltc: 'LTC',
+      solana: 'SOL',
+      sol: 'SOL',
+      monero: 'XMR',
+      xmr: 'XMR',
+      cardano: 'ADA',
+      ada: 'ADA',
+      dogecoin: 'DOGE',
+      doge: 'DOGE',
+    };
+    return symbolMap[symbol.toLowerCase()] || symbol.toUpperCase();
+  };
+
+  // Get interval in seconds
+  const getIntervalSeconds = (interval) => {
+    const intervalSeconds = {
+      '1m': 60,
+      '5m': 300,
+      '15m': 900,
+      '1h': 3600,
+      '4h': 14400,
+      '1d': 86400
+    };
+    return intervalSeconds[interval] || 3600;
+  };
+
+  // Update current candle with real-time price from WebSocket
   useEffect(() => {
+    if (!useWebSocket || !coinId || !ws.isConnected || candles.length === 0) {
+      setIsRealTime(false);
+      return;
+    }
+
+    const symbol = normalizeSymbol(coinId);
+    const intervalSec = getIntervalSeconds(interval);
+    
+    const unsubscribe = ws.subscribeAllMids((allMids) => {
+      if (!allMids || !allMids[symbol]) return;
+      
+      const now = Date.now();
+      // Throttle updates to max 500ms
+      if (now - lastUpdateRef.current < 500) return;
+      lastUpdateRef.current = now;
+
+      const currentPrice = parseFloat(allMids[symbol]);
+      if (!currentPrice || currentPrice <= 0) return;
+
+      setCandles(prevCandles => {
+        if (!prevCandles || prevCandles.length === 0) return prevCandles;
+
+        // Get the last candle
+        const lastCandle = prevCandles[prevCandles.length - 1];
+        if (!lastCandle) return prevCandles;
+
+        // Calculate current candle timestamp (aligned to interval)
+        const currentTime = Math.floor(Date.now() / 1000);
+        const currentCandleTime = Math.floor(currentTime / intervalSec) * intervalSec;
+
+        // Check if we need to create a new candle or update the existing one
+        if (lastCandle.time === currentCandleTime) {
+          // Update existing candle
+          const updatedCandle = {
+            ...lastCandle,
+            high: Math.max(lastCandle.high, currentPrice),
+            low: Math.min(lastCandle.low, currentPrice),
+            close: currentPrice
+          };
+
+          return [
+            ...prevCandles.slice(0, -1),
+            updatedCandle
+          ];
+        } else if (currentCandleTime > lastCandle.time) {
+          // Create new candle
+          const newCandle = {
+            time: currentCandleTime,
+            open: currentPrice,
+            high: currentPrice,
+            low: currentPrice,
+            close: currentPrice
+          };
+
+          // Add new candle and keep array size limited
+          return [
+            ...prevCandles,
+            newCandle
+          ].slice(-limit);
+        }
+
+        return prevCandles;
+      });
+
+      setIsRealTime(true);
+    });
+
+    return unsubscribe;
+  }, [coinId, interval, ws.isConnected, useWebSocket, ws, candles.length, limit]);
+
+  // Initial fetch and periodic refresh
+  useEffect(() => {
+    // Initial fetch
     fetchCandles();
+
+    // Refresh every 5 minutes to ensure data is up to date
+    // (WebSocket updates only modify the last candle, not historical data)
+    const refreshInterval = 5 * 60 * 1000; // 5 minutes
+    const intervalId = setInterval(fetchCandles, refreshInterval);
+
+    return () => clearInterval(intervalId);
   }, [fetchCandles]);
 
   return {
     candles,
     loading,
     error,
+    isRealTime,
     refetch: fetchCandles
   };
 };

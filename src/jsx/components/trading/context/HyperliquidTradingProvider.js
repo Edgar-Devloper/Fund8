@@ -5,6 +5,7 @@ import { useOrderBook } from '../../../../hooks/useOrderBook.js';
 import { useRecentTrades } from '../../../../hooks/useRecentTrades.js';
 import { useCryptoPrice } from '../../../../hooks/useCryptoPrice.js';
 import { useOpenOrders } from '../../../../hooks/useOpenOrders.js';
+import { useHyperliquidWebSocket } from '../../../../hooks/useHyperliquidWebSocket.js';
 
 const TradingDataContext = createContext(null);
 
@@ -32,10 +33,16 @@ export const HyperliquidTradingProvider = ({ children }) => {
   
   const coinId = useMemo(() => pairToCoinId(selectedSymbol), [selectedSymbol]);
   
-  // fetch real data from hyperliquid
-  const { orderBook, loading: orderBookLoading } = useOrderBook(coinId, 30000);
-  const { trades: recentTrades, loading: tradesLoading } = useRecentTrades(coinId, 30000);
-  const { data: priceData, loading: priceLoading } = useCryptoPrice(coinId);
+  // WebSocket connection for real-time data
+  const ws = useHyperliquidWebSocket({
+    autoConnect: true,
+    log: process.env.NODE_ENV === 'development',
+  });
+  
+  // fetch real data from hyperliquid with WebSocket support
+  const { orderBook, loading: orderBookLoading, isRealTime: orderBookRealTime } = useOrderBook(coinId, 30000, true);
+  const { trades: recentTrades, loading: tradesLoading, isRealTime: tradesRealTime } = useRecentTrades(coinId, 10000, true);
+  const { data: priceData, loading: priceLoading, isRealTime: priceRealTime } = useCryptoPrice(coinId, 60000, true);
   const { openOrders, loading: openOrdersLoading } = useOpenOrders(30000);
   
   // handle empty order book
@@ -184,10 +191,17 @@ export const HyperliquidTradingProvider = ({ children }) => {
       price: priceLoading,
       openOrders: openOrdersLoading
     },
+    realTime: {
+      orderBook: orderBookRealTime,
+      trades: tradesRealTime,
+      price: priceRealTime,
+      websocket: ws.isConnected
+    },
     placeOrder,
     cancelOrder,
     connectionStatus: isConnected ? 'connected' : 'disconnected',
-    isConnected
+    isConnected,
+    websocket: ws
   }), [
     exchange,
     selectedSymbol,
@@ -200,11 +214,15 @@ export const HyperliquidTradingProvider = ({ children }) => {
     tradesLoading,
     priceLoading,
     openOrdersLoading,
+    orderBookRealTime,
+    tradesRealTime,
+    priceRealTime,
     placeOrder,
     cancelOrder,
     isConnected,
     exchanges,
-    exchangeSymbols
+    exchangeSymbols,
+    ws
   ]);
   
   return (

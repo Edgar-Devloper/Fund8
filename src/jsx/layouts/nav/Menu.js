@@ -57,10 +57,6 @@ export const MenuList = [
                 to: 'order-history'
             },
             {
-                title: 'Portofolio',
-                to: 'portofolio',                
-            },
-            {
                 title: 'Portfolio',
                 to: 'portfolio'
             },

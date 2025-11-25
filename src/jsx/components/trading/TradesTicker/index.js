@@ -28,14 +28,18 @@ const TradesTicker = () => {
               </tr>
             </thead>
             <tbody>
-              {trades.slice(0,60).map(tr => (
-                <tr key={tr.id}>
-                  <td className={tr.side === 'buy' ? 'text-success' : 'text-danger'} style={{textTransform:'capitalize'}}>{tr.side}</td>
-                  <td className="text-end">{tr.price.toFixed(2)}</td>
-                  <td className="text-end">{tr.amount}</td>
-                  <td className="text-end">{new Date(tr.ts).toLocaleTimeString()}</td>
-                </tr>
-              ))}
+              {trades.slice(0,60).map((tr, idx) => {
+                // Ensure unique key even if tr.id is duplicated
+                const uniqueKey = `${tr.id}-${idx}`;
+                return (
+                  <tr key={uniqueKey}>
+                    <td className={tr.side === 'buy' ? 'text-success' : 'text-danger'} style={{textTransform:'capitalize'}}>{tr.side}</td>
+                    <td className="text-end">{(tr.price || 0).toFixed(2)}</td>
+                    <td className="text-end">{(tr.amount || 0).toFixed(4)}</td>
+                    <td className="text-end">{tr.ts ? new Date(tr.ts).toLocaleTimeString() : '--'}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
