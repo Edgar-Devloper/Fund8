@@ -6,6 +6,7 @@ import { useRecentTrades } from '../../../../hooks/useRecentTrades.js';
 import { useCryptoPrice } from '../../../../hooks/useCryptoPrice.js';
 import { useOpenOrders } from '../../../../hooks/useOpenOrders.js';
 import { useHyperliquidWebSocket } from '../../../../hooks/useHyperliquidWebSocket.js';
+import hyperliquidTrading from '../../../../services/hyperliquidTrading.js';
 
 const TradingDataContext = createContext(null);
 
@@ -27,11 +28,28 @@ const pairToCoinId = (pair) => {
 };
 
 export const HyperliquidTradingProvider = ({ children }) => {
-  const { address, isConnected, signer } = useWallet();
+  const { address, isConnected, signer, provider } = useWallet();
   const [selectedSymbol, setSelectedSymbol] = useState('BTC/USDC');
   const [exchange, setExchange] = useState('hyperliquid');
+  const [tradingInitialized, setTradingInitialized] = useState(false);
   
   const coinId = useMemo(() => pairToCoinId(selectedSymbol), [selectedSymbol]);
+  
+  // Initialize trading service when wallet connects
+  useEffect(() => {
+    if (isConnected && provider && signer && !tradingInitialized) {
+      console.log('[HL Provider] Initializing trading service...');
+      hyperliquidTrading.initialize(provider, signer).then((success) => {
+        if (success) {
+          setTradingInitialized(true);
+          console.log('[HL Provider] Trading service initialized successfully');
+        }
+      });
+    } else if (!isConnected && tradingInitialized) {
+      hyperliquidTrading.disconnect();
+      setTradingInitialized(false);
+    }
+  }, [isConnected, provider, signer, tradingInitialized]);
   
   // WebSocket connection for real-time data (disabled to avoid rate limits)
   const ws = useHyperliquidWebSocket({
@@ -214,30 +232,64 @@ export const HyperliquidTradingProvider = ({ children }) => {
     }));
   }, [openOrders, isConnected]);
   
-  // place order function
+  // place order function - using real Hyperliquid trading service
   const placeOrder = useCallback(async (orderData) => {
-    if (!signer) {
-      throw new Error('Wallet no conectada');
+    if (!tradingInitialized) {
+      throw new Error('Trading service not initialized. Please connect your wallet.');
     }
     
-    const symbol = selectedSymbol.split('/')[0];
-    return await apiService.placeOrder(signer, {
+    const symbol = selectedSymbol.split('/')[0]; // Get coin (e.g., 'BTC' from 'BTC/USDC')
+    const isBuy = orderData.side === 'buy';
+    const size = orderData.size || orderData.amount;
+    const price = orderData.price;
+    
+    console.log('[HL Provider] Placing order:', {
       coin: symbol,
-      side: orderData.side,
-      size: orderData.size || orderData.amount,
-      price: orderData.price,
-      orderType: orderData.type === 'market' ? 'Market' : 'Limit',
-      reduceOnly: orderData.reduceOnly || false
+      isBuy,
+      size,
+      price,
+      type: orderData.type
     });
-  }, [signer, selectedSymbol]);
+    
+    let result;
+    
+    if (orderData.type === 'market') {
+      // Place market order
+      result = await hyperliquidTrading.placeMarketOrder({
+        coin: symbol,
+        isBuy: isBuy,
+        size: size
+      });
+    } else {
+      // Place limit order
+      result = await hyperliquidTrading.placeOrder({
+        coin: symbol,
+        isBuy: isBuy,
+        price: price,
+        size: size,
+        orderType: 'limit'
+      });
+    }
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to place order');
+    }
+    
+    return result;
+  }, [tradingInitialized, selectedSymbol]);
   
   // cancel order function
   const cancelOrder = useCallback(async (orderId) => {
-    if (!signer) {
-      throw new Error('Wallet no conectada');
+    if (!tradingInitialized) {
+      throw new Error('Trading service not initialized');
     }
-    return await apiService.cancelOrder(signer, orderId);
-  }, [signer]);
+    
+    const symbol = selectedSymbol.split('/')[0];
+    return await hyperliquidTrading.cancelOrder({
+      coin: symbol,
+      orderId: orderId
+    });
+  }, [tradingInitialized, selectedSymbol]);
   
   const exchanges = [
     { id: 'hyperliquid', name: 'Hyperliquid', status: 'live' }
@@ -275,6 +327,7 @@ export const HyperliquidTradingProvider = ({ children }) => {
     cancelOrder,
     connectionStatus: isConnected ? 'connected' : 'disconnected',
     isConnected,
+    tradingInitialized,
     websocket: ws
   }), [
     exchange,
@@ -294,6 +347,7 @@ export const HyperliquidTradingProvider = ({ children }) => {
     placeOrder,
     cancelOrder,
     isConnected,
+    tradingInitialized,
     exchanges,
     exchangeSymbols,
     ws

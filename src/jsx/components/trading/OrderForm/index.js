@@ -5,7 +5,7 @@ import { useNotifications } from '../../../../context/NotificationContext.js';
 import { useTranslation } from 'react-i18next';
 
 const OrderForm = () => {
-  const { selectedSymbol, placeOrder, orderBook, tickers } = useTradingData();
+  const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized } = useTradingData();
   const { isConnected, connectWallet, isConnecting } = useWallet();
   const { addNotification } = useNotifications();
   const { t } = useTranslation();
@@ -15,6 +15,7 @@ const OrderForm = () => {
   const [price, setPrice] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState(null);
   
   const currentTicker = tickers.find(t => t.symbol === selectedSymbol) || { last: 0 };
   const bestBid = orderBook?.bids?.[0]?.price || 0;
@@ -65,36 +66,54 @@ const OrderForm = () => {
       return;
     }
     
+    if (!tradingInitialized) {
+      addNotification({
+        type: 'warning',
+        title: 'Trading Not Ready',
+        message: 'Trading service is initializing. Please wait a moment and try again.'
+      });
+      return;
+    }
+    
     setLoading(true);
     try {
       const orderPrice = orderType === 'market' ? midPrice : parseFloat(price);
-      await placeOrder({
+      const total = (orderPrice * parseFloat(amount)).toFixed(2);
+      
+      // Show pending notification
+      addNotification({
+        type: 'info',
+        title: '⏳ Placing Order...',
+        message: `${side.toUpperCase()} ${amount} ${selectedSymbol.split('/')[0]} ${orderType === 'market' ? 'at market price' : `@ $${orderPrice}`}`
+      });
+      
+      const result = await placeOrder({
         side,
         type: orderType,
         price: orderPrice,
         size: parseFloat(amount)
       });
       
-      addNotification({
-        type: 'success',
-        title: t('trading.order_placed'),
-        message: t('trading.order_placed_success', { 
-          side: t(`trading.${side}`), 
-          amount, 
-          symbol: selectedSymbol.split('/')[0], 
-          price: orderPrice.toFixed(2) 
-        })
-      });
-      
-      setAmount('');
-      if (orderType === 'limit') {
-        setPrice(midPrice.toFixed(2));
+      if (result.success) {
+        setLastOrderId(result.orderId);
+        
+        addNotification({
+          type: 'success',
+          title: '✅ Order Placed Successfully!',
+          message: `${side.toUpperCase()} ${amount} ${selectedSymbol.split('/')[0]} ${orderType === 'market' ? 'at market' : `@ $${orderPrice}`}\nTotal: $${total}${result.orderId ? `\nOrder ID: ${result.orderId}` : ''}`
+        });
+        
+        // Clear form
+        setAmount('');
+        if (orderType === 'limit') {
+          setPrice(midPrice.toFixed(2));
+        }
       }
     } catch (error) {
       console.error('Error placing order:', error);
       addNotification({
         type: 'error',
-        title: t('trading.order_error'),
+        title: '❌ Order Failed',
         message: error.message || t('trading.error_placing_order')
       });
     } finally {
