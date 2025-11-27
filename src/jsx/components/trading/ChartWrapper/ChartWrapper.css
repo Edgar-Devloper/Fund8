@@ -273,3 +273,82 @@
   }
 }
 
+/* ============================================
+   DRAWING TOOLS STYLES
+   ============================================ */
+
+/* Drawing tool buttons */
+.btn-info {
+  background-color: var(--hl-accent-teal, #00c087) !important;
+  border-color: var(--hl-accent-teal, #00c087) !important;
+  color: #ffffff !important;
+}
+
+.btn-info:hover {
+  background-color: rgba(0, 192, 135, 0.8) !important;
+  border-color: rgba(0, 192, 135, 0.8) !important;
+}
+
+.btn-warning {
+  background-color: #eab308 !important;
+  border-color: #eab308 !important;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.btn-warning:hover {
+  background-color: rgba(234, 179, 8, 0.8) !important;
+  border-color: rgba(234, 179, 8, 0.8) !important;
+}
+
+.btn-outline-danger {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+  background: transparent !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+/* Drawing mode cursor */
+.chart-canvas-container[style*="crosshair"] {
+  cursor: crosshair !important;
+}
+
+.chart-canvas-container[style*="crosshair"] canvas {
+  cursor: crosshair !important;
+}
+
+/* Drawing mode indicator animation */
+@keyframes fadeInSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.drawing-mode-indicator {
+  animation: fadeInSlideDown 0.3s ease;
+}
+
+/* Responsive drawing tools */
+@media (max-width: 768px) {
+  .drawing-tools-separator {
+    border-left: none !important;
+    padding-left: 0 !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn-outline-danger {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+  }
+}
+

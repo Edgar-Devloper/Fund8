@@ -18,6 +18,11 @@ const ChartWrapper = () => {
   const [autoFitActive, setAutoFitActive] = useState(false);
   const [currentOHLC, setCurrentOHLC] = useState({ open: 0, high: 0, low: 0, close: 0, change: 0 });
   
+  // Drawing tools state
+  const [drawingMode, setDrawingMode] = useState(null); // null | 'line' | 'fibonacci'
+  const [drawings, setDrawings] = useState([]);
+  const drawingsRef = useRef([]);
+  
   // get coin id from symbol
   const coinId = selectedSymbol && selectedSymbol.includes('/') 
     ? selectedSymbol.split('/')[0].toLowerCase() 
@@ -330,6 +335,130 @@ const ChartWrapper = () => {
     }
   };
 
+  // Drawing tools functions
+  const addHorizontalLine = useCallback((price, color = '#00c087', label = '') => {
+    if (!seriesRef.current) return;
+    
+    const lineId = `line-${Date.now()}`;
+    const priceLine = {
+      id: lineId,
+      price: price,
+      color: color,
+      lineWidth: 2,
+      lineStyle: 0, // solid
+      axisLabelVisible: true,
+      title: label || `${price.toFixed(2)}`,
+    };
+    
+    const lineObj = seriesRef.current.createPriceLine(priceLine);
+    
+    const newDrawing = {
+      id: lineId,
+      type: 'line',
+      price: price,
+      color: color,
+      label: label,
+      lineObj: lineObj
+    };
+    
+    drawingsRef.current.push(newDrawing);
+    setDrawings([...drawingsRef.current]);
+    
+    return lineId;
+  }, []);
+
+  const addFibonacci = useCallback((highPrice, lowPrice) => {
+    if (!seriesRef.current) return;
+    
+    const fibLevels = [
+      { level: 0, color: '#ef4444', label: '0% (High)' },
+      { level: 0.236, color: '#f97316', label: '23.6%' },
+      { level: 0.382, color: '#eab308', label: '38.2%' },
+      { level: 0.5, color: '#00c087', label: '50%' },
+      { level: 0.618, color: '#06b6d4', label: '61.8%' },
+      { level: 1, color: '#8b5cf6', label: '100% (Low)' }
+    ];
+    
+    const fibId = `fib-${Date.now()}`;
+    const fibLines = [];
+    
+    fibLevels.forEach(({ level, color, label }) => {
+      const price = highPrice - (highPrice - lowPrice) * level;
+      const priceLine = {
+        price: price,
+        color: color,
+        lineWidth: 1,
+        lineStyle: 2, // dashed
+        axisLabelVisible: true,
+        title: label,
+      };
+      
+      const lineObj = seriesRef.current.createPriceLine(priceLine);
+      fibLines.push({ level, price, lineObj, color, label });
+    });
+    
+    const newDrawing = {
+      id: fibId,
+      type: 'fibonacci',
+      highPrice: highPrice,
+      lowPrice: lowPrice,
+      lines: fibLines
+    };
+    
+    drawingsRef.current.push(newDrawing);
+    setDrawings([...drawingsRef.current]);
+    
+    return fibId;
+  }, []);
+
+  const clearAllDrawings = useCallback(() => {
+    if (!seriesRef.current) return;
+    
+    drawingsRef.current.forEach(drawing => {
+      if (drawing.type === 'line' && drawing.lineObj) {
+        seriesRef.current.removePriceLine(drawing.lineObj);
+      } else if (drawing.type === 'fibonacci' && drawing.lines) {
+        drawing.lines.forEach(line => {
+          if (line.lineObj) {
+            seriesRef.current.removePriceLine(line.lineObj);
+          }
+        });
+      }
+    });
+    
+    drawingsRef.current = [];
+    setDrawings([]);
+  }, []);
+
+  const handleChartClick = useCallback((param) => {
+    if (!param.point || !drawingMode) return;
+    
+    const price = seriesRef.current.coordinateToPrice(param.point.y);
+    
+    if (drawingMode === 'line') {
+      addHorizontalLine(price, '#00c087', 'Support/Resistance');
+      setDrawingMode(null); // Deactivate after drawing
+    } else if (drawingMode === 'fibonacci') {
+      // For fibonacci, we need two clicks - high and low
+      // This is simplified: using current price as one point and a fixed range
+      const range = price * 0.1; // 10% range
+      addFibonacci(price + range, price - range);
+      setDrawingMode(null);
+    }
+  }, [drawingMode, addHorizontalLine, addFibonacci]);
+
+  // Subscribe to chart clicks
+  useEffect(() => {
+    if (!chartRef.current) return;
+    
+    const chart = chartRef.current;
+    chart.subscribeClick(handleChartClick);
+    
+    return () => {
+      chart.unsubscribeClick(handleChartClick);
+    };
+  }, [handleChartClick]);
+
   const formatPrice = (price) => price ? price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '0.0';
 
   return (
@@ -391,6 +520,37 @@ const ChartWrapper = () => {
               {autoFitActive ? '✓' : '⇄'}
             </button>
           </div>
+          
+          {/* Drawing Tools */}
+          <div className="d-flex align-items-center gap-1 small flex-wrap" style={{flexShrink: 0, borderLeft: '1px solid var(--hl-dark-border, #1e2541)', paddingLeft: '8px'}}>
+            <button 
+              onClick={() => setDrawingMode(drawingMode === 'line' ? null : 'line')} 
+              className={`btn btn-sm ${drawingMode === 'line' ? 'btn-info' : 'btn-outline-secondary'}`} 
+              style={{borderRadius:14, padding:'2px 8px', fontSize: '11px'}}
+              title="Dibujar línea horizontal"
+            >
+              ──
+            </button>
+            <button 
+              onClick={() => setDrawingMode(drawingMode === 'fibonacci' ? null : 'fibonacci')} 
+              className={`btn btn-sm ${drawingMode === 'fibonacci' ? 'btn-warning' : 'btn-outline-secondary'}`} 
+              style={{borderRadius:14, padding:'2px 8px', fontSize: '11px'}}
+              title="Fibonacci Retracement"
+            >
+              φ
+            </button>
+            {drawings.length > 0 && (
+              <button 
+                onClick={clearAllDrawings} 
+                className="btn btn-sm btn-outline-danger" 
+                style={{borderRadius:14, padding:'2px 8px', fontSize: '11px'}}
+                title="Limpiar todos los dibujos"
+              >
+                🗑️
+              </button>
+            )}
+          </div>
+          
           <div className="ms-auto d-flex align-items-center gap-2" style={{flexShrink: 0}}>
             {/* Real-time indicator */}
             {!candlesLoading && realCandles.length > 0 && (
@@ -402,7 +562,25 @@ const ChartWrapper = () => {
           </div>
         </div>
         <div className="card-body" style={{height:'100%', display:'flex', flexDirection:'column'}}>
-          <div className="chart-canvas-container">
+          {/* Drawing mode indicator */}
+          {drawingMode && (
+            <div 
+              style={{
+                padding: '6px 12px',
+                background: 'rgba(0, 192, 135, 0.1)',
+                border: '1px solid rgba(0, 192, 135, 0.3)',
+                borderRadius: '8px',
+                marginBottom: '8px',
+                fontSize: '12px',
+                color: 'var(--hl-accent-teal, #00c087)',
+                textAlign: 'center',
+                fontWeight: 600
+              }}
+            >
+              {drawingMode === 'line' ? '📍 Haz click en el gráfico para trazar una línea' : '📐 Haz click para colocar Fibonacci'}
+            </div>
+          )}
+          <div className="chart-canvas-container" style={{cursor: drawingMode ? 'crosshair' : 'default'}}>
             <div ref={containerRef} className="chart-canvas-inner" />
           </div>
         </div>
