@@ -20,8 +20,7 @@
   padding: 0 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 32px;
+  gap: 16px; /* Reducido de 32px a 16px para acercar menu al logo */
 }
 
 /* ============================================
@@ -62,9 +61,9 @@
 .hyperliquid-nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex: 1;
-  max-width: 800px;
+  gap: 2px; /* Reducido de 4px a 2px para compactar menu */
+  flex: 0 1 auto; /* Cambiado de flex: 1 para no ocupar tanto espacio */
+  max-width: 600px; /* Reducido de 800px a 600px */
 }
 
 .nav-link-wrapper {
@@ -75,10 +74,10 @@
 .nav-link-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px; /* Reducido de 8px a 6px */
+  padding: 10px 12px; /* Reducido de 16px a 12px en horizontal */
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 14px; /* Reducido de 15px a 14px */
   font-weight: 500;
   color: var(--hl-text-secondary, #a0aec0);
   text-decoration: none !important;
@@ -202,6 +201,7 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+  margin-left: auto; /* Empujar hacia la derecha para dar más espacio */
   position: relative;
   z-index: 1001;
 }

@@ -16,6 +16,7 @@ const ChartWrapper = () => {
   const [length, setLength] = useState(200);       // número de velas
   const [showVolume, setShowVolume] = useState(true);
   const [autoFitActive, setAutoFitActive] = useState(false);
+  const [currentOHLC, setCurrentOHLC] = useState({ open: 0, high: 0, low: 0, close: 0, change: 0 });
   
   // get coin id from symbol
   const coinId = selectedSymbol && selectedSymbol.includes('/') 
@@ -212,6 +213,21 @@ const ChartWrapper = () => {
   useEffect(() => {
     if (!realCandles || realCandles.length === 0) return;
     rebuildData();
+    
+    // Update current OHLC display with latest candle
+    const lastCandle = realCandles[realCandles.length - 1];
+    if (lastCandle) {
+      const change = lastCandle.close - lastCandle.open;
+      const changePercent = (change / lastCandle.open) * 100;
+      setCurrentOHLC({
+        open: lastCandle.open,
+        high: lastCandle.high,
+        low: lastCandle.low,
+        close: lastCandle.close,
+        change: change,
+        changePercent: changePercent
+      });
+    }
   }, [selectedSymbol, realCandles, rebuildData]);
 
   // Resize observer optimizado para evitar 'ResizeObserver loop'
@@ -242,15 +258,30 @@ const ChartWrapper = () => {
     };
   }, []);
 
-  // update chart when new candles arrive (refresh every minute for real-time updates)
+  // update chart when new candles arrive (refresh every 10 seconds for real-time updates)
   useEffect(() => {
     if (!realCandles || realCandles.length === 0) return;
     
     const id = setInterval(() => {
       if (!seriesRef.current) return;
-      // rebuild data to get latest candles
+      // rebuild data to get latest candles and update OHLC
       rebuildData();
-    }, 60000); // refresh every minute
+      
+      // Update OHLC display
+      const lastCandle = realCandles[realCandles.length - 1];
+      if (lastCandle) {
+        const change = lastCandle.close - lastCandle.open;
+        const changePercent = (change / lastCandle.open) * 100;
+        setCurrentOHLC({
+          open: lastCandle.open,
+          high: lastCandle.high,
+          low: lastCandle.low,
+          close: lastCandle.close,
+          change: change,
+          changePercent: changePercent
+        });
+      }
+    }, 10000); // refresh every 10 seconds for more dynamic feel
     
     return () => clearInterval(id);
   }, [selectedSymbol, timeframe, rebuildData, realCandles]);
@@ -273,10 +304,46 @@ const ChartWrapper = () => {
     }
   };
 
+  const formatPrice = (price) => price ? price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '0.0';
+
   return (
       <div className="card h-100" style={{borderRadius:22}}>
         <div className="card-header d-flex flex-wrap gap-3 align-items-center" style={{borderTopLeftRadius:22, borderTopRightRadius:22, padding:'10px 18px'}}>
           <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>Chart</h6>
+          
+          {/* OHLC Display */}
+          {currentOHLC.close > 0 && (
+            <div className="chart-ohlc-display">
+              <div className="chart-ohlc-item">
+                <span className="chart-ohlc-label">O</span>
+                <span className={`chart-ohlc-value ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>
+                  {formatPrice(currentOHLC.open)}
+                </span>
+              </div>
+              <div className="chart-ohlc-item">
+                <span className="chart-ohlc-label">H</span>
+                <span className={`chart-ohlc-value ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>
+                  {formatPrice(currentOHLC.high)}
+                </span>
+              </div>
+              <div className="chart-ohlc-item">
+                <span className="chart-ohlc-label">L</span>
+                <span className={`chart-ohlc-value ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>
+                  {formatPrice(currentOHLC.low)}
+                </span>
+              </div>
+              <div className="chart-ohlc-item">
+                <span className="chart-ohlc-label">C</span>
+                <span className={`chart-ohlc-value ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>
+                  {formatPrice(currentOHLC.close)}
+                </span>
+              </div>
+              <span className={`chart-ohlc-change ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>
+                {currentOHLC.change >= 0 ? '+' : ''}{formatPrice(currentOHLC.change)} ({currentOHLC.changePercent >= 0 ? '+' : ''}{currentOHLC.changePercent.toFixed(2)}%)
+              </span>
+            </div>
+          )}
+          
           <div className="d-flex align-items-center gap-2 small">
             {['1m','5m','15m','1h'].map(tf => (
               <button key={tf} onClick={() => setTimeframe(tf)} className={`btn btn-sm ${tf===timeframe?'btn-primary':'btn-outline-secondary'}`} style={{padding:'2px 10px', borderRadius:18}}>{tf}</button>

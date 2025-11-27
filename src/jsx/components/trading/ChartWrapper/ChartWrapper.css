@@ -43,3 +43,68 @@
   color: #ffffff !important;
 }
 
+/* OHLC Display Styles */
+.chart-ohlc-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chart-ohlc-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart-ohlc-label {
+  color: #666;
+  font-weight: 600;
+}
+
+.chart-ohlc-value {
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.chart-ohlc-value.positive {
+  color: #16a34a;
+}
+
+.chart-ohlc-value.negative {
+  color: #dc2626;
+}
+
+.chart-ohlc-change {
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  animation: priceFlash 0.5s ease;
+}
+
+.chart-ohlc-change.positive {
+  color: #16a34a;
+  background-color: rgba(22, 163, 74, 0.1);
+}
+
+.chart-ohlc-change.negative {
+  color: #dc2626;
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+@keyframes priceFlash {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
