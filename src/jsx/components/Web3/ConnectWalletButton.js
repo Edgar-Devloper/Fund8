@@ -5,9 +5,12 @@
 
 import React from 'react';
 import { useWallet } from '../../../context/WalletContext.js';
+import { useTranslation } from 'react-i18next';
+import './ConnectWalletButton.css';
 
 const ConnectWalletButton = () => {
-  const { address, isConnected, isConnecting, error, connectWallet, disconnectWallet } = useWallet();
+  const { address, isConnected, isConnecting, connectWallet, disconnectWallet } = useWallet();
+  const { t } = useTranslation(); // eslint-disable-line
 
   // Formato corto de la dirección
   const formatAddress = (addr) => {
@@ -16,53 +19,45 @@ const ConnectWalletButton = () => {
   };
 
   return (
-    <div className="wallet-connect-container">
+    <div className="wallet-connect-container-hyperliquid">
       {isConnected && address ? (
-        <div className="d-flex align-items-center">
-          {/* Dirección conectada */}
-          <div className="me-3">
-            <span className="badge badge-success badge-lg">
-              <i className="fa fa-circle text-success me-1"></i>
-              {formatAddress(address)}
-            </span>
-          </div>
-          
-          {/* Botón disconnect */}
-          <button 
-            onClick={disconnectWallet}
-            className="btn btn-danger btn-sm"
-            title="Desconectar wallet"
-          >
-            <i className="fa fa-sign-out me-1"></i>
-            Disconnect
+        // Wallet conectada - Estilo Hyperliquid con dropdown
+        <div className="wallet-connected-dropdown">
+          <button className="wallet-address-btn">
+            <span className="wallet-dot"></span>
+            <span className="wallet-address">{formatAddress(address)}</span>
+            <span className="wallet-arrow">▾</span>
           </button>
+          <div className="wallet-dropdown-menu">
+            <button 
+              onClick={disconnectWallet}
+              className="wallet-dropdown-item disconnect"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10.6667 11.3333L14 7.99999L10.6667 4.66666" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Disconnect
+            </button>
+          </div>
         </div>
       ) : (
-        <div>
-          <button
-            onClick={connectWallet}
-            className="btn btn-primary btn-sm"
-            disabled={isConnecting}
-          >
-            {isConnecting ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2"></span>
-                Conectando...
-              </>
-            ) : (
-              <>
-                <i className="fa fa-wallet me-2"></i>
-                Connect Wallet
-              </>
-            )}
-          </button>
-          
-          {error && (
-            <div className="alert alert-danger alert-sm mt-2 mb-0 p-2">
-              <small>{error}</small>
-            </div>
+        // Botón connect - Estilo Hyperliquid
+        <button
+          onClick={connectWallet}
+          className="wallet-connect-btn"
+          disabled={isConnecting}
+        >
+          {isConnecting ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2"></span>
+              Connecting...
+            </>
+          ) : (
+            'Connect Wallet'
           )}
-        </div>
+        </button>
       )}
     </div>
   );

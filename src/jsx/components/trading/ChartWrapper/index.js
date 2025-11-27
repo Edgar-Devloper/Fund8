@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { createChart, CrosshairMode } from 'lightweight-charts';
 import { useCandles } from '../../../../hooks/useCandles.js';
+import './ChartWrapper.css';
 
 const ChartWrapper = () => {
   const { selectedSymbol, tickers } = useTradingData();
@@ -14,6 +15,7 @@ const ChartWrapper = () => {
   const [timeframe, setTimeframe] = useState('1h'); // '1m' | '5m' | '15m' | '1h'
   const [length, setLength] = useState(200);       // número de velas
   const [showVolume, setShowVolume] = useState(true);
+  const [autoFitActive, setAutoFitActive] = useState(false);
   
   // get coin id from symbol
   const coinId = selectedSymbol && selectedSymbol.includes('/') 
@@ -263,6 +265,14 @@ const ChartWrapper = () => {
 
   const handleLengthChange = (e) => setLength(parseInt(e.target.value,10));
 
+  const handleAutoFit = () => {
+    if (chartRef.current) {
+      chartRef.current.timeScale().fitContent();
+      setAutoFitActive(true);
+      setTimeout(() => setAutoFitActive(false), 1000);
+    }
+  };
+
   return (
       <div className="card h-100" style={{borderRadius:22}}>
         <div className="card-header d-flex flex-wrap gap-3 align-items-center" style={{borderTopLeftRadius:22, borderTopRightRadius:22, padding:'10px 18px'}}>
@@ -279,10 +289,23 @@ const ChartWrapper = () => {
             <button onClick={() => setShowVolume(v=>!v)} className={`btn btn-sm ${showVolume?'btn-secondary':'btn-outline-secondary'}`} style={{borderRadius:18}}>
               Vol {showVolume?'On':'Off'}
             </button>
-            <button onClick={() => chartRef.current && chartRef.current.timeScale().fitContent()} className="btn btn-sm btn-outline-secondary" style={{borderRadius:18}}>Auto-Fit</button>
+            <button 
+              onClick={handleAutoFit} 
+              className={`btn btn-sm ${autoFitActive ? 'btn-success' : 'btn-outline-secondary'}`} 
+              style={{borderRadius:18, transition: 'all 0.3s ease'}}
+              title="Ajusta el gráfico para ver todas las velas"
+            >
+              {autoFitActive ? '✓ Ajustado' : '⇄ Auto-Fit'}
+            </button>
           </div>
           <div className="ms-auto d-flex align-items-center gap-2">
-            <span className="badge bg-primary" style={{borderRadius:20, padding:'6px 14px'}}>{candlesLoading ? 'Cargando...' : 'Hyperliquid'}</span>
+            {/* Real-time indicator */}
+            {!candlesLoading && realCandles.length > 0 && (
+              <div className="chart-live-indicator">
+                <span className="live-dot"></span>
+                <span className="live-text">LIVE</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="card-body" style={{height:'100%', padding:'14px 18px 18px', display:'flex', flexDirection:'column'}}>

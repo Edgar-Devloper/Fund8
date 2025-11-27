@@ -1,0 +1,207 @@
+/* Hyperliquid Style Wallet Button */
+
+.wallet-connect-container-hyperliquid {
+  display: flex;
+  align-items: center;
+}
+
+/* Connect Button (cuando no está conectado) */
+.wallet-connect-btn {
+  padding: 8px 20px;
+  background: var(--hl-accent-teal, #00e5cc);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.wallet-connect-btn:hover:not(:disabled) {
+  background: #00d4bb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 229, 204, 0.3);
+}
+
+.wallet-connect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Wallet Connected Dropdown */
+.wallet-connected-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.wallet-address-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--hl-dark-bg, #0a0e27);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-address-btn:hover {
+  border-color: var(--hl-accent-teal, #00e5cc);
+  background: var(--hl-hover, #1f2640);
+}
+
+.wallet-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--hl-accent-green, #00c087);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.wallet-address {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.wallet-arrow {
+  color: var(--hl-text-muted, #718096);
+  font-size: 12px;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.wallet-connected-dropdown:hover .wallet-arrow {
+  transform: translateY(2px);
+}
+
+/* Dropdown Menu */
+.wallet-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--hl-dark-card, #151a2e);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  z-index: 1003;
+  overflow: hidden;
+}
+
+.wallet-connected-dropdown:hover .wallet-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.wallet-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-dropdown-item:hover {
+  background: var(--hl-hover, #1f2640);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+.wallet-dropdown-item.disconnect {
+  color: var(--hl-accent-red, #ff5c5c);
+}
+
+.wallet-dropdown-item.disconnect:hover {
+  background: rgba(255, 92, 92, 0.1);
+  color: var(--hl-accent-red, #ff5c5c);
+}
+
+.wallet-dropdown-item svg {
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wallet-connect-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+  
+  .wallet-address-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  
+  .wallet-dropdown-menu {
+    min-width: 160px;
+  }
+  
+  .wallet-dropdown-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .wallet-connect-btn {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+  
+  .wallet-address-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+  
+  .wallet-dropdown-menu {
+    min-width: 140px;
+  }
+  
+  .wallet-dropdown-item {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .wallet-connect-btn {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+  
+  .wallet-address-btn {
+    padding: 4px 8px;
+    font-size: 9px;
+    gap: 4px;
+  }
+  
+  .wallet-dot {
+    width: 5px;
+    height: 5px;
+  }
+}
+

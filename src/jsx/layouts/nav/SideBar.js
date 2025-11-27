@@ -1,4 +1,5 @@
 import React, { Component, useContext, useEffect, useReducer, useState } from "react";
+import { useTranslation } from 'react-i18next';
 
 import PerfectScrollbar from "react-perfect-scrollbar";
 //  import Collapse from 'react-bootstrap/Collapse';
@@ -27,6 +28,7 @@ const initialState = {
 
 
 const SideBar = () => {
+  const { t } = useTranslation();
   var d  = new Date();
 	const {
 		iconHover,
@@ -139,7 +141,7 @@ const SideBar = () => {
                 let menuClass = data.classsChange;
                   if(menuClass === "menu-title"){
                     return(
-                        <li className={menuClass}  key={index} >{data.title}</li>
+                        <li className={menuClass}  key={index} >{t(data.title)}</li>
                     )
                   }else{
                     return(				
@@ -153,12 +155,12 @@ const SideBar = () => {
                               onClick={() => {handleMenuActive(data.title)}}
                             >								
 								                {data.iconStyle}
-                                <span className="nav-text">{data.title}</span>
+                                <span className="nav-text">{t(data.title)}</span>
                             </Link>
                         :
                           <Link  to={data.to} >
                               {data.iconStyle}
-                              <span className="nav-text">{data.title}</span>
+                              <span className="nav-text">{t(data.title)}</span>
                           </Link>
                         }
                         <Collapse in={state.active === data.title ? true :false}>
@@ -173,7 +175,7 @@ const SideBar = () => {
                                           <Link to={data.to} className={data.hasMenu ? 'has-arrow' : ''}
                                             onClick={() => { handleSubmenuActive(data.title)}}
                                           >
-                                            {data.title}
+                                            {t(data.title)}
                                           </Link>
                                           <Collapse in={state.activeSubmenu === data.title ? true :false}>
                                               <ul className={`${menuClass === "mm-collapse" ? "mm-show" : ""}`}>
@@ -181,7 +183,7 @@ const SideBar = () => {
                                                   return(	
                                                     <>
                                                       <li key={index}>
-                                                        <Link className={`${path === data.to ? "mm-active" : ""}`} to={data.to}>{data.title}</Link>
+                                                        <Link className={`${path === data.to ? "mm-active" : ""}`} to={data.to}>{t(data.title)}</Link>
                                                       </li>
                                                     </>
                                                   )
@@ -191,7 +193,7 @@ const SideBar = () => {
                                         </>
                                       :
                                       <Link to={data.to}>
-                                        {data.title}
+                                        {t(data.title)}
                                       </Link>
                                     }
                                     

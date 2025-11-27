@@ -205,13 +205,19 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
     // Initial fetch
     fetchCandles();
 
-    // Refresh every 5 minutes to ensure data is up to date
-    // (WebSocket updates only modify the last candle, not historical data)
-    const refreshInterval = 5 * 60 * 1000; // 5 minutes
+    // Refresh more frequently for better real-time feeling
+    // 1 minute for 1m/5m intervals, 2 minutes for others
+    let refreshInterval;
+    if (interval === '1m' || interval === '5m') {
+      refreshInterval = 60 * 1000; // 1 minute
+    } else {
+      refreshInterval = 2 * 60 * 1000; // 2 minutes
+    }
+    
     const intervalId = setInterval(fetchCandles, refreshInterval);
 
     return () => clearInterval(intervalId);
-  }, [fetchCandles]);
+  }, [fetchCandles, interval]);
 
   return {
     candles,

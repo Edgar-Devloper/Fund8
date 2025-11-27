@@ -24,3 +24,5 @@ Write-Host "El bundle se recompilará sin el código de TradingView" -Foreground
 
 
 
+
+

@@ -117,8 +117,10 @@ import PortfolioPage from './pages/Portfolio';
 const Markup = () => {
   //const { menuToggle } = useContext(ThemeContext);
   const allroutes = [
+    /// Trading como página principal
+    { url: "", component: <TradingPage /> },
+    { url: "trading", component: <TradingPage /> },
     /// Dashboard
-    { url: "", component: <Home /> },
     { url: "dashboard", component: <Home /> },
     { url: "coin-details", component: <CoinDetails/> },
     { url: "my-wallet", component: <MyWallet /> },
@@ -276,10 +278,10 @@ const Markup = () => {
 function MainLayout(){
   const { menuToggle, sidebariconHover } = useContext(ThemeContext);
   return (
-    <div id="main-wrapper" className={`show ${sidebariconHover ? "iconhover-toggle": ""} ${ menuToggle ? "menu-toggle" : ""}`}>  
+    <div id="main-wrapper" className={`trading-fullscreen-layout show ${sidebariconHover ? "iconhover-toggle": ""} ${ menuToggle ? "menu-toggle" : ""}`}>  
       <Nav />
-      <div className="content-body" style={{ minHeight: window.screen.height - 45 }}>
-          <div className="container-fluid">
+      <div className="content-body" style={{ minHeight: window.screen.height - 45, marginLeft: 0, padding: 0 }}>
+          <div className="container-fluid" style={{ padding: 0, maxWidth: '100%' }}>
             <Outlet />                
           </div>
       </div>

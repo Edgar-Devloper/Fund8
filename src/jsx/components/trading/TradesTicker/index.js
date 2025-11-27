@@ -1,49 +1,101 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
+import { useTranslation } from 'react-i18next';
+import './TradesTicker.css';
 
-/**
- * TradesTicker (placeholder)
- * Props:
- *  - trades: Array<{ id:string, price:number, qty:number, side:'buy'|'sell', ts:number }>
- *  - maxItems?: number
- *  - highlightDurationMs?: number (para animar nuevos)
- */
 const TradesTicker = () => {
-  const { trades } = useTradingData();
+  const { trades, selectedSymbol } = useTradingData();
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('trades'); // 'orderbook' | 'trades'
+  
+  const coinSymbol = selectedSymbol ? selectedSymbol.split('/')[0] : 'BTC';
+  
+  // Format time from timestamp
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '--:--:--';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      hour12: false 
+    });
+  };
+
   return (
-    <div className="card h-100" style={{borderRadius:22}}>
-      <div className="card-header d-flex align-items-center" style={{padding:'10px 16px', borderTopLeftRadius:22, borderTopRightRadius:22}}>
-        <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>Trades</h6>
-        <span className="badge bg-secondary ms-auto" style={{borderRadius:18}}>{trades.length}</span>
-      </div>
-      <div className="card-body" style={{padding:'10px 14px 14px', maxHeight:300, overflow:'hidden'}}>
-        <div className="position-relative rounded-3" style={{background:'#fafafa', border:'1px solid #ececec', height:'100%', overflow:'auto'}}>
-          <table className="table table-sm table-borderless mb-0 small align-middle" style={{fontSize:12}}>
-            <thead className="text-muted" style={{position:'sticky', top:0, background:'#fafafa'}}>
-              <tr>
-                <th style={{width:50}}>Side</th>
-                <th className="text-end">Price</th>
-                <th className="text-end">Amt</th>
-                <th className="text-end">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trades.slice(0,60).map((tr, idx) => {
-                // Ensure unique key even if tr.id is duplicated
-                const uniqueKey = `${tr.id}-${idx}`;
-                return (
-                  <tr key={uniqueKey}>
-                    <td className={tr.side === 'buy' ? 'text-success' : 'text-danger'} style={{textTransform:'capitalize'}}>{tr.side}</td>
-                    <td className="text-end">{(tr.price || 0).toFixed(2)}</td>
-                    <td className="text-end">{(tr.amount || 0).toFixed(4)}</td>
-                    <td className="text-end">{tr.ts ? new Date(tr.ts).toLocaleTimeString() : '--'}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+    <div className="card trades-hl-container">
+      {/* Header with Tabs */}
+      <div className="trades-hl-header">
+        <div className="trades-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'orderbook' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orderbook')}
+          >
+            Order Book
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'trades' ? 'active' : ''}`}
+            onClick={() => setActiveTab('trades')}
+          >
+            Trades
+          </button>
         </div>
+        
+        <button className="control-menu-btn">⋮</button>
       </div>
+      
+      {/* Trades Table */}
+      {activeTab === 'trades' && (
+        <div className="trades-hl-body">
+          <div className="trades-table-header">
+            <span>Price</span>
+            <span>Size ({coinSymbol})</span>
+            <span>Time</span>
+          </div>
+          
+          <div className="trades-table-content">
+            {trades && trades.length > 0 ? (
+              trades.slice(0, 30).map((trade, i) => {
+                // Generate unique key combining index, timestamp, price, and amount
+                const uniqueKey = `trade-${coinSymbol}-${i}-${trade.ts || Date.now()}-${trade.price}-${trade.amount}`;
+                
+                return (
+                  <div 
+                    key={uniqueKey}
+                    className={`trades-row ${trade.side === 'buy' ? 'buy-trade' : 'sell-trade'}`}
+                  >
+                    <span className={`price ${trade.side === 'buy' ? 'buy-price' : 'sell-price'}`}>
+                      {typeof trade.price === 'number' ? trade.price.toFixed(1) : trade.price}
+                    </span>
+                    <span className="size">
+                      {typeof trade.amount === 'number' ? trade.amount.toFixed(4) : trade.amount}
+                    </span>
+                    <span className="time">
+                      {formatTime(trade.ts || trade.timestamp)}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="external-link-icon">
+                        <path d="M10 1H7v1h2.293L4.146 7.146l.708.708L10 2.707V5h1V1zM3 2H2v9h9V8h-1v2H3V2z"/>
+                      </svg>
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center text-muted py-5">
+                <small>No recent trades</small>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Order Book Tab (placeholder - links back to OrderBook component) */}
+      {activeTab === 'orderbook' && (
+        <div className="trades-hl-body">
+          <div className="text-center text-muted py-5">
+            <small>See Order Book component above</small>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

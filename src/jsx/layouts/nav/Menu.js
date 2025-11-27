@@ -1,27 +1,32 @@
+import i18n from '../../../i18n/config';
+
+// Función para obtener traducciones
+const t = (key) => i18n.t(key);
+
 export const MenuList = [
     //Dashboard
     {
-        title: 'Dashboard',	
+        title: 'nav.dashboard',	
         classsChange: 'mm-collapse',		
         iconStyle: <i className="flaticon-025-dashboard"></i>,
         content: [
             {
-                title: 'Dashboard',
+                title: 'nav.dashboard',
                 to: 'dashboard',					
             },
             {
-                title: 'Coin Details',
+                title: 'nav.coin_details',
                 to: 'coin-details',
             },
             
             {
-                title: 'Transactions',
+                title: 'nav.transactions',
                 to: 'transactions',
                 
             },
 			
 			{
-                title: 'Market Capital',
+                title: 'nav.market_capital',
                 to: 'market-capital',                
             },
 			/*{
@@ -32,32 +37,32 @@ export const MenuList = [
     },
     // Trader (nuevo grupo)
     {
-        title: 'Trader',
+        title: 'nav.trader',
         classsChange: 'mm-collapse',
         iconStyle: <i className="flaticon-041-graph"></i>,
         content: [
             {
-                title: 'Trading',
+                title: 'nav.trading',
                 to: 'trading'
             },
             {
-                title: 'My Wallet',
+                title: 'nav.my_wallet',
                 to: 'my-wallet',
             },
             {
-                title: 'Market Watch',
+                title: 'nav.market_watch',
                 to: 'market'
             },
             {
-                title: 'Órdenes Activas',
+                title: 'nav.active_orders',
                 to: 'orders'
             },
             {
-                title: 'Historial Órdenes',
+                title: 'nav.order_history',
                 to: 'order-history'
             },
             {
-                title: 'Portfolio',
+                title: 'nav.portfolio',
                 to: 'portfolio'
             },
         ]
@@ -65,7 +70,7 @@ export const MenuList = [
     
     //Apps
     {
-        title: 'Apps',	
+        title: 'nav.apps',	
         classsChange: 'mm-collapse',
         iconStyle: <i className="flaticon-050-info"></i>,
         content: [

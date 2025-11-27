@@ -1,0 +1,371 @@
+/*
+ * Hyperliquid Navigation Bar
+ */
+
+.hyperliquid-nav {
+  background: var(--hl-dark-card, #151a2e);
+  border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 64px;
+  box-shadow: none;
+  border-top: none;
+}
+
+.hyperliquid-nav-container {
+  max-width: 100%;
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* ============================================
+   BRAND/LOGO
+   ============================================ */
+.hyperliquid-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--hl-text-primary, #ffffff);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--hl-accent-teal, #00e5cc), var(--hl-accent-green, #00c087));
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #000;
+}
+
+.brand-text {
+  font-size: 22px;
+  letter-spacing: -0.5px;
+}
+
+/* ============================================
+   NAVIGATION LINKS
+   ============================================ */
+.hyperliquid-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  max-width: 800px;
+}
+
+.nav-link-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-link-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--hl-text-secondary, #a0aec0);
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.nav-link-item:hover:not(.disabled) {
+  background: var(--hl-hover, #1f2640);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+.nav-link-item.active {
+  background: var(--hl-hover, #1f2640);
+  color: var(--hl-accent-teal, #00e5cc);
+  font-weight: 600;
+}
+
+.nav-link-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nav-link-item.disabled.has-tooltip:hover {
+  opacity: 0.7;
+}
+
+/* Coming Soon Tooltip */
+.coming-soon-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 500;
+}
+
+.nav-link-item.has-tooltip:hover .coming-soon-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-content {
+  background: linear-gradient(135deg, #1a1f3a 0%, #0f1323 100%);
+  border: 1px solid var(--hl-accent-teal, #00e5cc);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(0, 229, 204, 0.2), 
+              0 4px 16px rgba(0, 0, 0, 0.4);
+  min-width: 200px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.tooltip-content::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: #1a1f3a;
+  border-left: 1px solid var(--hl-accent-teal, #00e5cc);
+  border-top: 1px solid var(--hl-accent-teal, #00e5cc);
+}
+
+.tooltip-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--hl-accent-teal, #00e5cc);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.tooltip-description {
+  font-size: 12px;
+  color: var(--hl-text-secondary, #a0aec0);
+  line-height: 1.5;
+}
+
+.nav-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-label {
+  display: inline-block;
+  text-decoration: none !important;
+  border: none;
+  outline: none;
+}
+
+/* Asegurar que no haya decoraciones en links */
+.nav-link-item, 
+.nav-link-item:hover,
+.nav-link-item:focus,
+.nav-link-item:active,
+.nav-link-item:visited {
+  text-decoration: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ============================================
+   RIGHT ACTIONS
+   ============================================ */
+.hyperliquid-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1001;
+}
+
+.nav-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  color: var(--hl-text-secondary, #a0aec0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.nav-icon-btn:hover {
+  background: var(--hl-hover, #1f2640);
+  border-color: var(--hl-accent-teal, #00e5cc);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+/* Language Selector Hyperliquid Style */
+.language-selector-hyperliquid .dropdown-menu {
+  z-index: 1002 !important;
+}
+
+.language-selector-hyperliquid .dropdown-item:hover {
+  background: var(--hl-hover, #1f2640) !important;
+  color: var(--hl-text-primary, #ffffff) !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 992px) {
+  .nav-label {
+    font-size: 13px;
+  }
+
+  .hyperliquid-nav-links {
+    gap: 2px;
+  }
+
+  .nav-link-item {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hyperliquid-nav {
+    height: 56px;
+  }
+  
+  .hyperliquid-nav-container {
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .brand-text {
+    font-size: 16px;
+  }
+
+  /* Mostrar solo Trade y More */
+  .nav-link-item:nth-child(n+2):not(:last-child) {
+    display: none;
+  }
+
+  .hyperliquid-nav-actions {
+    gap: 8px;
+  }
+
+  .nav-icon-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  /* Compact wallet button */
+  .wallet-connect-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+  
+  .wallet-address-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 576px) {
+  .hyperliquid-nav {
+    height: 52px;
+  }
+  
+  .hyperliquid-nav-container {
+    padding: 0 8px;
+    gap: 8px;
+  }
+  
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  
+  .brand-text {
+    font-size: 14px;
+  }
+  
+  /* Mantener solo Trade visible */
+  .hyperliquid-nav-links {
+    gap: 0;
+  }
+  
+  .nav-link-item {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .hyperliquid-nav-actions {
+    gap: 6px;
+  }
+  
+  /* Ocultar settings button */
+  .hyperliquid-nav-actions > button:last-child {
+    display: none;
+  }
+  
+  .wallet-connect-btn {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+  
+  .wallet-address-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+  
+  /* Language selector más pequeño */
+  .language-selector .dropdown-toggle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 400px) {
+  .hyperliquid-nav-container {
+    padding: 0 6px;
+    gap: 6px;
+  }
+  
+  .brand-text {
+    display: none;
+  }
+  
+  .wallet-connect-btn,
+  .wallet-address-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
+

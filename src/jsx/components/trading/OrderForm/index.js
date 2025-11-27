@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { useWallet } from '../../../../context/WalletContext.js';
 import { useNotifications } from '../../../../context/NotificationContext.js';
+import { useTranslation } from 'react-i18next';
 
 const OrderForm = () => {
   const { selectedSymbol, placeOrder, orderBook, tickers } = useTradingData();
-  const { isConnected } = useWallet();
+  const { isConnected, connectWallet, isConnecting } = useWallet();
   const { addNotification } = useNotifications();
+  const { t } = useTranslation();
   
   const [side, setSide] = useState('buy');
   const [orderType, setOrderType] = useState('limit');
@@ -39,8 +41,8 @@ const OrderForm = () => {
     if (!isConnected) {
       addNotification({
         type: 'warning',
-        title: 'Wallet no conectada',
-        message: 'Por favor, conecta tu wallet para colocar órdenes'
+        title: t('trading.wallet_not_connected'),
+        message: t('trading.connect_wallet_to_place_orders')
       });
       return;
     }
@@ -48,8 +50,8 @@ const OrderForm = () => {
     if (orderType === 'limit' && (!price || parseFloat(price) <= 0)) {
       addNotification({
         type: 'warning',
-        title: 'Precio inválido',
-        message: 'Por favor, ingresa un precio válido'
+        title: t('trading.invalid_price'),
+        message: t('trading.enter_valid_price')
       });
       return;
     }
@@ -57,8 +59,8 @@ const OrderForm = () => {
     if (!amount || parseFloat(amount) <= 0) {
       addNotification({
         type: 'warning',
-        title: 'Cantidad inválida',
-        message: 'Por favor, ingresa una cantidad válida'
+        title: t('trading.invalid_amount'),
+        message: t('trading.enter_valid_amount')
       });
       return;
     }
@@ -75,8 +77,13 @@ const OrderForm = () => {
       
       addNotification({
         type: 'success',
-        title: 'Orden Colocada',
-        message: `Orden de ${side} de ${amount} ${selectedSymbol.split('/')[0]} @ $${orderPrice.toFixed(2)} colocada exitosamente`
+        title: t('trading.order_placed'),
+        message: t('trading.order_placed_success', { 
+          side: t(`trading.${side}`), 
+          amount, 
+          symbol: selectedSymbol.split('/')[0], 
+          price: orderPrice.toFixed(2) 
+        })
       });
       
       setAmount('');
@@ -87,8 +94,8 @@ const OrderForm = () => {
       console.error('Error placing order:', error);
       addNotification({
         type: 'error',
-        title: 'Error al Colocar Orden',
-        message: error.message || 'Error al colocar la orden'
+        title: t('trading.order_error'),
+        message: error.message || t('trading.error_placing_order')
       });
     } finally {
       setLoading(false);
@@ -96,20 +103,17 @@ const OrderForm = () => {
   };
   
   return (
-    <div className="card h-100" style={{borderRadius:22}}>
-      <div className="card-header d-flex align-items-center" style={{padding:'10px 16px', borderTopLeftRadius:22, borderTopRightRadius:22}}>
-        <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>Order Form</h6>
-        <span className={`badge ms-auto ${isConnected ? 'bg-success' : 'bg-warning'}`} style={{borderRadius:18}}>
-          {isConnected ? 'Conectado' : 'Sin Wallet'}
-        </span>
-      </div>
-      <div className="card-body d-flex flex-column" style={{padding:'14px 16px 18px'}}>
-        {!isConnected && (
-          <div className="alert alert-warning mb-3" role="alert">
-            <small>Conecta tu wallet para colocar órdenes</small>
-          </div>
+    <div className="card order-form-container">
+      <div className="order-form-header">
+        <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>{t('trading.order_form')}</h6>
+        {isConnected && (
+          <span className="wallet-status-badge connected">
+            <span className="status-dot"></span>
+            Connected
+          </span>
         )}
-        
+      </div>
+      <div className="order-form-body" style={{padding:'14px 16px 18px'}}>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <div className="btn-group w-100" role="group">
@@ -117,6 +121,12 @@ const OrderForm = () => {
                 type="button"
                 className={`btn ${side === 'buy' ? 'btn-success' : 'btn-outline-success'}`}
                 onClick={() => setSide('buy')}
+                style={{ 
+                  fontWeight: 600, 
+                  fontSize: '15px',
+                  color: side === 'buy' ? '#ffffff' : 'var(--hl-accent-green, #00c087)',
+                  padding: '10px 20px'
+                }}
               >
                 BUY
               </button>
@@ -124,27 +134,51 @@ const OrderForm = () => {
                 type="button"
                 className={`btn ${side === 'sell' ? 'btn-danger' : 'btn-outline-danger'}`}
                 onClick={() => setSide('sell')}
+                style={{ 
+                  fontWeight: 600, 
+                  fontSize: '15px',
+                  color: side === 'sell' ? '#ffffff' : 'var(--hl-accent-red, #ff5c5c)',
+                  padding: '10px 20px'
+                }}
               >
                 SELL
               </button>
             </div>
           </div>
           
+          {!isConnected && (
+            <button 
+              type="button"
+              className="wallet-required-notice clickable"
+              onClick={connectWallet}
+              disabled={isConnecting}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M14 5.33333H2C1.63181 5.33333 1.33333 5.63181 1.33333 6V13.3333C1.33333 13.7015 1.63181 14 2 14H14C14.3682 14 14.6667 13.7015 14.6667 13.3333V6C14.6667 5.63181 14.3682 5.33333 14 5.33333Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10.6667 14V3.33333C10.6667 2.97971 10.5262 2.64057 10.2761 2.39052C10.0261 2.14048 9.68696 2 9.33333 2H6.66667C6.31304 2 5.97391 2.14048 5.72386 2.39052C5.47381 2.64057 5.33333 2.97971 5.33333 3.33333V14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>{isConnecting ? 'Connecting...' : 'Connect wallet to start trading'}</span>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="arrow-icon">
+                <path d="M5.25 10.5L8.75 7L5.25 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+          
           <div className="mb-3">
-            <label className="form-label small text-muted">Tipo de Orden</label>
+            <label className="form-label small text-muted">{t('trading.order_type')}</label>
             <select
               className="form-select form-select-sm"
               value={orderType}
               onChange={(e) => setOrderType(e.target.value)}
             >
-              <option value="limit">Limit</option>
-              <option value="market">Market</option>
+              <option value="limit">{t('trading.limit')}</option>
+              <option value="market">{t('trading.market')}</option>
             </select>
           </div>
           
           {orderType === 'limit' && (
             <div className="mb-3">
-              <label className="form-label small text-muted">Precio (USDC)</label>
+              <label className="form-label small text-muted">{t('trading.price')} (USDC)</label>
               <div className="input-group input-group-sm">
                 <input
                   type="number"
@@ -160,7 +194,7 @@ const OrderForm = () => {
                   type="button"
                   className="btn btn-outline-secondary"
                   onClick={() => handlePriceClick(bestBid)}
-                  title="Usar mejor bid"
+                  title={t('trading.use_best_bid')}
                 >
                   Bid
                 </button>
@@ -168,7 +202,7 @@ const OrderForm = () => {
                   type="button"
                   className="btn btn-outline-secondary"
                   onClick={() => handlePriceClick(bestAsk)}
-                  title="Usar mejor ask"
+                  title={t('trading.use_best_ask')}
                 >
                   Ask
                 </button>
@@ -179,13 +213,13 @@ const OrderForm = () => {
           {orderType === 'market' && (
             <div className="mb-3">
               <div className="alert alert-info small mb-0">
-                Precio de mercado: ${midPrice.toFixed(2)}
+                {t('trading.market_price')}: ${midPrice.toFixed(2)}
               </div>
             </div>
           )}
           
           <div className="mb-3">
-            <label className="form-label small text-muted">Cantidad</label>
+            <label className="form-label small text-muted">{t('trading.amount')}</label>
             <input
               type="number"
               className="form-control form-control-sm"
@@ -200,7 +234,7 @@ const OrderForm = () => {
           
           <div className="mb-3">
             <div className="d-flex justify-content-between small text-muted mb-1">
-              <span>Total:</span>
+              <span>{t('trading.total')}:</span>
               <span>
                 {amount && (orderType === 'market' ? midPrice : price) 
                   ? `$${((parseFloat(amount) || 0) * (orderType === 'market' ? midPrice : parseFloat(price) || 0)).toFixed(2)}`
@@ -213,14 +247,21 @@ const OrderForm = () => {
             type="submit"
             className={`btn w-100 ${side === 'buy' ? 'btn-success' : 'btn-danger'}`}
             disabled={loading || !isConnected}
+            style={{ 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              padding: '12px',
+              textTransform: 'uppercase',
+              color: '#ffffff'
+            }}
           >
             {loading ? (
               <>
                 <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                Procesando...
+                Processing...
               </>
             ) : (
-              `${side.toUpperCase()} ${selectedSymbol.split('/')[0]}`
+              side === 'buy' ? 'BUY' : 'SELL'
             )}
           </button>
         </form>

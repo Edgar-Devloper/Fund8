@@ -1,0 +1,220 @@
+/*
+ * Global Hyperliquid Theme
+ * Aplica el tema oscuro de Hyperliquid a toda la aplicación
+ */
+
+:root {
+  --hl-dark-bg: #0a0e27;
+  --hl-dark-card: #151a2e;
+  --hl-dark-border: #1e2541;
+  --hl-accent-teal: #00e5cc;
+  --hl-accent-green: #00c087;
+  --hl-accent-red: #ff5c5c;
+  --hl-text-primary: #ffffff;
+  --hl-text-secondary: #a0aec0;
+  --hl-text-muted: #718096;
+  --hl-hover: #1f2640;
+}
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+body {
+  background: var(--hl-dark-bg) !important;
+  color: var(--hl-text-secondary) !important;
+}
+
+#main-wrapper {
+  background: var(--hl-dark-bg) !important;
+}
+
+/* ============================================
+   LAYOUT FULLSCREEN - Ocultar sidebar/header/footer
+   ============================================ */
+
+/* FORZAR ocultar sidebar con máxima especificidad */
+body .dlabnav,
+body .deznav,
+body nav.dlabnav,
+body .sidebar,
+body .nav-header {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Ocultar header y footer originales */
+body .header,
+body .header-content,
+body .footer {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Main wrapper fullscreen */
+.trading-fullscreen-layout,
+#main-wrapper {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+.trading-fullscreen-layout .content-body,
+.content-body {
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.trading-fullscreen-layout .container-fluid,
+.container-fluid {
+  padding: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+/* ============================================
+   CARDS GLOBALES
+   ============================================ */
+.card {
+  background: var(--hl-dark-card) !important;
+  border: 1px solid var(--hl-dark-border) !important;
+  color: var(--hl-text-primary) !important;
+}
+
+.card-header {
+  background: var(--hl-dark-card) !important;
+  border-bottom: 1px solid var(--hl-dark-border) !important;
+}
+
+.card-body {
+  background: var(--hl-dark-card) !important;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn-primary {
+  background: var(--hl-accent-teal) !important;
+  border-color: var(--hl-accent-teal) !important;
+  color: #000 !important;
+}
+
+.btn-primary:hover {
+  background: #00d4bb !important;
+  border-color: #00d4bb !important;
+}
+
+.btn-success {
+  background: var(--hl-accent-green) !important;
+  border-color: var(--hl-accent-green) !important;
+}
+
+.btn-danger {
+  background: var(--hl-accent-red) !important;
+  border-color: var(--hl-accent-red) !important;
+}
+
+/* ============================================
+   TEXT COLORS
+   ============================================ */
+.text-primary {
+  color: var(--hl-accent-teal) !important;
+}
+
+.text-success {
+  color: var(--hl-accent-green) !important;
+}
+
+.text-danger {
+  color: var(--hl-accent-red) !important;
+}
+
+.text-muted {
+  color: var(--hl-text-muted) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--hl-text-primary) !important;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+.form-control,
+.form-select {
+  background: var(--hl-dark-bg) !important;
+  border: 1px solid var(--hl-dark-border) !important;
+  color: var(--hl-text-primary) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: var(--hl-dark-bg) !important;
+  border-color: var(--hl-accent-teal) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 229, 204, 0.25) !important;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+.modal-content {
+  background: var(--hl-dark-card) !important;
+  border: 1px solid var(--hl-dark-border) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--hl-dark-border) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--hl-dark-border) !important;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+.table {
+  color: var(--hl-text-secondary) !important;
+}
+
+.table thead th {
+  background: var(--hl-dark-card) !important;
+  border-color: var(--hl-dark-border) !important;
+  color: var(--hl-text-muted) !important;
+}
+
+.table td {
+  border-color: var(--hl-dark-border) !important;
+}
+
+.table-hover tbody tr:hover {
+  background: var(--hl-hover) !important;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--hl-dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--hl-dark-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hl-hover);
+}
+

@@ -1,0 +1,209 @@
+/* 
+ * Ajustes Responsive Globales para Trading Page
+ * Complementa los estilos específicos de cada componente
+ */
+
+/* Tablet - 992px and below */
+@media (max-width: 992px) {
+  /* Ajustar padding general */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Cards más compactos */
+  .card {
+    border-radius: 8px;
+  }
+  
+  .card-header {
+    padding: 10px 14px;
+  }
+  
+  .card-body {
+    padding: 12px 14px;
+  }
+}
+
+/* Mobile Landscape - 768px and below */
+@media (max-width: 768px) {
+  /* Scrollbars más delgados en móvil */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  /* Ocultar sidebar y footer si existen */
+  .dlabnav,
+  .footer {
+    display: none !important;
+  }
+  
+  /* Fullwidth para main content */
+  #main-wrapper {
+    padding-left: 0 !important;
+  }
+  
+  .content-body {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Cards aún más compactos */
+  .card {
+    border-radius: 6px;
+  }
+  
+  .card-header {
+    padding: 8px 12px;
+  }
+  
+  .card-body {
+    padding: 10px 12px;
+  }
+  
+  /* Botones más grandes para touch */
+  .btn {
+    min-height: 40px;
+    touch-action: manipulation;
+  }
+  
+  /* Forms más fáciles de usar */
+  input,
+  select,
+  textarea {
+    min-height: 38px;
+    font-size: 16px !important; /* Previene zoom en iOS */
+  }
+}
+
+/* Mobile Portrait - 576px and below */
+@media (max-width: 576px) {
+  body {
+    font-size: 13px;
+  }
+  
+  /* Headings más pequeños */
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.9rem; }
+  
+  /* Modals fullscreen */
+  .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100vh;
+  }
+  
+  .modal-content {
+    border-radius: 0;
+    height: 100vh;
+  }
+  
+  /* Tooltips más pequeños */
+  .tooltip {
+    font-size: 11px;
+  }
+  
+  /* Badges más compactos */
+  .badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+/* Extra Small Mobile - 400px and below */
+@media (max-width: 400px) {
+  body {
+    font-size: 12px;
+  }
+  
+  /* Padding mínimo */
+  .card-header {
+    padding: 6px 10px;
+  }
+  
+  .card-body {
+    padding: 8px 10px;
+  }
+  
+  /* Botones aún más compactos si es necesario */
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Reducir altura de headers en landscape */
+  .hyperliquid-nav {
+    height: 48px !important;
+  }
+  
+  .trading-pair-header {
+    padding: 8px 12px !important;
+  }
+  
+  /* Chart más compacto */
+  .chart-container {
+    min-height: 300px !important;
+  }
+  
+  /* Side panels más pequeños */
+  .side-panel {
+    height: 250px !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Áreas táctiles más grandes */
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Quitar efectos hover en touch devices */
+  .nav-link-item:hover,
+  .btn:hover {
+    transform: none !important;
+  }
+  
+  /* Mejorar feedback táctil */
+  button:active,
+  .btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+  }
+}
+
+/* Dark mode improvements for mobile */
+@media (prefers-color-scheme: dark) {
+  /* Mejor contraste en móvil */
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Print styles (hide trading interface) */
+@media print {
+  .hyperliquid-nav,
+  .trading-pair-header,
+  .order-form-container,
+  .orderbook-container,
+  .trades-ticker-container {
+    display: none !important;
+  }
+}
+

@@ -1,0 +1,227 @@
+/*
+ * Hyperliquid Theme for Trading Page
+ * Aplica estilos oscuros con accent teal/cyan
+ */
+
+/* ============================================
+   VARIABLES CSS PARA HYPERLIQUID
+   ============================================ */
+:root {
+  --hl-dark-bg: #0a0e27;
+  --hl-dark-card: #151a2e;
+  --hl-dark-border: #1e2541;
+  --hl-accent-teal: #00e5cc;
+  --hl-accent-green: #00c087;
+  --hl-accent-red: #ff5c5c;
+  --hl-text-primary: #ffffff;
+  --hl-text-secondary: #a0aec0;
+  --hl-text-muted: #718096;
+  --hl-hover: #1f2640;
+}
+
+/* ============================================
+   BACKGROUND & LAYOUT
+   ============================================ */
+.page-content {
+  background: var(--hl-dark-bg) !important;
+  min-height: calc(100vh - 64px - 70px);
+  padding: 16px 24px;
+}
+
+/* Cards & Panels */
+.card,
+.bg-dark-subtle,
+.chart-container,
+.orderbook-container,
+.trades-container,
+.order-form-container {
+  background: var(--hl-dark-card) !important;
+  border: 1px solid var(--hl-dark-border) !important;
+  border-radius: 8px;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content h4,
+.page-content h5,
+.page-content h6 {
+  color: var(--hl-text-primary) !important;
+}
+
+.page-content p,
+.page-content span,
+.page-content label {
+  color: var(--hl-text-secondary) !important;
+}
+
+.text-muted {
+  color: var(--hl-text-muted) !important;
+}
+
+/* ============================================
+   BUTTONS & ACCENTS
+   ============================================ */
+.btn-primary {
+  background: var(--hl-accent-teal) !important;
+  border-color: var(--hl-accent-teal) !important;
+  color: #000 !important;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #00d4bb !important;
+  border-color: #00d4bb !important;
+}
+
+.btn-success,
+.text-success {
+  color: var(--hl-accent-green) !important;
+}
+
+.btn-danger,
+.text-danger {
+  color: var(--hl-accent-red) !important;
+}
+
+/* ============================================
+   TRADING SPECIFIC
+   ============================================ */
+
+/* Buy/Sell Buttons */
+.order-form-container .btn.buy-btn {
+  background: var(--hl-accent-teal) !important;
+  border: none;
+  color: #000 !important;
+}
+
+.order-form-container .btn.sell-btn {
+  background: transparent !important;
+  border: 1px solid var(--hl-dark-border);
+  color: var(--hl-text-secondary) !important;
+}
+
+.order-form-container .btn.sell-btn:hover {
+  background: var(--hl-hover) !important;
+}
+
+/* OrderBook */
+.orderbook-container {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.orderbook-container .ask {
+  color: var(--hl-accent-red) !important;
+}
+
+.orderbook-container .bid {
+  color: var(--hl-accent-green) !important;
+}
+
+/* Trades Ticker */
+.trades-container .trade-buy {
+  color: var(--hl-accent-green) !important;
+}
+
+.trades-container .trade-sell {
+  color: var(--hl-accent-red) !important;
+}
+
+/* Price Display */
+.price-positive {
+  color: var(--hl-accent-green) !important;
+}
+
+.price-negative {
+  color: var(--hl-accent-red) !important;
+}
+
+/* ============================================
+   INPUTS & FORMS
+   ============================================ */
+.form-control,
+.form-select {
+  background: var(--hl-dark-bg) !important;
+  border: 1px solid var(--hl-dark-border) !important;
+  color: var(--hl-text-primary) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background: var(--hl-dark-bg) !important;
+  border-color: var(--hl-accent-teal) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 229, 204, 0.25) !important;
+  color: var(--hl-text-primary) !important;
+}
+
+.form-control::placeholder {
+  color: var(--hl-text-muted) !important;
+}
+
+/* ============================================
+   BADGES & TAGS
+   ============================================ */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: rgba(0, 192, 135, 0.2) !important;
+  color: var(--hl-accent-green) !important;
+}
+
+.badge-danger {
+  background: rgba(255, 92, 92, 0.2) !important;
+  color: var(--hl-accent-red) !important;
+}
+
+.badge-primary {
+  background: rgba(0, 229, 204, 0.2) !important;
+  color: var(--hl-accent-teal) !important;
+}
+
+/* ============================================
+   HOVER EFFECTS
+   ============================================ */
+.clickable:hover,
+.list-group-item:hover {
+  background: var(--hl-hover) !important;
+  cursor: pointer;
+}
+
+/* ============================================
+   BORDERS & SEPARATORS
+   ============================================ */
+hr,
+.border-top,
+.border-bottom {
+  border-color: var(--hl-dark-border) !important;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--hl-dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--hl-dark-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hl-hover);
+}
+

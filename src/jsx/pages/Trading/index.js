@@ -1,11 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
 import OrderForm from "../../components/trading/OrderForm";
 import OrderBook from "../../components/trading/OrderBook";
-import TradesTicker from "../../components/trading/TradesTicker";
-import PriceTicker from "../../components/trading/PriceTicker";
 import ChartWrapper from "../../components/trading/ChartWrapper";
 import PairsModal from "../../components/trading/PairsModal";
+import HyperliquidNav from "../../components/trading/HyperliquidNav";
+import TradingPairHeader from "../../components/trading/TradingPairHeader";
 import { HyperliquidTradingProvider } from "../../components/trading/context/HyperliquidTradingProvider";
+import "../../components/trading/hyperliquid-theme.css";
+import "../../components/trading/TradingComponents.css";
+import "../../components/trading/responsive-adjustments.css";
+import "./TradingPage.css";
 
 const TradingPage = () => {
   const [showPairs, setShowPairs] = useState(false);
@@ -22,55 +26,36 @@ const TradingPage = () => {
 
   return (
     <HyperliquidTradingProvider>
-      <div className="page-content">
-        {/* Header */}
-        <div className="d-flex align-items-center mb-3 flex-wrap gap-3">
-          <h2 className="font-w600 mb-0 me-auto mb-2">Trading</h2>
-          <button
-            type="button"
-            onClick={togglePairs}
-            className="btn btn-sm btn-outline-primary"
-          >
-            {showPairs ? "Cerrar Pares" : "Pares & Precio"}
-          </button>
-          <div className="d-none d-md-flex align-items-center gap-2">
-            <PriceTicker />
-          </div>
-        </div>
+      <HyperliquidNav />
+      <TradingPairHeader />
+      <div className="trading-page-content">
 
-        {/* Chart full width */}
-        <div className="row">
-          <div className="col-12 mb-3">
-            <div
-              style={{ height: "60vh", minHeight: 420 }}
-              className="bg-dark-subtle rounded position-relative p-2"
-            >
+        {/* Layout estilo Hyperliquid: Chart izquierda | OrderForm + OrderBook + Trades derecha */}
+        <div className="trading-main-layout">
+          
+          {/* COLUMNA IZQUIERDA: Chart (70%) */}
+          <div className="trading-chart-column">
+            <div className="chart-container">
               <ChartWrapper />
             </div>
           </div>
-        </div>
-        {/* Paneles inferiores */}
-        <div className="row g-3">
-          <div className="col-12 col-lg-4 d-flex">
-            <div className="flex-grow-1 d-flex">
-              <OrderBook />
-            </div>
-          </div>
-          <div className="col-12 col-lg-4 d-flex">
-            <div className="flex-grow-1 d-flex">
-              <TradesTicker />
-            </div>
-          </div>
-          <div className="col-12 col-lg-4 d-flex">
-            <div className="flex-grow-1 d-flex">
+
+          {/* COLUMNA DERECHA: OrderForm + OrderBook (con Trades integrado) */}
+          <div className="trading-side-column">
+            
+            {/* Order Form */}
+            <div className="side-panel order-form-panel">
               <OrderForm />
             </div>
-          </div>
-        </div>
 
-        <p className="text-muted small mt-3">
-          Trading en tiempo real con datos de Hyperliquid. Conecta tu wallet para colocar órdenes.
-        </p>
+            {/* OrderBook con Trades integrado */}
+            <div className="side-panel orderbook-trades-panel">
+              <OrderBook />
+            </div>
+
+          </div>
+
+        </div>
 
         {/* Modal Pares & Precio */}
         {showPairs && <PairsModal onClose={togglePairs} />}

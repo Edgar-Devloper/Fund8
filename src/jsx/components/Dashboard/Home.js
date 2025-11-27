@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import loadable from "@loadable/component";
 import pMinDelay from "p-min-delay";
 import {Dropdown} from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 //Import
 import { ThemeContext } from "../../../context/ThemeContext";
@@ -70,6 +71,7 @@ const MarketLineApex = loadable(() =>
 
 const Home = () => {
 	const { background } = useContext(ThemeContext);
+	const { t } = useTranslation();
 	
 	// Hook para obtener precios de crypto en tiempo real
 	const { prices, loading: pricesLoading, error: pricesError } = useDashboardPrices(60000); // Actualiza cada 60s
@@ -142,7 +144,7 @@ const Home = () => {
 	return(
 		<>
 			<div className="mb-sm-4 d-flex flex-wrap align-items-center text-head">
-				<h2 className="font-w600 mb-2 me-auto">Dashboard</h2>
+				<h2 className="font-w600 mb-2 me-auto">{t('nav.dashboard')}</h2>
 				<Dropdown className=" weather-btn mb-2">
 					<span className="fs-22 font-w600 d-flex"><i className="fa fa-cloud me-3 ms-3"></i>21</span>
 					<Dropdown.Toggle variant="" as="div" className="form-control style-3 default-select cursor-pointer">{country1} </Dropdown.Toggle>

@@ -5,10 +5,12 @@
 import React from 'react';
 import { useWallet } from '../../../context/WalletContext.js';
 import { useUserBalance } from '../../../hooks/useUserBalance.js';
+import { useTranslation } from 'react-i18next';
 
 const UserBalanceCard = () => {
   const { address } = useWallet();
   const { userState, loading, error } = useUserBalance();
+  const { t } = useTranslation();
 
   if (!address) {
     return (
@@ -16,9 +18,9 @@ const UserBalanceCard = () => {
         <div className="card">
           <div className="card-body text-center py-4">
             <i className="fa fa-wallet fa-3x text-muted mb-3"></i>
-            <h4 className="text-muted">Conecta tu Wallet</h4>
+            <h4 className="text-muted">{t('wallet.connect_your_wallet')}</h4>
             <p className="text-muted">
-              Para ver tu balance y posiciones, conecta tu wallet usando el botón en la esquina superior derecha.
+              {t('wallet.connect_wallet_message')}
             </p>
           </div>
         </div>
@@ -32,9 +34,9 @@ const UserBalanceCard = () => {
         <div className="card">
           <div className="card-body text-center py-4">
             <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Cargando...</span>
+              <span className="visually-hidden">{t('common.loading')}</span>
             </div>
-            <p className="mt-3 text-muted">Obteniendo datos de tu cuenta...</p>
+            <p className="mt-3 text-muted">{t('wallet.fetching_account_data')}</p>
           </div>
         </div>
       </div>
@@ -47,7 +49,7 @@ const UserBalanceCard = () => {
         <div className="card border-danger">
           <div className="card-body text-center py-4">
             <i className="fa fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-            <h5 className="text-danger">Error al cargar datos</h5>
+            <h5 className="text-danger">{t('wallet.error_loading_data')}</h5>
             <p className="text-muted">{error}</p>
           </div>
         </div>
@@ -93,10 +95,10 @@ const UserBalanceCard = () => {
                   </svg>
                 </div>
                 <div className="flex-grow-1">
-                  <small className="text-muted d-block">Tu Wallet</small>
+                  <small className="text-muted d-block">{t('wallet.your_wallet')}</small>
                   <h6 className="mb-0 font-w600">{formatAddress(address)}</h6>
                   <h4 className="mb-0 mt-2">{formatCurrency(accountValue)}</h4>
-                  <small className="text-success">Account Value</small>
+                  <small className="text-success">{t('wallet.account_value')}</small>
                 </div>
               </div>
             </div>
@@ -116,7 +118,7 @@ const UserBalanceCard = () => {
                 </div>
                 <div>
                   <h4 className="mb-0">{formatCurrency(totalMarginUsed)}</h4>
-                  <small className="text-warning">Margin Used</small>
+                  <small className="text-warning">{t('wallet.margin_used')}</small>
                 </div>
               </div>
             </div>
@@ -136,7 +138,7 @@ const UserBalanceCard = () => {
                 </div>
                 <div>
                   <h4 className="mb-0">{formatCurrency(totalNtlPos)}</h4>
-                  <small className="text-primary">Position Value</small>
+                  <small className="text-primary">{t('wallet.position_value')}</small>
                 </div>
               </div>
             </div>
@@ -156,7 +158,7 @@ const UserBalanceCard = () => {
                 </div>
                 <div>
                   <h4 className="mb-0">{formatCurrency(withdrawable)}</h4>
-                  <small className="text-info">Withdrawable</small>
+                  <small className="text-info">{t('wallet.withdrawable')}</small>
                 </div>
               </div>
             </div>

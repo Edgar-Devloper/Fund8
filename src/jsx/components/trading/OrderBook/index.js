@@ -1,77 +1,192 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
+import { useTranslation } from 'react-i18next';
+import './OrderBook.css';
 
-/**
- * OrderBook (placeholder)
- * Props planificadas:
- *  - bids: Array<{ price:number, size:number }>
- *  - asks: Array<{ price:number, size:number }>
- *  - midPrice?: number
- *  - onSelectPrice?(price:number)
- *  - depthAggregation (config para agrupar)
- *  - maxRows?: number
- *  - spread?: number (calculado si no pasa)
- */
 const OrderBook = () => {
-  const { orderBook } = useTradingData();
+  const { orderBook, selectedSymbol, trades } = useTradingData();
+  const { t } = useTranslation(); // eslint-disable-line
   const { bids = [], asks = [] } = orderBook || {};
+  
+  const [activeTab, setActiveTab] = useState('orderbook'); // 'orderbook' | 'trades'
+  const [grouping, setGrouping] = useState('0.1');
+  
+  // Format time from timestamp for trades
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '--:--:--';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      hour12: false 
+    });
+  };
+  
+  // Calculate total (cumulative) for each row
+  const asksWithTotal = useMemo(() => {
+    let cumulative = 0;
+    return [...asks].reverse().slice(0, 12).map(ask => {
+      cumulative += ask.amount;
+      return { ...ask, total: cumulative };
+    }).reverse();
+  }, [asks]);
+  
+  const bidsWithTotal = useMemo(() => {
+    let cumulative = 0;
+    return bids.slice(0, 12).map(bid => {
+      cumulative += bid.amount;
+      return { ...bid, total: cumulative };
+    });
+  }, [bids]);
+  
+  // Max amount for bar width calculation
   const maxAmount = useMemo(() => Math.max(
-    ...bids.map(b => b.amount),
-    ...asks.map(a => a.amount),
+    ...asksWithTotal.map(a => a.amount),
+    ...bidsWithTotal.map(b => b.amount),
     1
-  ), [bids, asks]);
-  const spread = useMemo(() => {
-    if (!bids.length || !asks.length) return '--';
+  ), [asksWithTotal, bidsWithTotal]);
+  
+  // Spread calculation
+  const spreadData = useMemo(() => {
+    if (!bids.length || !asks.length) return { value: '--', percent: '--' };
     const bestBid = bids[0].price;
     const bestAsk = asks[0].price;
-    return (bestAsk - bestBid).toFixed(2);
+    const spreadValue = bestAsk - bestBid;
+    const spreadPercent = ((spreadValue / bestAsk) * 100).toFixed(3);
+    return { 
+      value: spreadValue.toFixed(1), 
+      percent: spreadPercent 
+    };
   }, [bids, asks]);
+  
+  const coinSymbol = selectedSymbol ? selectedSymbol.split('/')[0] : 'BTC';
+  
   return (
-    <div className="card h-100" style={{borderRadius:22}}>
-      <div className="card-header d-flex align-items-center gap-2" style={{padding:'10px 16px', borderTopLeftRadius:22, borderTopRightRadius:22}}>
-        <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>Order Book</h6>
-        <span className="badge bg-secondary ms-auto" style={{borderRadius:18}}>spread {spread}</span>
+    <div className="card orderbook-hl-container">
+      {/* Header with Tabs and Controls */}
+      <div className="orderbook-hl-header">
+        <div className="orderbook-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'orderbook' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orderbook')}
+          >
+            Order Book
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'trades' ? 'active' : ''}`}
+            onClick={() => setActiveTab('trades')}
+          >
+            Trades
+          </button>
+        </div>
+        
+        <div className="orderbook-controls">
+          <select 
+            className="control-select" 
+            value={grouping}
+            onChange={(e) => setGrouping(e.target.value)}
+          >
+            <option value="0.01">0.01</option>
+            <option value="0.1">0.1</option>
+            <option value="1">1</option>
+            <option value="10">10</option>
+          </select>
+          
+          <select className="control-select">
+            <option>{coinSymbol}</option>
+          </select>
+          
+          <button className="control-menu-btn">⋮</button>
+        </div>
       </div>
-      <div className="card-body" style={{padding:'10px 14px 14px'}}>
-        <div className="row g-3 small" style={{height:'100%'}}>
-          <div className="col-6 d-flex flex-column" style={{maxHeight:300}}>
-            <div className="flex-grow-1 position-relative rounded-3" style={{background:'#fafafa', border:'1px solid #ececec', overflow:'hidden'}}>
-              <table className="table table-sm table-borderless mb-0 align-middle" style={{fontSize:12}}>
-                <thead className="text-muted" style={{position:'sticky', top:0, background:'#fafafa'}}>
-                  <tr><th>Bid Px</th><th className="text-end">Amt</th></tr>
-                </thead>
-                <tbody style={{overflowY:'auto'}}>
-                  {bids.slice(0,18).map((b,i) => (
-                    <tr key={i} className="position-relative" style={{height:18}}>
-                      <td style={{position:'relative', zIndex:2}}>{b.price.toFixed(2)}</td>
-                      <td className="text-end" style={{position:'relative', zIndex:2}}>{b.amount}</td>
-                      <td className="position-absolute top-0 start-0 h-100" style={{width:`${(b.amount/maxAmount)*100}%`, background:'rgba(25,135,84,0.18)', zIndex:1, borderTopRightRadius:4, borderBottomRightRadius:4}}></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      
+      {/* Order Book Table */}
+      {activeTab === 'orderbook' && (
+        <div className="orderbook-hl-body">
+          <div className="orderbook-table-header">
+            <span>Price</span>
+            <span>Size ({coinSymbol})</span>
+            <span>Total ({coinSymbol})</span>
           </div>
-          <div className="col-6 d-flex flex-column" style={{maxHeight:300}}>
-            <div className="flex-grow-1 position-relative rounded-3" style={{background:'#fafafa', border:'1px solid #ececec', overflow:'hidden'}}>
-              <table className="table table-sm table-borderless mb-0 align-middle" style={{fontSize:12}}>
-                <thead className="text-muted" style={{position:'sticky', top:0, background:'#fafafa'}}>
-                  <tr><th>Ask Px</th><th className="text-end">Amt</th></tr>
-                </thead>
-                <tbody>
-                  {asks.slice(0,18).map((a,i) => (
-                    <tr key={i} className="position-relative" style={{height:18}}>
-                      <td style={{position:'relative', zIndex:2}}>{a.price.toFixed(2)}</td>
-                      <td className="text-end" style={{position:'relative', zIndex:2}}>{a.amount}</td>
-                      <td className="position-absolute top-0 start-0 h-100" style={{width:`${(a.amount/maxAmount)*100}%`, background:'rgba(220,53,69,0.18)', zIndex:1, borderTopRightRadius:4, borderBottomRightRadius:4}}></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          
+          <div className="orderbook-table-content">
+            {/* Asks (Sell Orders - Red) */}
+            <div className="asks-section">
+              {asksWithTotal.map((ask, i) => (
+                <div key={`ask-${i}`} className="orderbook-row ask-row">
+                  <div className="depth-bar ask-bar" style={{ width: `${(ask.amount / maxAmount) * 100}%` }} />
+                  <span className="price ask-price">{ask.price.toFixed(1)}</span>
+                  <span className="size">{ask.amount.toFixed(4)}</span>
+                  <span className="total">{ask.total.toFixed(4)}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Spread Row */}
+            <div className="spread-row">
+              <span className="spread-value">{spreadData.value}</span>
+              <span className="spread-percent">{spreadData.percent}%</span>
+            </div>
+            
+            {/* Bids (Buy Orders - Green) */}
+            <div className="bids-section">
+              {bidsWithTotal.map((bid, i) => (
+                <div key={`bid-${i}`} className="orderbook-row bid-row">
+                  <div className="depth-bar bid-bar" style={{ width: `${(bid.amount / maxAmount) * 100}%` }} />
+                  <span className="price bid-price">{bid.price.toFixed(1)}</span>
+                  <span className="size">{bid.amount.toFixed(4)}</span>
+                  <span className="total">{bid.total.toFixed(4)}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
+      )}
+      
+      {/* Trades Tab */}
+      {activeTab === 'trades' && (
+        <div className="orderbook-hl-body">
+          <div className="trades-table-header">
+            <span>Price</span>
+            <span>Size ({coinSymbol})</span>
+            <span>Time</span>
+          </div>
+          
+          <div className="trades-table-content">
+            {trades && trades.length > 0 ? (
+              trades.slice(0, 30).map((trade, i) => {
+                // Generate unique key combining index, timestamp, price, and amount
+                const uniqueKey = `trade-${coinSymbol}-${i}-${trade.ts || Date.now()}-${trade.price}-${trade.amount}`;
+                
+                return (
+                  <div 
+                    key={uniqueKey}
+                    className={`trades-row ${trade.side === 'buy' ? 'buy-trade' : 'sell-trade'}`}
+                  >
+                    <span className={`price ${trade.side === 'buy' ? 'buy-price' : 'sell-price'}`}>
+                      {typeof trade.price === 'number' ? trade.price.toFixed(1) : trade.price}
+                    </span>
+                    <span className="size">
+                      {typeof trade.amount === 'number' ? trade.amount.toFixed(4) : trade.amount}
+                    </span>
+                    <span className="time">
+                      {formatTime(trade.ts || trade.timestamp)}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="external-link-icon">
+                        <path d="M10 1H7v1h2.293L4.146 7.146l.708.708L10 2.707V5h1V1zM3 2H2v9h9V8h-1v2H3V2z"/>
+                      </svg>
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center text-muted py-5">
+                <small>No recent trades</small>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

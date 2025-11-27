@@ -103,6 +103,11 @@ const normalizeSymbol = (input) => {
 };
 
 export const apiService = {
+  // Exponer métodos directos para uso en providers
+  getAllMids,
+  getMetaAndAssetCtxs,
+  getCandles,
+  
   async fetchCryptoPrice(coinId) {
     const symbol = normalizeSymbol(coinId);
     const response = await getAllMids();

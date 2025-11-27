@@ -15,14 +15,14 @@ $black: #000;
 $charade: #23252F;
 
 /////////////////////////
-// Dark Version Color
+// Dark Version Color (Hyperliquid Style)
 /////////////////////////
-$d-ctd: #ddd;
-$d-ctl: #828690;
-$d-border: #2e2e42;
-$d-bg: #171622;
-$dark-card: #212130;
-$dark_bg_lighter: #1E2A4A;
+$d-ctd: #a0aec0;           // Text secondary (antes #ddd)
+$d-ctl: #718096;           // Text muted (antes #828690)
+$d-border: #1e2541;        // Borders (antes #2e2e42) 
+$d-bg: #0a0e27;            // Background principal (antes #171622) ⭐
+$dark-card: #151a2e;       // Cards background (antes #212130) ⭐
+$dark_bg_lighter: #1f2640; // Hover/lighter bg (antes #1E2A4A)
 
 /////////////////////////
 // Primary Light

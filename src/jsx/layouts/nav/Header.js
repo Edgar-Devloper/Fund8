@@ -12,9 +12,12 @@ import { ThemeContext } from "../../../context/ThemeContext";
 import ConnectWalletButton from "../../components/Web3/ConnectWalletButton";
 import NotificationDropdown from "../../components/Notifications/NotificationDropdown";
 import { useWalletNotifications } from "../../../hooks/useWalletNotifications";
+import LanguageSelector from "../../components/LanguageSelector";
+import { useTranslation } from 'react-i18next';
 
 const Header = ({ onNote }) => {
   const { changeBackground, background } = useContext(ThemeContext);
+  const { t } = useTranslation();
   
   // Integrar notificaciones de wallet
   useWalletNotifications();
@@ -73,7 +76,7 @@ const Header = ({ onNote }) => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Find something here.."
+                    placeholder={t('header.search_placeholder')}
                   />
                   <span className="input-group-text">
                     <Link to={"#"}>
@@ -215,6 +218,12 @@ const Header = ({ onNote }) => {
               </li>
 
               <NotificationDropdown />
+              
+              {/* Language Selector */}
+              <li className="nav-item">
+                <LanguageSelector variant="compact" />
+              </li>
+
               <Dropdown
                 as="li"
                 className="nav-item dropdown notification_dropdown "
