@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTradingData } from './context/HyperliquidTradingProvider';
 import './TradingPairHeader.css';
 
 const TradingPairHeader = () => {
   const { selectedSymbol, tickers, setSelectedSymbol } = useTradingData();
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectorRef = useRef(null);
 
   // Encontrar el ticker actual
   const currentTicker = tickers?.find(t => t.symbol === selectedSymbol) || {
@@ -34,27 +36,92 @@ const TradingPairHeader = () => {
   // Market cap viene del ticker ahora
   const marketCap = currentTicker.marketCap || 0;
 
-  const handlePairSelect = (symbol) => {
+  const toggleDropdown = (e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log('Toggle dropdown, current state:', showDropdown);
+    setShowDropdown(prev => !prev);
+  };
+
+  const closeDropdown = (e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log('Close dropdown');
+    setShowDropdown(false);
+  };
+
+  const handleItemClick = (symbol, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log('Select pair:', symbol);
     setSelectedSymbol(symbol);
     setShowDropdown(false);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target) &&
+        selectorRef.current &&
+        !selectorRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      // Add delay to prevent immediate close
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
+    }
+  }, [showDropdown]);
+
   return (
     <div className="trading-pair-header">
       {/* Pair Selector */}
-      <div className="pair-selector-container">
-        <div 
+      <div className={`pair-selector-container ${showDropdown ? 'dropdown-open' : ''}`}>
+        {/* Overlay for mobile */}
+        {showDropdown && (
+          <div 
+            className="dropdown-overlay-mobile" 
+            onClick={closeDropdown}
+          />
+        )}
+        
+        <button 
+          ref={selectorRef}
           className="pair-selector" 
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={toggleDropdown}
+          type="button"
+          style={{ 
+            cursor: 'pointer', 
+            userSelect: 'none', 
+            WebkitTapHighlightColor: 'transparent',
+            border: 'none',
+            outline: 'none'
+          }}
         >
           <span className="pair-symbol">{currentTicker.symbol}</span>
           <span className="pair-badge">Spot</span>
           <span className="pair-arrow">▾</span>
           <span className="pair-star">⭐</span>
-        </div>
+        </button>
 
         {showDropdown && (
-          <div className="pair-dropdown">
+          <div ref={dropdownRef} className="pair-dropdown">
             <div className="dropdown-header">
               <input 
                 type="text" 
@@ -68,10 +135,20 @@ const TradingPairHeader = () => {
                 const isPositive = parseFloat(changePercent) >= 0;
                 
                 return (
-                  <div 
+                  <button 
                     key={ticker.symbol}
                     className="dropdown-item"
-                    onClick={() => handlePairSelect(ticker.symbol)}
+                    onClick={(e) => handleItemClick(ticker.symbol, e)}
+                    type="button"
+                    style={{ 
+                      cursor: 'pointer', 
+                      userSelect: 'none', 
+                      WebkitTapHighlightColor: 'transparent',
+                      border: 'none',
+                      width: '100%',
+                      textAlign: 'left',
+                      background: 'transparent'
+                    }}
                   >
                     <div className="item-left">
                       <span className="item-symbol">{ticker.symbol}</span>
@@ -80,7 +157,7 @@ const TradingPairHeader = () => {
                     <span className={`item-change ${isPositive ? 'positive' : 'negative'}`}>
                       {isPositive ? '+' : ''}{changePercent}%
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>

@@ -12,7 +12,7 @@
   flex-wrap: wrap;
   position: sticky;
   top: 64px;
-  z-index: 99;
+  z-index: 98;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
 }
 
@@ -24,6 +24,27 @@
   z-index: 100;
 }
 
+/* Mobile Overlay */
+.dropdown-overlay-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .dropdown-overlay-mobile {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9998;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+  }
+}
+
 .pair-selector {
   display: flex;
   align-items: center;
@@ -33,10 +54,23 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  color: inherit;
 }
 
 .pair-selector:hover {
   background: var(--hl-dark-border, #1e2541);
+}
+
+.pair-selector:active {
+  background: var(--hl-dark-border, #1e2541);
+  transform: scale(0.98);
 }
 
 .pair-symbol {
@@ -77,12 +111,15 @@
   top: calc(100% + 8px);
   left: 0;
   width: 320px;
+  max-width: calc(100vw - 40px);
   background: var(--hl-dark-card, #151a2e);
   border: 1px solid var(--hl-dark-border, #1e2541);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   overflow: hidden;
   animation: dropdownSlideIn 0.2s ease;
+  z-index: 1000;
+  pointer-events: auto;
 }
 
 @keyframes dropdownSlideIn {
@@ -93,6 +130,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes dropdownSlideInMobile {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -129,10 +177,28 @@
   cursor: pointer;
   transition: background 0.2s ease;
   border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  outline: none;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  background: transparent;
 }
 
 .dropdown-item:hover {
-  background: var(--hl-hover, #1f2640);
+  background: var(--hl-hover, #1f2640) !important;
+}
+
+.dropdown-item:active {
+  background: var(--hl-dark-border, #1e2541) !important;
+  transform: scale(0.99);
 }
 
 .dropdown-item:last-child {
@@ -374,7 +440,7 @@
   .trading-pair-header {
     padding: 10px 12px;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
   }
@@ -416,6 +482,69 @@
   .stat-value {
     font-size: 11px;
   }
+  
+  /* Dropdown adjustments for mobile */
+  .pair-dropdown {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100vw - 40px);
+    max-width: 360px;
+    z-index: 9999 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+    animation: dropdownSlideInMobile 0.3s ease !important;
+    pointer-events: auto !important;
+  }
+  
+  .dropdown-list {
+    max-height: 60vh;
+    min-height: 300px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+  }
+  
+  .dropdown-search {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px;
+  }
+  
+  .dropdown-item {
+    padding: 16px;
+    min-height: 64px;
+    pointer-events: auto;
+  }
+  
+  .item-symbol {
+    font-size: 16px;
+    pointer-events: none;
+  }
+  
+  .item-price {
+    font-size: 14px;
+    pointer-events: none;
+  }
+  
+  .item-change {
+    font-size: 14px;
+    pointer-events: none;
+  }
+  
+  .pair-selector-container {
+    z-index: 10000 !important;
+    position: relative;
+  }
+  
+  .trading-pair-header {
+    z-index: 98 !important;
+  }
+  
+  .item-left {
+    pointer-events: none;
+  }
 }
 
 @media (max-width: 400px) {
@@ -430,6 +559,11 @@
   
   .price-value {
     font-size: 15px;
+  }
+  
+  .pair-dropdown {
+    width: calc(100vw - 20px);
+    max-width: 340px;
   }
 }
 
