@@ -27,6 +27,9 @@
   background: var(--hl-dark-card, #151a2e);
   border-radius: 8px;
   padding: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Side Column - Right Side (Desktop) */
@@ -186,9 +189,15 @@
     width: 100%;
   }
 
-  .chart-container {
+  .trading-chart-column {
+    height: auto;
     min-height: 400px;
-    max-height: 500px;
+  }
+
+  .chart-container {
+    height: 400px;
+    min-height: 400px;
+    max-height: 450px;
   }
 
   .trading-side-column {
@@ -219,9 +228,15 @@
     gap: 12px;
   }
 
-  .chart-container {
+  .trading-chart-column {
+    height: auto;
     min-height: 350px;
-    max-height: 400px;
+  }
+
+  .chart-container {
+    height: 350px;
+    min-height: 350px;
+    max-height: 380px;
     padding: 4px;
   }
 
@@ -240,6 +255,20 @@
   }
 }
 
+/* Modern Mobile Devices - 430px and below (iPhone 14 Pro Max, etc) */
+@media (max-width: 430px) {
+  .trading-chart-column {
+    height: auto;
+    min-height: 340px;
+  }
+
+  .chart-container {
+    height: 340px;
+    min-height: 340px;
+    max-height: 360px;
+  }
+}
+
 /* Extra Small Mobile - 400px and below */
 @media (max-width: 400px) {
   .trading-page-content {
@@ -250,8 +279,14 @@
     gap: 8px;
   }
 
+  .trading-chart-column {
+    height: auto;
+    min-height: 320px;
+  }
+
   .chart-container {
-    min-height: 300px;
+    height: 320px;
+    min-height: 320px;
     max-height: 350px;
   }
 

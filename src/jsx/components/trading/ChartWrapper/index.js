@@ -255,20 +255,29 @@ const ChartWrapper = () => {
     let last = { w: 0, h: 0 };
     const resize = (width, height) => {
       if (!chartRef.current) return;
-      if (width === last.w && height === last.h) return; // evitar reentradas innecesarias
-      last = { w: width, h: height };
-      chartRef.current.applyOptions({ width, height });
+      // Ensure minimum dimensions for mobile
+      const minWidth = 280;
+      const minHeight = 200;
+      const finalWidth = Math.max(minWidth, Math.floor(width));
+      const finalHeight = Math.max(minHeight, Math.floor(height));
+      
+      if (finalWidth === last.w && finalHeight === last.h) return; // evitar reentradas innecesarias
+      last = { w: finalWidth, h: finalHeight };
+      chartRef.current.applyOptions({ width: finalWidth, height: finalHeight });
     };
     const observer = new ResizeObserver(entries => {
       const entry = entries[0];
       if (!entry) return;
       const { width, height } = entry.contentRect;
       if (frame) cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => resize(Math.floor(width), Math.floor(height)));
+      frame = requestAnimationFrame(() => resize(width, height));
     });
     observer.observe(el);
-    // inicial
-    resize(el.clientWidth, el.clientHeight);
+    // inicial - force resize after a small delay to ensure parent has rendered
+    setTimeout(() => {
+      const rect = el.getBoundingClientRect();
+      resize(rect.width, rect.height);
+    }, 100);
     return () => {
       if (frame) cancelAnimationFrame(frame);
       observer.disconnect();
@@ -325,8 +334,8 @@ const ChartWrapper = () => {
 
   return (
       <div className="card h-100 chart-wrapper-container" style={{borderRadius:22, background: 'var(--hl-dark-card, #151a2e)', border: '1px solid var(--hl-dark-border, #1e2541)'}}>
-        <div className="card-header d-flex flex-wrap gap-3 align-items-center chart-header" style={{borderTopLeftRadius:22, borderTopRightRadius:22, padding:'10px 18px', background: 'var(--hl-dark-card, #151a2e)', borderBottom: '1px solid var(--hl-dark-border, #1e2541)'}}>
-          <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px', color: 'var(--hl-text-primary, #ffffff)'}}>Chart</h6>
+        <div className="card-header d-flex flex-wrap gap-2 align-items-center chart-header" style={{borderTopLeftRadius:22, borderTopRightRadius:22, background: 'var(--hl-dark-card, #151a2e)', borderBottom: '1px solid var(--hl-dark-border, #1e2541)'}}>
+          <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px', color: 'var(--hl-text-primary, #ffffff)', flexShrink: 0}}>Chart</h6>
           
           {/* OHLC Display */}
           {currentOHLC.close > 0 && (
@@ -361,28 +370,28 @@ const ChartWrapper = () => {
             </div>
           )}
           
-          <div className="d-flex align-items-center gap-2 small">
+          <div className="d-flex align-items-center gap-1 small flex-wrap" style={{flexShrink: 0}}>
             {['1m','5m','15m','1h'].map(tf => (
-              <button key={tf} onClick={() => setTimeframe(tf)} className={`btn btn-sm ${tf===timeframe?'btn-primary':'btn-outline-secondary'}`} style={{padding:'2px 10px', borderRadius:18}}>{tf}</button>
+              <button key={tf} onClick={() => setTimeframe(tf)} className={`btn btn-sm ${tf===timeframe?'btn-primary':'btn-outline-secondary'}`} style={{padding:'2px 8px', borderRadius:14, fontSize: '11px'}}>{tf}</button>
             ))}
           </div>
-          <div className="d-flex align-items-center gap-2 small">
-            <select value={length} onChange={handleLengthChange} className="form-select form-select-sm" style={{width:90, borderRadius:14}}>
-              {[120,240,360,480,720].map(n => <option key={n} value={n}>{n} velas</option>)}
+          <div className="d-flex align-items-center gap-1 small flex-wrap" style={{flexShrink: 0}}>
+            <select value={length} onChange={handleLengthChange} className="form-select form-select-sm" style={{width:85, borderRadius:12, fontSize: '11px', padding: '2px 6px'}}>
+              {[120,240,360,480,720].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
-            <button onClick={() => setShowVolume(v=>!v)} className={`btn btn-sm ${showVolume?'btn-secondary':'btn-outline-secondary'}`} style={{borderRadius:18}}>
-              Vol {showVolume?'On':'Off'}
+            <button onClick={() => setShowVolume(v=>!v)} className={`btn btn-sm ${showVolume?'btn-secondary':'btn-outline-secondary'}`} style={{borderRadius:14, padding:'2px 8px', fontSize: '11px'}}>
+              Vol
             </button>
             <button 
               onClick={handleAutoFit} 
               className={`btn btn-sm ${autoFitActive ? 'btn-success' : 'btn-outline-secondary'}`} 
-              style={{borderRadius:18, transition: 'all 0.3s ease'}}
+              style={{borderRadius:14, transition: 'all 0.3s ease', padding:'2px 8px', fontSize: '11px'}}
               title="Ajusta el gráfico para ver todas las velas"
             >
-              {autoFitActive ? '✓ Ajustado' : '⇄ Auto-Fit'}
+              {autoFitActive ? '✓' : '⇄'}
             </button>
           </div>
-          <div className="ms-auto d-flex align-items-center gap-2">
+          <div className="ms-auto d-flex align-items-center gap-2" style={{flexShrink: 0}}>
             {/* Real-time indicator */}
             {!candlesLoading && realCandles.length > 0 && (
               <div className="chart-live-indicator">
@@ -392,9 +401,9 @@ const ChartWrapper = () => {
             )}
           </div>
         </div>
-        <div className="card-body" style={{height:'100%', padding:'14px 18px 18px', display:'flex', flexDirection:'column'}}>
-          <div style={{flex:1, position:'relative', borderRadius:18, background:'#0a0e27', boxShadow:'inset 0 0 0 1px #1e2541', overflow:'hidden'}}>
-            <div ref={containerRef} style={{position:'absolute', inset:0, minHeight:400}} />
+        <div className="card-body" style={{height:'100%', display:'flex', flexDirection:'column'}}>
+          <div className="chart-canvas-container">
+            <div ref={containerRef} className="chart-canvas-inner" />
           </div>
         </div>
       </div>

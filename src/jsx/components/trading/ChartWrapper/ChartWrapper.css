@@ -57,6 +57,28 @@
   border: 1px solid var(--hl-dark-border, #1e2541);
 }
 
+/* Mobile adjustments for OHLC */
+@media (max-width: 768px) {
+  .chart-ohlc-display {
+    gap: 8px;
+    padding: 4px 8px;
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-ohlc-display {
+    gap: 6px;
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+  
+  .chart-ohlc-item {
+    gap: 2px;
+  }
+}
+
 .chart-ohlc-item {
   display: flex;
   align-items: center;
@@ -105,6 +127,149 @@
   }
   50% {
     transform: scale(1.05);
+  }
+}
+
+/* Chart Wrapper Responsive */
+.chart-wrapper-container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chart-wrapper-container .card-header {
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  flex-shrink: 0;
+}
+
+.chart-wrapper-container .card-body {
+  padding: 14px 18px 18px !important;
+  flex: 1;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Make controls stack better on mobile */
+.chart-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .chart-controls-row {
+    gap: 6px;
+  }
+  
+  /* Stack OHLC on its own row */
+  .chart-ohlc-display {
+    width: 100%;
+    order: 10;
+  }
+}
+
+/* Mobile Chart Controls */
+@media (max-width: 768px) {
+  .chart-wrapper-container .card-header {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+  }
+  
+  .chart-wrapper-container .card-body {
+    padding: 8px 12px 12px !important;
+  }
+  
+  .chart-wrapper-container .btn-sm {
+    font-size: 11px !important;
+    padding: 2px 8px !important;
+  }
+  
+  .chart-wrapper-container .form-select-sm {
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+  }
+  
+  .chart-live-indicator {
+    font-size: 9px;
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-wrapper-container .card-header {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+  
+  .chart-wrapper-container .card-body {
+    padding: 6px 8px 8px !important;
+  }
+  
+  .chart-wrapper-container h6 {
+    font-size: 13px !important;
+  }
+  
+  .chart-wrapper-container .btn-sm {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+  }
+  
+  .chart-wrapper-container .form-select-sm {
+    font-size: 10px !important;
+    width: 80px !important;
+  }
+  
+  .chart-live-indicator {
+    display: none; /* Hide in very small screens */
+  }
+}
+
+@media (max-width: 400px) {
+  .chart-ohlc-change {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+}
+
+/* Chart Canvas Container Responsive Heights */
+.chart-canvas-container {
+  position: relative;
+  flex: 1;
+  border-radius: 18px;
+  background: #0a0e27;
+  box-shadow: inset 0 0 0 1px #1e2541;
+  overflow: hidden;
+  min-height: 400px;
+  width: 100%;
+}
+
+.chart-canvas-inner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .chart-canvas-container {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-canvas-container {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 400px) {
+  .chart-canvas-container {
+    min-height: 280px;
   }
 }
 
