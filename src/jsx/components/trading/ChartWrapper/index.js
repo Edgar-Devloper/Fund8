@@ -85,7 +85,7 @@ const ChartWrapper = () => {
           return {
             time: c.time,
             value: Math.max(1, Math.round(volume)),
-            color: c.close >= c.open ? '#16a34a99' : '#dc262699'
+            color: c.close >= c.open ? '#00c08799' : '#ef444499'
           };
         });
         volumeSeriesRef.current.setData(volData);
@@ -116,18 +116,35 @@ const ChartWrapper = () => {
     if (!chartRef.current && isMounted) {
       try {
         chartInstance = createChart(el, {
-          layout: { background: { color: '#ffffff' }, textColor: '#222' },
-          grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+          layout: { 
+            background: { color: '#0a0e27' }, // Fondo oscuro Hyperliquid
+            textColor: '#a0aec0' 
+          },
+          grid: { 
+            vertLines: { color: '#1e2541' }, 
+            horzLines: { color: '#1e2541' } 
+          },
           crosshair: { mode: CrosshairMode.Normal },
-          rightPriceScale: { visible: true },
-          timeScale: { timeVisible: true, secondsVisible: false },
+          rightPriceScale: { 
+            visible: true,
+            borderColor: '#1e2541'
+          },
+          timeScale: { 
+            timeVisible: true, 
+            secondsVisible: false,
+            borderColor: '#1e2541'
+          },
           localization: { locale: 'en-US' },
           // autoSize desactivado para evitar loop con ResizeObserver manual
         });
         
         if (isMounted) {
           seriesInstance = chartInstance.addCandlestickSeries({
-            upColor: '#16a34a', downColor: '#dc2626', borderVisible: false, wickUpColor: '#16a34a', wickDownColor: '#dc2626'
+            upColor: '#00c087', // Verde teal Hyperliquid
+            downColor: '#ef4444', // Rojo más vibrante
+            borderVisible: false, 
+            wickUpColor: '#00c087', 
+            wickDownColor: '#ef4444'
           });
           volumeSeriesInstance = chartInstance.addHistogramSeries({
             priceScaleId: '',
@@ -307,9 +324,9 @@ const ChartWrapper = () => {
   const formatPrice = (price) => price ? price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '0.0';
 
   return (
-      <div className="card h-100" style={{borderRadius:22}}>
-        <div className="card-header d-flex flex-wrap gap-3 align-items-center" style={{borderTopLeftRadius:22, borderTopRightRadius:22, padding:'10px 18px'}}>
-          <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>Chart</h6>
+      <div className="card h-100 chart-wrapper-container" style={{borderRadius:22, background: 'var(--hl-dark-card, #151a2e)', border: '1px solid var(--hl-dark-border, #1e2541)'}}>
+        <div className="card-header d-flex flex-wrap gap-3 align-items-center chart-header" style={{borderTopLeftRadius:22, borderTopRightRadius:22, padding:'10px 18px', background: 'var(--hl-dark-card, #151a2e)', borderBottom: '1px solid var(--hl-dark-border, #1e2541)'}}>
+          <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px', color: 'var(--hl-text-primary, #ffffff)'}}>Chart</h6>
           
           {/* OHLC Display */}
           {currentOHLC.close > 0 && (
@@ -376,7 +393,7 @@ const ChartWrapper = () => {
           </div>
         </div>
         <div className="card-body" style={{height:'100%', padding:'14px 18px 18px', display:'flex', flexDirection:'column'}}>
-          <div style={{flex:1, position:'relative', borderRadius:18, background:'#ffffff', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.4), 0 0 0 1px rgba(0,0,0,0.05)', overflow:'hidden'}}>
+          <div style={{flex:1, position:'relative', borderRadius:18, background:'#0a0e27', boxShadow:'inset 0 0 0 1px #1e2541', overflow:'hidden'}}>
             <div ref={containerRef} style={{position:'absolute', inset:0, minHeight:400}} />
           </div>
         </div>

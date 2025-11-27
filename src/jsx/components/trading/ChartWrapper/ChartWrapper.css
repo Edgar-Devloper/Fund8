@@ -52,9 +52,9 @@
   font-weight: 500;
   font-family: 'Courier New', monospace;
   padding: 4px 12px;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--hl-dark-border, #1e2541);
 }
 
 .chart-ohlc-item {
@@ -64,7 +64,7 @@
 }
 
 .chart-ohlc-label {
-  color: #666;
+  color: var(--hl-text-secondary, #718096);
   font-weight: 600;
 }
 
@@ -74,11 +74,11 @@
 }
 
 .chart-ohlc-value.positive {
-  color: #16a34a;
+  color: #00c087;
 }
 
 .chart-ohlc-value.negative {
-  color: #dc2626;
+  color: #ef4444;
 }
 
 .chart-ohlc-change {
@@ -90,13 +90,13 @@
 }
 
 .chart-ohlc-change.positive {
-  color: #16a34a;
-  background-color: rgba(22, 163, 74, 0.1);
+  color: #00c087;
+  background-color: rgba(0, 192, 135, 0.1);
 }
 
 .chart-ohlc-change.negative {
-  color: #dc2626;
-  background-color: rgba(220, 38, 38, 0.1);
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 @keyframes priceFlash {
