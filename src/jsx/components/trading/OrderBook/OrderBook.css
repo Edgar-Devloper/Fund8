@@ -93,6 +93,104 @@
   color: var(--hl-text-primary, #ffffff);
 }
 
+/* Symbol Dropdown with Icons */
+.symbol-dropdown-container {
+  position: relative;
+}
+
+.symbol-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--hl-dark-bg, #0a0e27);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 6px;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+  min-width: 90px;
+}
+
+.symbol-select:hover {
+  border-color: var(--hl-accent-teal, #00e5cc);
+}
+
+.symbol-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dropdown-arrow {
+  margin-left: auto;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 10px;
+}
+
+.symbol-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--hl-dark-card, #151a2e);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  min-width: 140px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.symbol-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+}
+
+.symbol-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.symbol-dropdown-item:hover {
+  background: var(--hl-hover, #1f2640);
+}
+
+.symbol-dropdown-item.active {
+  background: rgba(0, 192, 135, 0.1);
+  border-left: 2px solid var(--hl-accent-teal, #00c087);
+}
+
+.symbol-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--hl-text-primary, #ffffff);
+}
+
+.symbol-pair {
+  font-size: 11px;
+  color: var(--hl-text-secondary, #718096);
+}
+
 /* Body */
 .orderbook-hl-body {
   flex: 1;

@@ -1,15 +1,54 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { useTranslation } from 'react-i18next';
 import './OrderBook.css';
 
+// Import crypto icons
+import btcIcon from '../../../../images/icons/btc.png';
+import ethIcon from '../../../../images/icons/eth.png';
+import solIcon from '../../../../images/icons/sol.png';
+import ltcIcon from '../../../../images/icons/ltc.png';
+import moneroIcon from '../../../../images/icons/monero.png';
+import adaIcon from '../../../../images/icons/ada.png';
+import dogeIcon from '../../../../images/icons/doge.png';
+
+// Icon mapping
+const iconMap = {
+  'BTC': btcIcon,
+  'ETH': ethIcon,
+  'SOL': solIcon,
+  'LTC': ltcIcon,
+  'XMR': moneroIcon,
+  'ADA': adaIcon,
+  'DOGE': dogeIcon,
+};
+
 const OrderBook = () => {
-  const { orderBook, selectedSymbol, trades } = useTradingData();
+  const { orderBook, selectedSymbol, trades, tickers, setSelectedSymbol } = useTradingData();
   const { t } = useTranslation(); // eslint-disable-line
   const { bids = [], asks = [] } = orderBook || {};
   
   const [activeTab, setActiveTab] = useState('orderbook'); // 'orderbook' | 'trades'
   const [grouping, setGrouping] = useState('0.1');
+  const [showSymbolDropdown, setShowSymbolDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowSymbolDropdown(false);
+      }
+    };
+    
+    if (showSymbolDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSymbolDropdown]);
   
   // Format time from timestamp for trades
   const formatTime = (timestamp) => {
@@ -93,9 +132,58 @@ const OrderBook = () => {
             <option value="10">10</option>
           </select>
           
-          <select className="control-select">
-            <option>{coinSymbol}</option>
-          </select>
+          <div className="symbol-dropdown-container" ref={dropdownRef}>
+            <button 
+              className="control-select symbol-select"
+              onClick={() => setShowSymbolDropdown(!showSymbolDropdown)}
+              type="button"
+            >
+              <img 
+                src={iconMap[coinSymbol] || btcIcon} 
+                alt={coinSymbol}
+                className="symbol-icon"
+              />
+              <span>{coinSymbol}</span>
+              <span className="dropdown-arrow">▾</span>
+            </button>
+            
+            {showSymbolDropdown && (
+              <div className="symbol-dropdown-menu">
+                {tickers && tickers.length > 0 ? (
+                  tickers.map(ticker => {
+                    const symbol = ticker.symbol.split('/')[0];
+                    return (
+                      <div
+                        key={ticker.symbol}
+                        className={`symbol-dropdown-item ${selectedSymbol === ticker.symbol ? 'active' : ''}`}
+                        onClick={() => {
+                          setSelectedSymbol(ticker.symbol);
+                          setShowSymbolDropdown(false);
+                        }}
+                      >
+                        <img 
+                          src={iconMap[symbol] || btcIcon} 
+                          alt={symbol}
+                          className="symbol-icon"
+                        />
+                        <span className="symbol-name">{symbol}</span>
+                        <span className="symbol-pair">/{ticker.symbol.split('/')[1]}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="symbol-dropdown-item">
+                    <img 
+                      src={iconMap[coinSymbol] || btcIcon} 
+                      alt={coinSymbol}
+                      className="symbol-icon"
+                    />
+                    <span>{coinSymbol}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           
           <button className="control-menu-btn">⋮</button>
         </div>

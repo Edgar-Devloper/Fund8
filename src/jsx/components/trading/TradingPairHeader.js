@@ -2,6 +2,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTradingData } from './context/HyperliquidTradingProvider';
 import './TradingPairHeader.css';
 
+// Import crypto icons
+import btcIcon from '../../../images/icons/btc.png';
+import ethIcon from '../../../images/icons/eth.png';
+import solIcon from '../../../images/icons/sol.png';
+import ltcIcon from '../../../images/icons/ltc.png';
+import moneroIcon from '../../../images/icons/monero.png';
+import adaIcon from '../../../images/icons/ada.png';
+import dogeIcon from '../../../images/icons/doge.png';
+
+// Icon mapping
+const iconMap = {
+  'BTC': btcIcon,
+  'ETH': ethIcon,
+  'SOL': solIcon,
+  'LTC': ltcIcon,
+  'XMR': moneroIcon,
+  'ADA': adaIcon,
+  'DOGE': dogeIcon,
+};
+
 const TradingPairHeader = () => {
   const { selectedSymbol, tickers, setSelectedSymbol } = useTradingData();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -35,6 +55,10 @@ const TradingPairHeader = () => {
 
   // Market cap viene del ticker ahora
   const marketCap = currentTicker.marketCap || 0;
+  
+  // Get coin symbol for icon
+  const coinSymbol = currentTicker.symbol ? currentTicker.symbol.split('/')[0] : 'BTC';
+  const currentIcon = iconMap[coinSymbol] || btcIcon;
 
   const toggleDropdown = (e) => {
     if (e) {
@@ -114,6 +138,11 @@ const TradingPairHeader = () => {
             outline: 'none'
           }}
         >
+          <img 
+            src={currentIcon} 
+            alt={coinSymbol}
+            className="pair-icon"
+          />
           <span className="pair-symbol">{currentTicker.symbol}</span>
           <span className="pair-badge">Spot</span>
           <span className="pair-arrow">▾</span>
@@ -133,6 +162,8 @@ const TradingPairHeader = () => {
               {tickers?.slice(0, 10).map(ticker => {
                 const changePercent = (ticker.change24hPercent || 0).toFixed(2);
                 const isPositive = parseFloat(changePercent) >= 0;
+                const tickerCoin = ticker.symbol.split('/')[0];
+                const tickerIcon = iconMap[tickerCoin] || btcIcon;
                 
                 return (
                   <button 
@@ -150,6 +181,11 @@ const TradingPairHeader = () => {
                       background: 'transparent'
                     }}
                   >
+                    <img 
+                      src={tickerIcon} 
+                      alt={tickerCoin}
+                      className="dropdown-item-icon"
+                    />
                     <div className="item-left">
                       <span className="item-symbol">{ticker.symbol}</span>
                       <span className="item-price">${ticker.last.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

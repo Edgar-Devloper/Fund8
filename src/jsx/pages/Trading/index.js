@@ -46,7 +46,7 @@ const TradingPage = () => {
             {/* Order Form */}
             <div className="side-panel order-form-panel">
               <OrderForm />
-            </div>
+        </div>
 
             {/* OrderBook con Trades integrado */}
             <div className="side-panel orderbook-trades-panel">
