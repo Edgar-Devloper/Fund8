@@ -1,13 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ConnectWalletButton from '../Web3/ConnectWalletButton';
 import LanguageSelector from '../LanguageSelector';
 import SettingsModal from '../Settings/SettingsModal';
+import BalanceDisplay from './BalanceDisplay';
 import './HyperliquidNav.css';
 
 const HyperliquidNav = () => {
   const location = useLocation();
-  const [showSettings, setShowSettings] = React.useState(false); // eslint-disable-line
+  const [showSettings, setShowSettings] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Handle scroll to show/hide nav
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show nav when at top or scrolling up
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // Scrolling down and past threshold
+        setIsVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
+  // Update body class when nav visibility changes
+  useEffect(() => {
+    if (isVisible) {
+      document.body.classList.remove('nav-hidden');
+    } else {
+      document.body.classList.add('nav-hidden');
+    }
+    
+    return () => {
+      document.body.classList.remove('nav-hidden');
+    };
+  }, [isVisible]);
 
   const navItems = [
     { path: '/', label: 'Trade', icon: null, enabled: true },
@@ -25,7 +64,7 @@ const HyperliquidNav = () => {
   };
 
   return (
-    <nav className="hyperliquid-nav">
+    <nav className={`hyperliquid-nav ${isVisible ? 'nav-visible' : 'nav-hidden'}`}>
       <div className="hyperliquid-nav-container">
         {/* Logo/Brand */}
         <div className="hyperliquid-nav-brand">
@@ -68,6 +107,8 @@ const HyperliquidNav = () => {
 
         {/* Right Actions */}
         <div className="hyperliquid-nav-actions">
+          <BalanceDisplay />
+          
           <ConnectWalletButton />
           
           <LanguageSelector variant="icon" />

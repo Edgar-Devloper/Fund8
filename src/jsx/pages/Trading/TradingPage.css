@@ -9,7 +9,8 @@
 .trading-main-layout {
   display: flex;
   gap: 16px;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 520px); /* Reduced to make room for bottom panel */
+  min-height: 600px;
   align-items: stretch;
 }
 

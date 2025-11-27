@@ -1,5 +1,5 @@
 import React from 'react';
-import { MockTradingDataProvider, useTradingData } from '../../components/trading/context/MockTradingDataProvider';
+import { HyperliquidTradingProvider, useTradingData } from '../../components/trading/context/HyperliquidTradingProvider';
 import DataTable from '../../components/shared/DataTable';
 import StatCard from '../../components/shared/StatCard';
 
@@ -27,14 +27,14 @@ const MarketContent = () => {
 
 const MarketPage = () => {
   return (
-    <MockTradingDataProvider>
+    <HyperliquidTradingProvider>
       <div className="page-content">
         
           <h4 className="mb-3">Market Watch</h4>
           <MarketContent />
         
       </div>
-    </MockTradingDataProvider>
+    </HyperliquidTradingProvider>
   );
 };
 

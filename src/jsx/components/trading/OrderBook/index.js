@@ -62,22 +62,68 @@ const OrderBook = () => {
     });
   };
   
+  // Get decimal places for price based on grouping
+  const getPriceDecimals = (groupingValue) => {
+    const g = parseFloat(groupingValue);
+    if (g >= 10) return 0;
+    if (g >= 1) return 1;
+    if (g >= 0.1) return 1;
+    if (g >= 0.01) return 2;
+    return 2;
+  };
+  
+  const priceDecimals = getPriceDecimals(grouping);
+  
+  // Group orders by price according to grouping value
+  const groupOrders = (orders, groupingValue) => {
+    if (!orders || orders.length === 0) return [];
+    
+    const grouping = parseFloat(groupingValue);
+    const grouped = {};
+    
+    orders.forEach(order => {
+      // Round price to nearest grouping value
+      const roundedPrice = Math.floor(order.price / grouping) * grouping;
+      
+      if (!grouped[roundedPrice]) {
+        grouped[roundedPrice] = {
+          price: roundedPrice,
+          amount: 0
+        };
+      }
+      
+      grouped[roundedPrice].amount += order.amount;
+    });
+    
+    // Convert to array and sort
+    return Object.values(grouped);
+  };
+  
+  // Apply grouping to bids and asks
+  const groupedBids = useMemo(() => {
+    return groupOrders(bids, grouping);
+  }, [bids, grouping]);
+  
+  const groupedAsks = useMemo(() => {
+    return groupOrders(asks, grouping);
+  }, [asks, grouping]);
+  
   // Calculate total (cumulative) for each row
   const asksWithTotal = useMemo(() => {
     let cumulative = 0;
-    return [...asks].reverse().slice(0, 12).map(ask => {
+    return [...groupedAsks].reverse().slice(0, 12).map(ask => {
       cumulative += ask.amount;
       return { ...ask, total: cumulative };
     }).reverse();
-  }, [asks]);
+  }, [groupedAsks]);
   
   const bidsWithTotal = useMemo(() => {
     let cumulative = 0;
-    return bids.slice(0, 12).map(bid => {
+    return groupedBids.slice(0, 12).map(bid => {
       cumulative += bid.amount;
       return { ...bid, total: cumulative };
     });
-  }, [bids]);
+  }, [groupedBids]);
   
   // Max amount for bar width calculation
   const maxAmount = useMemo(() => Math.max(
@@ -86,18 +132,18 @@ const OrderBook = () => {
     1
   ), [asksWithTotal, bidsWithTotal]);
   
-  // Spread calculation
+  // Spread calculation (using grouped data)
   const spreadData = useMemo(() => {
-    if (!bids.length || !asks.length) return { value: '--', percent: '--' };
-    const bestBid = bids[0].price;
-    const bestAsk = asks[0].price;
+    if (!groupedBids.length || !groupedAsks.length) return { value: '--', percent: '--' };
+    const bestBid = groupedBids[0].price;
+    const bestAsk = groupedAsks[0].price;
     const spreadValue = bestAsk - bestBid;
     const spreadPercent = ((spreadValue / bestAsk) * 100).toFixed(3);
     return { 
-      value: spreadValue.toFixed(1), 
+      value: spreadValue.toFixed(parseFloat(grouping) < 1 ? 2 : 1), 
       percent: spreadPercent 
     };
-  }, [bids, asks]);
+  }, [groupedBids, groupedAsks, grouping]);
   
   const coinSymbol = selectedSymbol ? selectedSymbol.split('/')[0] : 'BTC';
   
@@ -204,7 +250,7 @@ const OrderBook = () => {
               {asksWithTotal.map((ask, i) => (
                 <div key={`ask-${i}`} className="orderbook-row ask-row">
                   <div className="depth-bar ask-bar" style={{ width: `${(ask.amount / maxAmount) * 100}%` }} />
-                  <span className="price ask-price">{ask.price.toFixed(1)}</span>
+                  <span className="price ask-price">{ask.price.toFixed(priceDecimals)}</span>
                   <span className="size">{ask.amount.toFixed(4)}</span>
                   <span className="total">{ask.total.toFixed(4)}</span>
                 </div>
@@ -222,7 +268,7 @@ const OrderBook = () => {
               {bidsWithTotal.map((bid, i) => (
                 <div key={`bid-${i}`} className="orderbook-row bid-row">
                   <div className="depth-bar bid-bar" style={{ width: `${(bid.amount / maxAmount) * 100}%` }} />
-                  <span className="price bid-price">{bid.price.toFixed(1)}</span>
+                  <span className="price bid-price">{bid.price.toFixed(priceDecimals)}</span>
                   <span className="size">{bid.amount.toFixed(4)}</span>
                   <span className="total">{bid.total.toFixed(4)}</span>
                 </div>

@@ -14,6 +14,12 @@
   top: 64px;
   z-index: 98;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+  transition: top 0.3s ease-in-out;
+}
+
+/* Adjust position when nav is hidden - slide up */
+body.nav-hidden .trading-pair-header {
+  top: 0;
 }
 
 /* ============================================

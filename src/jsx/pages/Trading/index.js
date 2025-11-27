@@ -5,6 +5,7 @@ import ChartWrapper from "../../components/trading/ChartWrapper";
 import PairsModal from "../../components/trading/PairsModal";
 import HyperliquidNav from "../../components/trading/HyperliquidNav";
 import TradingPairHeader from "../../components/trading/TradingPairHeader";
+import TradingBottomPanel from "../../components/trading/TradingBottomPanel";
 import { HyperliquidTradingProvider } from "../../components/trading/context/HyperliquidTradingProvider";
 import "../../components/trading/hyperliquid-theme.css";
 import "../../components/trading/TradingComponents.css";
@@ -56,6 +57,9 @@ const TradingPage = () => {
           </div>
 
         </div>
+
+        {/* Bottom Panel: Open Orders + Positions + History */}
+        <TradingBottomPanel />
 
         {/* Modal Pares & Precio */}
         {showPairs && <PairsModal onClose={togglePairs} />}

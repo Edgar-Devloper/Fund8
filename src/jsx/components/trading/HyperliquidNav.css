@@ -12,6 +12,41 @@
   height: 64px;
   box-shadow: none;
   border-top: none;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Fade indicator on right edge (shows there's more content to scroll) */
+.hyperliquid-nav-container::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  width: 60px;
+  height: 64px;
+  background: linear-gradient(to left, var(--hl-dark-card, #151a2e) 0%, transparent 100%);
+  pointer-events: none;
+  flex-shrink: 0;
+  margin-left: -60px;
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .hyperliquid-nav-container::after {
+    display: block;
+  }
+}
+
+/* Slide animation states */
+.hyperliquid-nav.nav-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.hyperliquid-nav.nav-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hyperliquid-nav-container {
@@ -20,7 +55,29 @@
   padding: 0 24px;
   display: flex;
   align-items: center;
-  gap: 16px; /* Reducido de 32px a 16px para acercar menu al logo */
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but keep functionality */
+.hyperliquid-nav-container::-webkit-scrollbar {
+  height: 3px;
+}
+
+.hyperliquid-nav-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hyperliquid-nav-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 204, 0.3);
+  border-radius: 2px;
+}
+
+.hyperliquid-nav-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 204, 0.5);
 }
 
 /* ============================================
@@ -35,6 +92,7 @@
   color: var(--hl-text-primary, #ffffff);
   cursor: pointer;
   flex-shrink: 0;
+  min-width: max-content;
 }
 
 .brand-icon {
@@ -61,9 +119,10 @@
 .hyperliquid-nav-links {
   display: flex;
   align-items: center;
-  gap: 2px; /* Reducido de 4px a 2px para compactar menu */
-  flex: 0 1 auto; /* Cambiado de flex: 1 para no ocupar tanto espacio */
-  max-width: 600px; /* Reducido de 800px a 600px */
+  gap: 2px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-link-wrapper {
@@ -201,9 +260,10 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  margin-left: auto; /* Empujar hacia la derecha para dar más espacio */
+  margin-left: auto;
   position: relative;
   z-index: 1001;
+  white-space: nowrap;
 }
 
 .nav-icon-btn {
