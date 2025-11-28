@@ -103,7 +103,11 @@ const ChartWrapper = () => {
         // Force time scale to be visible and update
         chartRef.current.timeScale().applyOptions({
           timeVisible: true,
-          visible: true
+          visible: true,
+          secondsVisible: false,
+          fixLeftEdge: false,
+          fixRightEdge: false,
+          allowBoldLabels: true
         });
       }
     } catch (error) {
@@ -147,10 +151,19 @@ const ChartWrapper = () => {
             rightOffset: 12,
             barSpacing: 3,
             rightBarStaysOnScroll: true,
-            lockVisibleTimeRangeOnResize: true
+            lockVisibleTimeRangeOnResize: true,
+            fixLeftEdge: false,
+            fixRightEdge: false,
+            allowBoldLabels: true,
+            minBarSpacing: 0.5
           },
-          localization: { 
-            locale: 'es-ES'
+          localization: {
+            locale: 'es-ES',
+            dateFormat: 'dd MMM yyyy',
+            timeFormat: 'HH:mm',
+            priceFormatter: (price) => {
+              return price.toFixed(2);
+            }
           },
           // autoSize desactivado para evitar loop con ResizeObserver manual
         });

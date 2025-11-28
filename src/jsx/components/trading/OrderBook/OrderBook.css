@@ -269,6 +269,7 @@
   bottom: 0;
   z-index: 1;
   transition: width 0.3s ease;
+  pointer-events: none; /* Allow clicks to pass through to the row */
 }
 
 .ask-bar {

@@ -17,9 +17,11 @@ export const WalletProvider = ({ children }) => {
   const [signer, setSigner] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Don't check for MetaMask on mount - only when user clicks connect
 
   const connectWallet = useCallback(async () => {
-    // connects wallet and requires message signature for authentication
+    // Always show MetaMask popup when user clicks connect
     setIsConnecting(true);
     setError(null);
 
@@ -28,10 +30,41 @@ export const WalletProvider = ({ children }) => {
         throw new Error('MetaMask no está instalado. Por favor instala MetaMask para continuar.');
       }
 
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts',
-        params: []
-      });
+      // If already connected, disconnect first to force reconnection with popup
+      if (address) {
+        disconnectWallet();
+        // Small delay to ensure state is cleared
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // First, try to use wallet_requestPermissions which should show popup
+      // This method can show popup even if already authorized
+      let accounts;
+      try {
+        // Request permissions explicitly - this may show popup
+        await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }]
+        });
+        
+        // After requesting permissions, get accounts
+        accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts',
+          params: []
+        });
+      } catch (permError) {
+        // If wallet_requestPermissions fails or is denied, check error code
+        if (permError.code === 4001) {
+          throw new Error('Conexión cancelada. Por favor, autoriza la conexión en MetaMask.');
+        }
+        
+        // If method not supported or other error, fallback to eth_requestAccounts
+        console.log('[Wallet] wallet_requestPermissions no disponible o error, usando eth_requestAccounts');
+        accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts',
+          params: []
+        });
+      }
 
       if (!accounts || accounts.length === 0) {
         throw new Error('Usuario rechazó la conexión');
@@ -41,30 +74,22 @@ export const WalletProvider = ({ children }) => {
       const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
       const web3Signer = web3Provider.getSigner();
 
-      const message = `Por favor, firma este mensaje para autenticarte en Fund8 Trading Panel.\n\nDirección: ${userAddress}\nTiempo: ${new Date().toISOString()}`;
-      
-      const signature = await web3Signer.signMessage(message);
-      const recoveredAddress = ethers.utils.verifyMessage(message, signature);
-      
-      // verifies signature matches connected address
-      if (recoveredAddress.toLowerCase() !== userAddress.toLowerCase()) {
-        throw new Error('La firma no es válida');
-      }
-
+      // Connect wallet without requiring signature authentication
+      // The actual signing will happen when placing orders
       setProvider(web3Provider);
       setSigner(web3Signer);
       setAddress(userAddress);
 
-      console.log('[Wallet] Conectado y autenticado con firma:', userAddress);
+      console.log('[Wallet] Conectado:', userAddress);
     } catch (err) {
       console.error('[Wallet] Error al conectar:', err);
       
       let errorMessage = err.message || 'Error al conectar la wallet';
       
       if (err.code === 4001) {
-        errorMessage = 'Firma cancelada. Por favor, firma el mensaje para conectar tu wallet.';
+        errorMessage = 'Conexión cancelada. Por favor, autoriza la conexión en MetaMask.';
       } else if (err.message?.includes('reject') || err.message?.includes('denied')) {
-        errorMessage = 'Firma rechazada. Por favor, firma el mensaje para conectar tu wallet.';
+        errorMessage = 'Conexión rechazada. Por favor, autoriza la conexión en MetaMask.';
       } else if (err.message?.includes('MetaMask')) {
         errorMessage = err.message;
       }
@@ -86,30 +111,29 @@ export const WalletProvider = ({ children }) => {
     setProvider(null);
     setSigner(null);
     console.log('[Wallet] Desconectado');
-  }, []);
+  }, [address]);
 
   useEffect(() => {
-    // listens for account/chain changes in metamask
-    if (typeof window.ethereum !== 'undefined' && address) {
+    // Only listen for account/chain changes if wallet is already connected
+    // This prevents automatic reconnection on page load
+    if (typeof window.ethereum !== 'undefined' && address && provider && signer) {
       const handleAccountsChanged = (accounts) => {
+        // If accounts array is empty, user disconnected in MetaMask
         if (accounts.length === 0) {
           disconnectWallet();
-        } else if (accounts[0] !== address) {
-          // updates wallet when user switches account in metamask
-          if (!window.ethereum) return;
-          const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-          const web3Signer = web3Provider.getSigner();
-          web3Signer.getAddress().then(newAddress => {
-            setAddress(newAddress);
-            setProvider(web3Provider);
-            setSigner(web3Signer);
-            console.log('[Wallet] Cuenta cambiada a:', newAddress);
-          });
+        } else if (accounts[0].toLowerCase() !== address.toLowerCase()) {
+          // User switched account in MetaMask - update to new account
+          // Use existing provider/signer to avoid triggering MetaMask popup
+          if (!provider || !signer) return;
+          
+          // Just update the address from the accounts array
+          setAddress(accounts[0]);
+          console.log('[Wallet] Cuenta cambiada a:', accounts[0]);
         }
       };
 
       const handleChainChanged = () => {
-        // reloads page when network changes
+        // Reload page when network changes
         window.location.reload();
       };
 
@@ -123,7 +147,7 @@ export const WalletProvider = ({ children }) => {
         }
       };
     }
-  }, [address, disconnectWallet]);
+  }, [address, provider, signer, disconnectWallet]);
 
   const value = {
     address,

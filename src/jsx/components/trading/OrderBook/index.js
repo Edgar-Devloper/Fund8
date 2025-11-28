@@ -251,7 +251,14 @@ const OrderBook = () => {
                 <div 
                   key={`ask-${i}`} 
                   className="orderbook-row ask-row"
-                  onClick={() => setSelectedPrice(ask.price)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (setSelectedPrice && typeof setSelectedPrice === 'function') {
+                      setSelectedPrice(ask.price);
+                      console.log('[OrderBook] Selected price:', ask.price);
+                    }
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="depth-bar ask-bar" style={{ width: `${(ask.amount / maxAmount) * 100}%` }} />
@@ -274,7 +281,14 @@ const OrderBook = () => {
                 <div 
                   key={`bid-${i}`} 
                   className="orderbook-row bid-row"
-                  onClick={() => setSelectedPrice(bid.price)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (setSelectedPrice && typeof setSelectedPrice === 'function') {
+                      setSelectedPrice(bid.price);
+                      console.log('[OrderBook] Selected price:', bid.price);
+                    }
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="depth-bar bid-bar" style={{ width: `${(bid.amount / maxAmount) * 100}%` }} />

@@ -88,26 +88,28 @@
 
 /* Dropdown Menu */
 .wallet-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  top: calc(64px + 8px); /* Nav height + spacing */
+  right: 24px;
   min-width: 180px;
   background: var(--hl-dark-card, #151a2e);
   border: 1px solid var(--hl-dark-border, #1e2541);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.2s ease;
-  z-index: 1003;
+  z-index: 10001; /* Above navbar (10000) */
   overflow: hidden;
+  animation: fadeInDown 0.2s ease;
 }
 
-.wallet-connected-dropdown:hover .wallet-dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .wallet-dropdown-item {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '../../../context/WalletContext';
 import hyperliquidTrading from '../../../services/hyperliquidTrading';
 import './BalanceDisplay.css';
@@ -8,6 +8,8 @@ const BalanceDisplay = () => {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const containerRef = useRef(null);
+  const buttonRef = useRef(null);
 
   useEffect(() => {
     if (!isConnected || !address) {
@@ -63,6 +65,23 @@ const BalanceDisplay = () => {
     return () => clearInterval(interval);
   }, [isConnected, address]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setShowDetails(false);
+      }
+    };
+
+    if (showDetails) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDetails]);
+
   if (!isConnected || !balance) {
     return null;
   }
@@ -74,8 +93,9 @@ const BalanceDisplay = () => {
   };
 
   return (
-    <div className="balance-display-container">
+    <div className="balance-display-container" ref={containerRef}>
       <div 
+        ref={buttonRef}
         className="balance-display"
         onClick={() => setShowDetails(!showDetails)}
       >
@@ -90,8 +110,13 @@ const BalanceDisplay = () => {
         <span className="balance-currency">{balance.currency}</span>
       </div>
 
-      {showDetails && (
-        <div className="balance-details-dropdown">
+      {showDetails && buttonRef.current && (
+        <div 
+          className="balance-details-dropdown"
+          style={{
+            right: `${window.innerWidth - buttonRef.current.getBoundingClientRect().right}px`
+          }}
+        >
           <div className="balance-detail-row">
             <span className="detail-label">Available:</span>
             <span className="detail-value">${balance.available.toFixed(2)}</span>
