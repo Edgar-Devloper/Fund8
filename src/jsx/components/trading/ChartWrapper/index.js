@@ -17,6 +17,7 @@ const ChartWrapper = () => {
   const [showVolume, setShowVolume] = useState(true);
   const [autoFitActive, setAutoFitActive] = useState(false);
   const [currentOHLC, setCurrentOHLC] = useState({ open: 0, high: 0, low: 0, close: 0, change: 0 });
+  const [hoverVolume, setHoverVolume] = useState(null); // Volume on hover
   
   // Drawing tools state
   const [drawingMode, setDrawingMode] = useState(null); // null | 'line' | 'fibonacci'
@@ -30,6 +31,9 @@ const ChartWrapper = () => {
   
   // fetch real candles from hyperliquid
   const { candles: realCandles, loading: candlesLoading } = useCandles(coinId, timeframe, length);
+
+  // Store volume data by time for hover tooltip
+  const volumeMapRef = useRef(new Map());
 
   const rebuildData = useCallback(() => {
     if (!seriesRef.current || !realCandles || realCandles.length === 0) {
@@ -83,13 +87,22 @@ const ChartWrapper = () => {
       // use real candles from hyperliquid
       seriesRef.current.setData(validCandles);
       
+      // Clear volume map and rebuild
+      volumeMapRef.current.clear();
+      
       if (showVolume && volumeSeriesRef.current) {
         // calculate volume from price movement (since hyperliquid candles don't include volume in this format)
         const volData = validCandles.map(c => {
+          // Calculate approximate volume (you can replace this with real volume from API if available)
           const volume = Math.abs(c.close - c.open) * (c.high - c.low) * 1000; // approximate volume
+          const volumeValue = Math.max(1, Math.round(volume));
+          
+          // Store volume in map for hover tooltip
+          volumeMapRef.current.set(c.time, volumeValue);
+          
           return {
             time: c.time,
-            value: Math.max(1, Math.round(volume)),
+            value: volumeValue,
             color: c.close >= c.open ? '#00c08799' : '#ef444499'
           };
         });
@@ -186,6 +199,22 @@ const ChartWrapper = () => {
           chartRef.current = chartInstance;
           seriesRef.current = seriesInstance;
           volumeSeriesRef.current = volumeSeriesInstance;
+          
+          // Subscribe to crosshair move to show volume on hover
+          chartInstance.subscribeCrosshairMove(param => {
+            if (isMounted && param.time) {
+              // Get volume for this candle time
+              const volume = volumeMapRef.current.get(param.time);
+              if (volume !== undefined) {
+                setHoverVolume(volume);
+              } else {
+                setHoverVolume(null);
+              }
+            } else if (isMounted) {
+              // Mouse left the chart area
+              setHoverVolume(null);
+            }
+          });
         } else {
           // Componente desmontado antes de inicializar, limpiar
           try {
@@ -213,6 +242,15 @@ const ChartWrapper = () => {
       const chart = chartRef.current;
       const series = seriesRef.current;
       const volumeSeries = volumeSeriesRef.current;
+      
+      // Unsubscribe from crosshair move
+      if (chart) {
+        try {
+          chart.unsubscribeCrosshairMove();
+        } catch (e) {
+          // Ignore errors
+        }
+      }
       
       chartRef.current = null;
       seriesRef.current = null;
@@ -485,6 +523,13 @@ const ChartWrapper = () => {
   }, [handleChartClick]);
 
   const formatPrice = (price) => price ? price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '0.0';
+  
+  const formatVolume = (volume) => {
+    if (!volume || volume === 0) return '0';
+    if (volume >= 1000000) return `${(volume / 1000000).toFixed(2)}M`;
+    if (volume >= 1000) return `${(volume / 1000).toFixed(2)}K`;
+    return volume.toFixed(0);
+  };
 
   return (
       <div className="card h-100 chart-wrapper-container" style={{borderRadius:22, background: 'var(--hl-dark-card, #151a2e)', border: '1px solid var(--hl-dark-border, #1e2541)'}}>
@@ -516,6 +561,18 @@ const ChartWrapper = () => {
                 <span className="chart-ohlc-label">C</span>
                 <span className={`chart-ohlc-value ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>
                   {formatPrice(currentOHLC.close)}
+                </span>
+              </div>
+              {/* Volume display - shows hover volume when mouse is over a candle */}
+              <div className="chart-ohlc-item">
+                <span className="chart-ohlc-label">Vol</span>
+                <span className="chart-ohlc-value" style={{ color: hoverVolume !== null ? 'var(--hl-accent-teal, #00c087)' : 'inherit' }}>
+                  {hoverVolume !== null 
+                    ? formatVolume(hoverVolume)
+                    : (volumeMapRef.current.size > 0 
+                        ? formatVolume(Array.from(volumeMapRef.current.values()).pop())
+                        : '--')
+                  }
                 </span>
               </div>
               <span className={`chart-ohlc-change ${currentOHLC.change >= 0 ? 'positive' : 'negative'}`}>

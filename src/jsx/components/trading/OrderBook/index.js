@@ -125,25 +125,44 @@ const OrderBook = () => {
     });
   }, [groupedBids]);
   
-  // Max amount for bar width calculation
-  const maxAmount = useMemo(() => Math.max(
-    ...asksWithTotal.map(a => a.amount),
-    ...bidsWithTotal.map(b => b.amount),
+  // Max total for bar width calculation (cumulative total)
+  const maxTotal = useMemo(() => Math.max(
+    ...asksWithTotal.map(a => a.total),
+    ...bidsWithTotal.map(b => b.total),
     1
   ), [asksWithTotal, bidsWithTotal]);
   
-  // Spread calculation (using grouped data)
+  // Spread calculation (using original data for best bid/ask, not grouped)
   const spreadData = useMemo(() => {
-    if (!groupedBids.length || !groupedAsks.length) return { value: '--', percent: '--' };
-    const bestBid = groupedBids[0].price;
-    const bestAsk = groupedAsks[0].price;
+    if (!bids.length || !asks.length) return { value: '--', percent: '--' };
+    
+    // Use original bids/asks to get real best prices (not grouped)
+    // Best bid = highest buy price (first in array, already sorted descending)
+    // Best ask = lowest sell price (first in array, already sorted ascending)
+    const bestBid = bids[0]?.price || 0;
+    const bestAsk = asks[0]?.price || 0;
+    
+    if (bestBid === 0 || bestAsk === 0) return { value: '--', percent: '--' };
+    
+    // Spread = difference between best ask and best bid
     const spreadValue = bestAsk - bestBid;
-    const spreadPercent = ((spreadValue / bestAsk) * 100).toFixed(3);
+    // Spread percentage = (spread / ask price) * 100
+    const spreadPercent = ((spreadValue / bestAsk) * 100);
+    
+    // Debug log
+    console.log('[OrderBook Spread]', {
+      bestBid,
+      bestAsk,
+      spreadValue,
+      spreadPercent: `${spreadPercent.toFixed(3)}%`,
+      formattedValue: spreadValue.toFixed(2)
+    });
+    
     return { 
-      value: spreadValue.toFixed(parseFloat(grouping) < 1 ? 2 : 1), 
-      percent: spreadPercent 
+      value: spreadValue.toFixed(2), // Always show 2 decimal places
+      percent: spreadPercent.toFixed(3) // Show 3 decimal places for percentage
     };
-  }, [groupedBids, groupedAsks, grouping]);
+  }, [bids, asks]);
   
   const coinSymbol = selectedSymbol ? selectedSymbol.split('/')[0] : 'BTC';
   
@@ -167,16 +186,19 @@ const OrderBook = () => {
         </div>
         
         <div className="orderbook-controls">
-          <select 
-            className="control-select" 
-            value={grouping}
-            onChange={(e) => setGrouping(e.target.value)}
-          >
-            <option value="0.01">0.01</option>
-            <option value="0.1">0.1</option>
-            <option value="1">1</option>
-            <option value="10">10</option>
-          </select>
+          {/* Grouping selector - only show in Order Book tab */}
+          {activeTab === 'orderbook' && (
+            <select 
+              className="control-select" 
+              value={grouping}
+              onChange={(e) => setGrouping(e.target.value)}
+            >
+              <option value="0.01">0.01</option>
+              <option value="0.1">0.1</option>
+              <option value="1">1</option>
+              <option value="10">10</option>
+            </select>
+          )}
           
           <div className="symbol-dropdown-container" ref={dropdownRef}>
             <button 
@@ -239,9 +261,9 @@ const OrderBook = () => {
       {activeTab === 'orderbook' && (
         <div className="orderbook-hl-body">
           <div className="orderbook-table-header">
-            <span>Price</span>
-            <span>Size ({coinSymbol})</span>
-            <span>Total ({coinSymbol})</span>
+            <span>PRICE</span>
+            <span>SIZE ({coinSymbol})</span>
+            <span>TOTAL ({coinSymbol})</span>
           </div>
           
           <div className="orderbook-table-content">
@@ -261,7 +283,7 @@ const OrderBook = () => {
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  <div className="depth-bar ask-bar" style={{ width: `${(ask.amount / maxAmount) * 100}%` }} />
+                  <div className="depth-bar ask-bar" style={{ width: `${(ask.total / maxTotal) * 100}%` }} />
                   <span className="price ask-price">{ask.price.toFixed(priceDecimals)}</span>
                   <span className="size">{ask.amount.toFixed(4)}</span>
                   <span className="total">{ask.total.toFixed(4)}</span>
@@ -271,6 +293,7 @@ const OrderBook = () => {
             
             {/* Spread Row */}
             <div className="spread-row">
+              <span className="spread-label">SPREAD</span>
               <span className="spread-value">{spreadData.value}</span>
               <span className="spread-percent">{spreadData.percent}%</span>
             </div>
@@ -291,7 +314,7 @@ const OrderBook = () => {
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  <div className="depth-bar bid-bar" style={{ width: `${(bid.amount / maxAmount) * 100}%` }} />
+                  <div className="depth-bar bid-bar" style={{ width: `${(bid.total / maxTotal) * 100}%` }} />
                   <span className="price bid-price">{bid.price.toFixed(priceDecimals)}</span>
                   <span className="size">{bid.amount.toFixed(4)}</span>
                   <span className="total">{bid.total.toFixed(4)}</span>
