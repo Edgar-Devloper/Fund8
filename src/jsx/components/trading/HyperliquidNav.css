@@ -87,14 +87,25 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--hl-text-primary, #ffffff);
   cursor: pointer;
   flex-shrink: 0;
   min-width: max-content;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
 }
 
+.hyperliquid-nav-brand:hover {
+  opacity: 0.8;
+}
+
+.hyperliquid-nav-brand .fund8-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Legacy styles - kept for backward compatibility if needed */
 .brand-icon {
   display: flex;
   align-items: center;
@@ -343,6 +354,10 @@
   .brand-text {
     font-size: 16px;
   }
+  
+  .hyperliquid-nav-brand .fund8-logo {
+    height: 36px;
+  }
 
   /* Mostrar solo Trade y More */
   .nav-link-item:nth-child(n+2):not(:last-child) {
@@ -389,6 +404,10 @@
   
   .brand-text {
     font-size: 14px;
+  }
+  
+  .hyperliquid-nav-brand .fund8-logo {
+    height: 32px;
   }
   
   /* Mantener solo Trade visible */

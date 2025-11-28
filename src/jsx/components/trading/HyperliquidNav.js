@@ -4,6 +4,7 @@ import ConnectWalletButton from '../Web3/ConnectWalletButton';
 import LanguageSelector from '../LanguageSelector';
 import SettingsModal from '../Settings/SettingsModal';
 import BalanceDisplay from './BalanceDisplay';
+import fund8Logo from '../../../images/brand/fund8-logo-black-bg.png';
 import './HyperliquidNav.css';
 
 const HyperliquidNav = () => {
@@ -67,10 +68,18 @@ const HyperliquidNav = () => {
     <nav className={`hyperliquid-nav ${isVisible ? 'nav-visible' : 'nav-hidden'}`}>
       <div className="hyperliquid-nav-container">
         {/* Logo/Brand */}
-        <div className="hyperliquid-nav-brand">
-          <span className="brand-icon">F8</span>
-          <span className="brand-text">Fund8</span>
-        </div>
+        <Link to="/" className="hyperliquid-nav-brand">
+          <img 
+            src={fund8Logo} 
+            alt="Fund8" 
+            className="fund8-logo"
+            style={{
+              height: '40px',
+              width: 'auto',
+              objectFit: 'contain'
+            }}
+          />
+        </Link>
 
         {/* Navigation Links */}
         <div className="hyperliquid-nav-links">
