@@ -24,7 +24,7 @@ const iconMap = {
 };
 
 const OrderBook = () => {
-  const { orderBook, selectedSymbol, trades, tickers, setSelectedSymbol } = useTradingData();
+  const { orderBook, selectedSymbol, trades, tickers, setSelectedSymbol, setSelectedPrice } = useTradingData();
   const { t } = useTranslation(); // eslint-disable-line
   const { bids = [], asks = [] } = orderBook || {};
   
@@ -248,7 +248,12 @@ const OrderBook = () => {
             {/* Asks (Sell Orders - Red) */}
             <div className="asks-section">
               {asksWithTotal.map((ask, i) => (
-                <div key={`ask-${i}`} className="orderbook-row ask-row">
+                <div 
+                  key={`ask-${i}`} 
+                  className="orderbook-row ask-row"
+                  onClick={() => setSelectedPrice(ask.price)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="depth-bar ask-bar" style={{ width: `${(ask.amount / maxAmount) * 100}%` }} />
                   <span className="price ask-price">{ask.price.toFixed(priceDecimals)}</span>
                   <span className="size">{ask.amount.toFixed(4)}</span>
@@ -266,7 +271,12 @@ const OrderBook = () => {
             {/* Bids (Buy Orders - Green) */}
             <div className="bids-section">
               {bidsWithTotal.map((bid, i) => (
-                <div key={`bid-${i}`} className="orderbook-row bid-row">
+                <div 
+                  key={`bid-${i}`} 
+                  className="orderbook-row bid-row"
+                  onClick={() => setSelectedPrice(bid.price)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="depth-bar bid-bar" style={{ width: `${(bid.amount / maxAmount) * 100}%` }} />
                   <span className="price bid-price">{bid.price.toFixed(priceDecimals)}</span>
                   <span className="size">{bid.amount.toFixed(4)}</span>

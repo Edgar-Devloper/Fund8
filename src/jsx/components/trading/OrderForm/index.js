@@ -5,7 +5,7 @@ import { useNotifications } from '../../../../context/NotificationContext.js';
 import { useTranslation } from 'react-i18next';
 
 const OrderForm = () => {
-  const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized } = useTradingData();
+  const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized, selectedPrice, setSelectedPrice } = useTradingData();
   const { isConnected, connectWallet, isConnecting } = useWallet();
   const { addNotification } = useNotifications();
   const { t } = useTranslation();
@@ -21,6 +21,14 @@ const OrderForm = () => {
   const bestBid = orderBook?.bids?.[0]?.price || 0;
   const bestAsk = orderBook?.asks?.[0]?.price || 0;
   const midPrice = bestBid && bestAsk ? ((bestBid + bestAsk) / 2) : currentTicker.last;
+  
+  // Update price when selectedPrice changes from OrderBook
+  useEffect(() => {
+    if (selectedPrice && orderType === 'limit') {
+      setPrice(selectedPrice.toFixed(2));
+      setSelectedPrice(null); // Clear after using
+    }
+  }, [selectedPrice, orderType, setSelectedPrice]);
   
   useEffect(() => {
     if (orderType === 'market') {

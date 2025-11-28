@@ -262,7 +262,7 @@
   flex-shrink: 0;
   margin-left: auto;
   position: relative;
-  z-index: 1001;
+  z-index: 10004;
   white-space: nowrap;
 }
 
@@ -288,8 +288,24 @@
 }
 
 /* Language Selector Hyperliquid Style */
+.language-selector-hyperliquid {
+  position: relative;
+  z-index: 10004 !important;
+}
+
 .language-selector-hyperliquid .dropdown-menu {
-  z-index: 1002 !important;
+  z-index: 10005 !important;
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.language-selector-hyperliquid .dropdown-item {
+  cursor: pointer !important;
+  pointer-events: auto !important;
 }
 
 .language-selector-hyperliquid .dropdown-item:hover {

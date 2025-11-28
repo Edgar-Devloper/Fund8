@@ -32,6 +32,7 @@ export const HyperliquidTradingProvider = ({ children }) => {
   const [selectedSymbol, setSelectedSymbol] = useState('BTC/USDC');
   const [exchange, setExchange] = useState('hyperliquid');
   const [tradingInitialized, setTradingInitialized] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState(null);
   
   const coinId = useMemo(() => pairToCoinId(selectedSymbol), [selectedSymbol]);
   
@@ -325,6 +326,8 @@ export const HyperliquidTradingProvider = ({ children }) => {
     },
     placeOrder,
     cancelOrder,
+    selectedPrice,
+    setSelectedPrice,
     connectionStatus: isConnected ? 'connected' : 'disconnected',
     isConnected,
     tradingInitialized,
@@ -346,6 +349,8 @@ export const HyperliquidTradingProvider = ({ children }) => {
     priceRealTime,
     placeOrder,
     cancelOrder,
+    selectedPrice,
+    setSelectedPrice,
     isConnected,
     tradingInitialized,
     exchanges,

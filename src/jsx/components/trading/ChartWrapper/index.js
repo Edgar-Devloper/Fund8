@@ -100,6 +100,11 @@ const ChartWrapper = () => {
       
       if (chartRef.current) {
         chartRef.current.timeScale().fitContent();
+        // Force time scale to be visible and update
+        chartRef.current.timeScale().applyOptions({
+          timeVisible: true,
+          visible: true
+        });
       }
     } catch (error) {
       console.error('[ChartWrapper] Error setting chart data:', error);
@@ -137,9 +142,16 @@ const ChartWrapper = () => {
           timeScale: { 
             timeVisible: true, 
             secondsVisible: false,
-            borderColor: '#1e2541'
+            borderColor: '#1e2541',
+            visible: true,
+            rightOffset: 12,
+            barSpacing: 3,
+            rightBarStaysOnScroll: true,
+            lockVisibleTimeRangeOnResize: true
           },
-          localization: { locale: 'en-US' },
+          localization: { 
+            locale: 'es-ES'
+          },
           // autoSize desactivado para evitar loop con ResizeObserver manual
         });
         

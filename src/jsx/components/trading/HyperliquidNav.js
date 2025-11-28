@@ -113,13 +113,16 @@ const HyperliquidNav = () => {
           
           <LanguageSelector variant="icon" />
           
-          <button 
-            className="nav-icon-btn" 
-            title="Settings"
-            onClick={() => setShowSettings(true)}
-          >
-            ⚙️
-          </button>
+          {/* Settings button hidden */}
+          {false && (
+            <button 
+              className="nav-icon-btn" 
+              title="Settings"
+              onClick={() => setShowSettings(true)}
+            >
+              ⚙️
+            </button>
+          )}
         </div>
       </div>
       
