@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useWallet } from '../../../../context/WalletContext.js';
+import { useNFT } from '../../../../context/NFTContext.js';
 import { apiService } from '../../../../api/apiService.js';
 import { useNotifications } from '../../../../context/NotificationContext.js';
 
 const QuickTrade = () => {
 	const { address, isConnected, signer } = useWallet();
+	const { selectedNFT } = useNFT();
 	const { addNotification } = useNotifications();
 	const [selectedCurrency, setSelectedCurrency] = useState("BTC");
 	const [amount, setAmount] = useState("");
@@ -56,6 +58,14 @@ const QuickTrade = () => {
 				type: 'warning',
 				title: 'Wallet no conectada',
 				message: 'Por favor, conecta tu wallet primero',
+			});
+			return;
+		}
+		if (!selectedNFT) {
+			addNotification({
+				type: 'warning',
+				title: 'NFT no seleccionado',
+				message: 'Por favor, selecciona un NFT antes de realizar operaciones de trading.',
 			});
 			return;
 		}
@@ -117,6 +127,14 @@ const QuickTrade = () => {
 				type: 'warning',
 				title: 'Wallet no conectada',
 				message: 'Por favor, conecta tu wallet primero',
+			});
+			return;
+		}
+		if (!selectedNFT) {
+			addNotification({
+				type: 'warning',
+				title: 'NFT no seleccionado',
+				message: 'Por favor, selecciona un NFT antes de realizar operaciones de trading.',
 			});
 			return;
 		}

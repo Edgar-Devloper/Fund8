@@ -1,6 +1,10 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { useTranslation } from 'react-i18next';
+// import DepositModal from '../DepositModal';
+// import WithdrawModal from '../WithdrawModal';
+// import '../DepositModal.css';
+// import '../WithdrawModal.css';
 import './OrderBook.css';
 
 // Import crypto icons
@@ -31,6 +35,8 @@ const OrderBook = () => {
   const [activeTab, setActiveTab] = useState('orderbook'); // 'orderbook' | 'trades'
   const [grouping, setGrouping] = useState('0.1');
   const [showSymbolDropdown, setShowSymbolDropdown] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const dropdownRef = useRef(null);
   
   // Close dropdown when clicking outside
@@ -368,6 +374,43 @@ const OrderBook = () => {
           </div>
         </div>
       )}
+      
+      {/* {activeTab === 'orderbook' && (
+        <div className="orderbook-hl-footer">
+          <button 
+            className="deposit-btn"
+            onClick={() => setShowDepositModal(true)}
+          >
+            Deposit
+          </button>
+          <div className="footer-actions">
+            <button 
+              className="perps-spot-btn"
+              onClick={() => {
+                // TODO: Implement Perps <-> Spot toggle functionality
+                console.log('Perps <-> Spot clicked (not implemented yet)');
+              }}
+            >
+              <span>Perps</span>
+              <span className="arrow-icon">↔</span>
+              <span>Spot</span>
+            </button>
+            <button 
+              className="withdraw-btn"
+              onClick={() => setShowWithdrawModal(true)}
+            >
+              Withdraw
+            </button>
+          </div>
+        </div>
+      )} */}
+
+      {/* {showDepositModal && (
+        <DepositModal onClose={() => setShowDepositModal(false)} />
+      )}
+      {showWithdrawModal && (
+        <WithdrawModal onClose={() => setShowWithdrawModal(false)} />
+      )} */}
     </div>
   );
 };

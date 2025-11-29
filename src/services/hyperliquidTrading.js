@@ -31,13 +31,10 @@ class HyperliquidTradingService {
 
       console.log('[HL Trading] Initializing trading service with SDK...');
       
-      // Use the provider and signer directly from WalletContext
       this.provider = provider;
       this.signer = signer;
       this.address = await signer.getAddress();
       
-      // Initialize the ExchangeClient with the ethers signer
-      // The SDK handles signing correctly with msgpack and action_hash
       this.exchangeClient = new hl.ExchangeClient({
         wallet: this.signer, // ethers signer is compatible
         transport: new hl.HttpTransport({
@@ -53,10 +50,6 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Get coin index for a symbol
-   * Hyperliquid uses coin indices (a: 0 for BTC, etc.)
-   */
   async getCoinIndex(coinSymbol) {
     try {
       const infoClient = new hl.InfoClient({
@@ -66,7 +59,6 @@ class HyperliquidTradingService {
       const meta = await infoClient.metaAndAssetCtxs();
       const universe = meta?.universe || [];
       
-      // Find the coin index
       const coinIndex = universe.findIndex(coin => 
         coin?.name?.toUpperCase() === coinSymbol.toUpperCase()
       );
@@ -82,47 +74,34 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Place a limit order
-   * @param {Object} params - Order parameters
-   * @param {string} params.coin - Trading pair symbol (e.g., 'BTC')
-   * @param {boolean} params.isBuy - true for buy, false for sell
-   * @param {number} params.price - Limit price
-   * @param {number} params.size - Order size
-   * @param {string} params.orderType - 'limit' or 'market'
-   */
-  async placeOrder({ coin, isBuy, price, size, orderType = 'limit' }) {
+  async placeOrder({ coin, isBuy, price, size, orderType = 'limit', nftId = null }) {
     if (!this.exchangeClient || !this.address) {
       throw new Error('Wallet not connected. Please connect your wallet first.');
     }
 
     try {
-      console.log('[HL Trading] Placing order:', { coin, isBuy, price, size, orderType });
+      if (nftId) {
+        console.log('[HL Trading] Order linked to NFT ID:', nftId);
+      }
 
-      // Get coin index
       const coinIndex = await this.getCoinIndex(coin);
 
-      // Build the order according to Hyperliquid SDK format
       const order = {
-        a: coinIndex, // asset index
-        b: isBuy, // is buy
-        p: price.toString(), // limit price
-        s: size.toString(), // size
-        r: false, // reduce only
+        a: coinIndex,
+        b: isBuy,
+        p: price.toString(),
+        s: size.toString(),
+        r: false,
         t: orderType === 'market' 
-          ? { limit: { tif: 'Ioc' } } // Immediate-Or-Cancel for market
-          : { limit: { tif: 'Gtc' } } // Good-Til-Cancelled for limit
+          ? { limit: { tif: 'Ioc' } }
+          : { limit: { tif: 'Gtc' } }
       };
 
-      // Place order using the SDK (handles signing automatically)
       const result = await this.exchangeClient.order({
         orders: [order],
         grouping: 'na'
       });
 
-      console.log('[HL Trading] Order placed successfully:', result);
-
-      // Parse result
       if (result && result.status === 'ok') {
         const orderId = result.response?.statuses?.[0]?.resting?.oid || 
                        result.response?.statuses?.[0]?.filled?.oid;
@@ -152,35 +131,31 @@ class HyperliquidTradingService {
   /**
    * Place a market order
    */
-  async placeMarketOrder({ coin, isBuy, size }) {
+  async placeMarketOrder({ coin, isBuy, size, nftId = null }) {
     if (!this.exchangeClient || !this.address) {
       throw new Error('Wallet not connected. Please connect your wallet first.');
     }
 
     try {
-      console.log('[HL Trading] Placing market order:', { coin, isBuy, size });
+      if (nftId) {
+        console.log('[HL Trading] Market order linked to NFT ID:', nftId);
+      }
 
-      // Get coin index
       const coinIndex = await this.getCoinIndex(coin);
 
-      // For market orders, use a very high/low price with IOC
-      // The SDK will handle it as a market order
       const order = {
         a: coinIndex,
         b: isBuy,
-        p: isBuy ? '999999999' : '0.01', // Extreme price for market execution
+        p: isBuy ? '999999999' : '0.01',
         s: size.toString(),
         r: false,
-        t: { limit: { tif: 'Ioc' } } // Immediate-Or-Cancel
+        t: { limit: { tif: 'Ioc' } }
       };
 
-      // Place order using the SDK
       const result = await this.exchangeClient.order({
         orders: [order],
         grouping: 'na'
       });
-
-      console.log('[HL Trading] Market order placed successfully:', result);
 
       if (result && result.status === 'ok') {
         const orderId = result.response?.statuses?.[0]?.resting?.oid || 
@@ -208,23 +183,18 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Cancel an order
-   */
   async cancelOrder({ coin, orderId }) {
     if (!this.exchangeClient || !this.address) {
       throw new Error('Wallet not connected');
     }
 
     try {
-      // Get coin index
       const coinIndex = await this.getCoinIndex(coin);
 
-      // Cancel order using the SDK
       const result = await this.exchangeClient.cancel({
         cancels: [{
           a: coinIndex,
-          o: orderId // order id
+          o: orderId
         }]
       });
 
@@ -241,23 +211,18 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Cancel all orders for a coin
-   */
   async cancelAllOrders(coin) {
     if (!this.exchangeClient || !this.address) {
       throw new Error('Wallet not connected');
     }
 
     try {
-      // Get coin index
       const coinIndex = await this.getCoinIndex(coin);
 
-      // Cancel all orders using the SDK
       const result = await this.exchangeClient.cancel({
         cancels: [{
           a: coinIndex,
-          cloid: null // null means cancel all
+          cloid: null
         }]
       });
 
@@ -274,9 +239,6 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Get user's open orders
-   */
   async getOpenOrders() {
     if (!this.address) {
       throw new Error('Wallet not connected');
@@ -295,9 +257,6 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Get user state (balances, positions, etc.)
-   */
   async getUserState() {
     if (!this.address) {
       throw new Error('Wallet not connected');
@@ -316,9 +275,201 @@ class HyperliquidTradingService {
     }
   }
 
-  /**
-   * Disconnect and cleanup
-   */
+  async deposit({ coin, amount, clearinghouseAddress }) {
+    throw new Error('Deposit functionality is under development and not yet activated');
+    
+    /*
+    if (!this.provider || !this.signer || !this.address) {
+      throw new Error('Wallet not connected. Please connect your wallet first.');
+    }
+
+    try {
+      console.log('[HL Trading] Depositing:', { coin, amount, clearinghouseAddress });
+
+      // Get clearinghouse address if not provided
+      let depositAddress = clearinghouseAddress;
+      
+      if (!depositAddress) {
+        // Try to get from API
+        const infoClient = new hl.InfoClient({
+          transport: new hl.HttpTransport({ isTestnet: IS_TESTNET })
+        });
+        
+        const metaAndAsset = await infoClient.metaAndAssetCtxs();
+        depositAddress = metaAndAsset?.clearinghouseAddress || metaAndAsset?.vaultAddress;
+        
+        if (!depositAddress || depositAddress === '0x0000000000000000000000000000000000000000') {
+          // Fallback to known addresses
+          depositAddress = IS_TESTNET
+            ? '0x0000000000000000000000000000000000000000' // TODO: Get testnet address
+            : '0x5E7D83dA751F4C9694b13aF351B30aC108f32C38'; // Mainnet clearinghouse
+        }
+      }
+
+      // Get token contract address based on coin
+      // For now, we'll support USDC on Arbitrum
+      const tokenAddresses = {
+        'USDC': IS_TESTNET 
+          ? '0x75faf114eafb1BDbe2F0316DF893fd58Ce45AF4F' // Arbitrum Sepolia USDC
+          : '0xaf88d065e77c8cC2239327C5EDb3A432268e5831' // Arbitrum Mainnet USDC
+      };
+
+      const tokenAddress = tokenAddresses[coin.toUpperCase()];
+      if (!tokenAddress) {
+        throw new Error(`Token ${coin} not supported for deposits. Currently only USDC is supported.`);
+      }
+
+      // ERC20 ABI for transfer
+      const erc20Abi = [
+        "function transfer(address to, uint256 amount) returns (bool)",
+        "function decimals() view returns (uint8)",
+        "function balanceOf(address owner) view returns (uint256)"
+      ];
+
+      const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, this.signer);
+      
+      // Get decimals
+      const decimals = await tokenContract.decimals();
+      
+      // Convert amount to wei/smallest unit
+      const amountInWei = ethers.utils.parseUnits(amount.toString(), decimals);
+      
+      // Check balance
+      const balance = await tokenContract.balanceOf(this.address);
+      if (balance.lt(amountInWei)) {
+        throw new Error(`Insufficient balance. You have ${ethers.utils.formatUnits(balance, decimals)} ${coin}, but trying to deposit ${amount} ${coin}.`);
+      }
+
+      // Execute transfer
+      console.log('[HL Trading] Sending deposit transaction...', {
+        token: coin,
+        tokenAddress,
+        depositAddress,
+        amount: amount.toString(),
+        amountInWei: amountInWei.toString()
+      });
+
+      const tx = await tokenContract.transfer(depositAddress, amountInWei);
+      console.log('[HL Trading] Deposit transaction sent:', tx.hash);
+
+      // Wait for confirmation
+      const receipt = await tx.wait();
+      console.log('[HL Trading] Deposit transaction confirmed:', receipt.transactionHash);
+
+      return {
+        success: true,
+        transactionHash: receipt.transactionHash,
+        data: receipt
+      };
+    } catch (error) {
+      console.error('[HL Trading] Error depositing:', error);
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred'
+      };
+    }
+    */
+  }
+
+  async withdraw({ coin, amount, destination }) {
+    if (!this.exchangeClient || !this.address) {
+      throw new Error('Wallet not connected. Please connect your wallet first.');
+    }
+
+    try {
+      console.log('[HL Trading] Withdrawing:', { coin, amount, destination });
+
+      const destAddress = destination || this.address;
+
+      const result = await this.exchangeClient.withdraw3({
+        destination: destAddress,
+        amount: amount.toString(),
+        coin: coin
+      });
+
+      console.log('[HL Trading] Withdraw result:', result);
+
+      if (result && result.status === 'ok') {
+        return {
+          success: true,
+          data: result.response || result
+        };
+      } else {
+        const errorMsg = result?.response || result?.error || 'Withdrawal failed';
+        console.error('[HL Trading] Withdraw failed:', errorMsg);
+        return {
+          success: false,
+          error: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)
+        };
+      }
+    } catch (error) {
+      console.error('[HL Trading] Error withdrawing:', error);
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred'
+      };
+    }
+  }
+
+  async approveAgent(stayConnected = false, agentAddress = null) {
+    if (!this.address) {
+      throw new Error('Trading service not initialized. Please connect your wallet first.');
+    }
+
+    if (!this.exchangeClient && this.provider && this.signer) {
+      console.log('[HL Trading] ExchangeClient not initialized, initializing now...');
+      await this.initialize(this.provider, this.signer);
+    }
+
+    if (!this.exchangeClient) {
+      throw new Error('ExchangeClient not available. Please ensure wallet is properly connected.');
+    }
+
+    try {
+      const finalAgentAddress = agentAddress || this.address;
+      
+      console.log('[HL Trading] Approving agent...', { 
+        stayConnected, 
+        agentAddress: finalAgentAddress,
+        userAddress: this.address
+      });
+
+      const result = await this.exchangeClient.approveAgent({
+        agentAddress: finalAgentAddress,
+        agentName: stayConnected ? 'Persistent Connection' : null
+      });
+
+      console.log('[HL Trading] Agent approval result:', result);
+
+      if (result && result.status === 'ok') {
+        return {
+          success: true,
+          data: result.response || result
+        };
+      } else {
+        const errorMsg = result?.response || result?.error || 'Agent approval failed';
+        console.error('[HL Trading] Agent approval failed:', errorMsg);
+        return {
+          success: false,
+          error: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)
+        };
+      }
+    } catch (error) {
+      console.error('[HL Trading] Error approving agent:', error);
+      
+      const errorMessage = error.message || '';
+      const needsDeposit = errorMessage.includes('Must deposit') || 
+                          errorMessage.includes('must deposit') ||
+                          errorMessage.includes('deposit before');
+      
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred',
+        needsDeposit: needsDeposit
+      };
+    }
+  }
+
   disconnect() {
     this.provider = null;
     this.signer = null;

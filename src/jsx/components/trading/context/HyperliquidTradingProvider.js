@@ -233,42 +233,43 @@ export const HyperliquidTradingProvider = ({ children }) => {
     }));
   }, [openOrders, isConnected]);
   
-  // place order function - using real Hyperliquid trading service
   const placeOrder = useCallback(async (orderData) => {
     if (!tradingInitialized) {
       throw new Error('Trading service not initialized. Please connect your wallet.');
     }
     
-    const symbol = selectedSymbol.split('/')[0]; // Get coin (e.g., 'BTC' from 'BTC/USDC')
+    const symbol = selectedSymbol.split('/')[0];
     const isBuy = orderData.side === 'buy';
     const size = orderData.size || orderData.amount;
     const price = orderData.price;
+    const nftId = orderData.nftId;
     
     console.log('[HL Provider] Placing order:', {
       coin: symbol,
       isBuy,
       size,
       price,
-      type: orderData.type
+      type: orderData.type,
+      nftId: nftId || 'No NFT selected'
     });
     
     let result;
     
     if (orderData.type === 'market') {
-      // Place market order
       result = await hyperliquidTrading.placeMarketOrder({
         coin: symbol,
         isBuy: isBuy,
-        size: size
+        size: size,
+        nftId: nftId
       });
     } else {
-      // Place limit order
       result = await hyperliquidTrading.placeOrder({
         coin: symbol,
         isBuy: isBuy,
         price: price,
         size: size,
-        orderType: 'limit'
+        orderType: 'limit',
+        nftId: nftId
       });
     }
     
@@ -279,7 +280,6 @@ export const HyperliquidTradingProvider = ({ children }) => {
     return result;
   }, [tradingInitialized, selectedSymbol]);
   
-  // cancel order function
   const cancelOrder = useCallback(async (orderId) => {
     if (!tradingInitialized) {
       throw new Error('Trading service not initialized');

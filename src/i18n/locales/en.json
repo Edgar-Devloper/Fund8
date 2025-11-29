@@ -211,7 +211,51 @@
     "push_notifications": "Push Notifications"
   },
   "header": {
-    "search_placeholder": "Find something here..."
+    "search_placeholder": "Find something here...",
+    "select_nft": "Select NFT",
+    "profile": "Profile",
+    "profile_name": "Admin",
+    "profile_role": "Administrator",
+    "inbox": "Inbox",
+    "logout": "Logout"
+  },
+  "nft": {
+    "select_nft": "Select an NFT",
+    "select_nft_description": "Select the NFT you want to use for your trading operations. You can change this selection at any time.",
+    "selected": "Selected",
+    "deselect": "Deselect",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "select_nft_to_continue": "Select an NFT to continue with your trading operations",
+    "nft_selected": "Selected NFT",
+    "name": "Name",
+    "nft_id": "NFT ID",
+    "token_id": "NFT ID",
+    "type": "Type",
+    "wallet": "Wallet",
+    "owner_id": "OWNER ID",
+    "left": "Left",
+    "right": "Right",
+    "referrals": "Referrals",
+    "all": "All",
+    "defily": "Defily",
+    "fund8": "Fund8",
+    "loading_nfts": "Loading NFTs...",
+    "no_nfts_found": "No NFTs found in your wallet.",
+    "no_nfts_found_description": "Make sure you have Defily or Fund8 NFTs in the wallet connected to BSC.",
+    "no_nfts_type": "No NFTs found of the selected type.",
+    "show_all": "Show all",
+    "error_loading": "Error loading NFTs",
+    "error_loading_description": "Verify that you are connected to the correct network (BSC Testnet or Mainnet) and that the contract address is correct.",
+    "retry": "Retry",
+    "no_nft_selected": "NFT not selected",
+    "select_nft_to_trade": "Please select an NFT before performing trading operations.",
+    "click_to_change": "Click to change",
+    "referral_links": "Referral Links",
+    "copy_left_referral_link": "Copy left referral link",
+    "copy_right_referral_link": "Copy right referral link",
+    "copied": "Copied",
+    "error_copying_link": "Error copying link"
   }
 }
 

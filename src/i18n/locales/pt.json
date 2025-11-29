@@ -211,7 +211,51 @@
     "push_notifications": "Notificações Push"
   },
   "header": {
-    "search_placeholder": "Procure algo aqui..."
+    "search_placeholder": "Procure algo aqui...",
+    "select_nft": "Selecionar NFT",
+    "profile": "Perfil",
+    "profile_name": "Admin",
+    "profile_role": "Administrador",
+    "inbox": "Caixa de Entrada",
+    "logout": "Sair"
+  },
+  "nft": {
+    "select_nft": "Selecione um NFT",
+    "select_nft_description": "Selecione o NFT que deseja usar para suas operações de trading. Você pode alterar esta seleção a qualquer momento.",
+    "selected": "Selecionado",
+    "deselect": "Desselecionar",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "select_nft_to_continue": "Selecione um NFT para continuar com suas operações de trading",
+    "nft_selected": "NFT Selecionado",
+    "name": "Nome",
+    "nft_id": "NFT ID",
+    "token_id": "NFT ID",
+    "type": "Tipo",
+    "wallet": "Carteira",
+    "owner_id": "ID DO PROPRIETÁRIO",
+    "left": "Esquerda",
+    "right": "Direita",
+    "referrals": "Indicações",
+    "all": "Todos",
+    "defily": "Defily",
+    "fund8": "Fund8",
+    "loading_nfts": "Carregando NFTs...",
+    "no_nfts_found": "Nenhum NFT encontrado em sua carteira.",
+    "no_nfts_found_description": "Certifique-se de ter NFTs Defily ou Fund8 na carteira conectada à BSC.",
+    "no_nfts_type": "Nenhum NFT encontrado do tipo selecionado.",
+    "show_all": "Mostrar todos",
+    "error_loading": "Erro ao carregar NFTs",
+    "error_loading_description": "Verifique se você está conectado à rede correta (BSC Testnet ou Mainnet) e se o endereço do contrato está correto.",
+    "retry": "Tentar novamente",
+    "no_nft_selected": "NFT não selecionado",
+    "select_nft_to_trade": "Por favor, selecione um NFT antes de realizar operações de trading.",
+    "click_to_change": "Clique para alterar",
+    "referral_links": "Links de Indicação",
+    "copy_left_referral_link": "Copiar link de indicação esquerdo",
+    "copy_right_referral_link": "Copiar link de indicação direito",
+    "copied": "Copiado",
+    "error_copying_link": "Erro ao copiar o link"
   }
 }
 

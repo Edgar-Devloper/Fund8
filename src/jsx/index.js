@@ -13,6 +13,7 @@ import "./step.css";
 import Nav from "./layouts/nav";
 import Footer from "./layouts/Footer";
 import ScrollToTop from './pages/ScrollToTop';
+import NFTSelectionModal from "./components/NFTSelectionModal";
 /// Dashboard
 import Home from "./components/Dashboard/Home";
 import CoinDetails from "./components/Dashboard/CoinDetails";
@@ -271,6 +272,7 @@ const Markup = () => {
       </Routes>
       <Setting />
 	  <ScrollToTop />
+      <NFTSelectionModal />
     </>
   );
 };

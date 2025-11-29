@@ -346,6 +346,85 @@
   font-family: 'Courier New', monospace;
 }
 
+/* Footer with Deposit/Withdraw buttons */
+.orderbook-hl-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--hl-dark-border, #1e2541);
+  background: var(--hl-dark-card, #151a2e);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deposit-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(16, 185, 129, 0.15); /* Teal oscuro similar a la imagen */
+  color: var(--hl-text-secondary, #a0aec0);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.deposit-btn:hover {
+  background: rgba(16, 185, 129, 0.25);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+.deposit-btn:active {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.perps-spot-btn,
+.withdraw-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--hl-text-secondary, #a0aec0);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.perps-spot-btn:hover,
+.withdraw-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--hl-text-primary, #ffffff);
+  border-color: var(--hl-dark-border, #2a3147);
+}
+
+.perps-spot-btn:active,
+.withdraw-btn:active {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Arrow icon for Perps <-> Spot */
+.perps-spot-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.perps-spot-btn .arrow-icon {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .orderbook-hl-header {

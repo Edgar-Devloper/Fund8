@@ -1,0 +1,511 @@
+/* Deposit Modal Overlay */
+.deposit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 15, 25, 0.85);
+  backdrop-filter: blur(7px) saturate(160%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* New Deposit Modal Content - Hyperliquid Style */
+.deposit-modal-content-new {
+  background: var(--hl-dark-card, #151a2e);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 12px;
+  width: min(420px, 95%);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0.14, 0.3, 1) forwards;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes modalSlideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* New Header */
+.deposit-modal-header-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+  position: relative;
+}
+
+.asset-icon-container {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.asset-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: var(--hl-dark-bg, #0a0e27);
+  padding: 8px;
+}
+
+.deposit-modal-header-new h5 {
+  margin: 0;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--hl-hover, #1f2640);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+/* New Body */
+.deposit-modal-body-new {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.deposit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.chain-select-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.chain-name-in-select {
+  color: var(--hl-accent-green, #00c087);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.chain-note-in-select {
+  color: var(--hl-text-muted, #718096);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.deposit-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--hl-dark-card, #151a2e);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: dropdownFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deposit-dropdown-item {
+  padding: 12px 16px;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+}
+
+.deposit-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.deposit-dropdown-item:hover {
+  background: var(--hl-hover, #1f2640);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+.deposit-dropdown-item.active {
+  background: rgba(0, 192, 135, 0.1);
+  color: var(--hl-accent-green, #00c087);
+  font-weight: 500;
+}
+
+.chain-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chain-option .chain-name {
+  color: inherit;
+  font-size: 14px;
+}
+
+.chain-option .chain-note-small {
+  color: var(--hl-text-muted, #718096);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.deposit-dropdown-item.active .chain-option .chain-note-small {
+  color: var(--hl-text-muted, #718096);
+}
+
+.deposit-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hl-text-secondary, #a0aec0);
+  text-align: left;
+}
+
+.deposit-input-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--hl-dark-bg, #0a0e27);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.deposit-input-select:hover {
+  border-color: var(--hl-hover, #1f2640);
+  background: var(--hl-hover, #1f2640);
+}
+
+.deposit-input-select span {
+  font-weight: 500;
+}
+
+.deposit-input-select svg {
+  color: var(--hl-text-muted, #718096);
+  flex-shrink: 0;
+}
+
+.deposit-amount-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.deposit-amount-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--hl-dark-bg, #0a0e27);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+}
+
+.deposit-amount-input:focus {
+  outline: none;
+  border-color: var(--hl-accent-blue, #007bff);
+}
+
+.deposit-amount-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deposit-amount-input::placeholder {
+  color: var(--hl-text-muted, #718096);
+}
+
+.max-button {
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.max-button:hover:not(:disabled) {
+  background: var(--hl-hover, #1f2640);
+  border-color: var(--hl-dark-border, #1e2541);
+  color: var(--hl-text-primary, #ffffff);
+}
+
+.max-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* New Footer */
+.deposit-modal-footer-new {
+  padding: 20px 24px 24px 24px;
+  border-top: 1px solid var(--hl-dark-border, #1e2541);
+}
+
+.btn-switch-arbitrum,
+.btn-deposit {
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-switch-arbitrum {
+  background: var(--hl-accent-green, #00c087);
+  color: #ffffff;
+}
+
+.btn-switch-arbitrum:hover {
+  background: #00a875;
+  transform: translateY(-1px);
+}
+
+.btn-switch-arbitrum:active {
+  transform: translateY(0);
+}
+
+.btn-deposit {
+  background: var(--hl-accent-blue, #007bff);
+  color: #ffffff;
+}
+
+.btn-deposit:hover:not(:disabled) {
+  background: #0069d9;
+  transform: translateY(-1px);
+}
+
+.btn-deposit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-deposit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Old Deposit Modal Styles (kept for backward compatibility) */
+.deposit-modal-content {
+  background: var(--hl-dark-card, #151a2e);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 12px;
+  width: min(500px, 95%);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0.14, 0.3, 1) forwards;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.deposit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+  flex-shrink: 0;
+}
+
+.deposit-modal-header h5 {
+  margin: 0;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.deposit-modal-body {
+  padding: 20px;
+  flex-grow: 1;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.security-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(0, 192, 135, 0.1);
+  border: 1px solid rgba(0, 192, 135, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.security-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--hl-accent-green, #00c087);
+  font-size: 15px;
+}
+
+.deposit-instructions {
+  margin-top: 5px;
+  margin-bottom: 0;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 13px;
+}
+
+.address-container {
+  background: var(--hl-dark-bg, #0a0e27);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.address-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.address-input {
+  flex-grow: 1;
+  background: var(--hl-dark-card, #151a2e);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  color: var(--hl-text-primary, #ffffff);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+}
+
+.copy-btn {
+  background: var(--hl-accent-blue, #007bff);
+  color: #ffffff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-btn.copied {
+  background: var(--hl-accent-green, #00c087);
+}
+
+.verification-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.verification-badge.verified {
+  background: rgba(0, 192, 135, 0.15);
+  color: var(--hl-accent-green, #00c087);
+}
+
+.verification-badge.warning {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.verify-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--hl-accent-blue, #007bff);
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.deposit-warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  color: var(--hl-text-primary, #ffffff);
+  font-size: 13px;
+}
+
+.deposit-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--hl-dark-border, #1e2541);
+  text-align: right;
+}
+
+.btn-close-modal {
+  background: var(--hl-dark-bg, #0a0e27);
+  color: var(--hl-text-secondary, #a0aec0);
+  border: 1px solid var(--hl-dark-border, #1e2541);
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+  background: var(--hl-hover, #1f2640);
+  color: var(--hl-text-primary, #ffffff);
+}

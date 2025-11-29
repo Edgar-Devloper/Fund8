@@ -1,12 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { useWallet } from '../../../../context/WalletContext.js';
+import { useNFT } from '../../../../context/NFTContext.js';
 import { useNotifications } from '../../../../context/NotificationContext.js';
 import { useTranslation } from 'react-i18next';
+import NFTSelectionModal from '../../../components/NFTSelectionModal';
+
+const getNftMetadata = async (ipfsLink) => {
+  if (!ipfsLink || !ipfsLink.includes('.json')) {
+    return null;
+  }
+
+  try {
+    const ipfsCid = ipfsLink.split('//')[1];
+    const metadataUrl = `https://ipfs.io/ipfs/${ipfsCid}`;
+    
+    const response = await fetch(metadataUrl);
+    if (!response.ok) {
+      throw new Error('Failed to fetch NFT metadata');
+    }
+    
+    const metadata = await response.json();
+    
+    if (metadata.image) {
+      metadata.image = metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/');
+    }
+    
+    return metadata;
+  } catch (error) {
+    console.error('[NFT Metadata] Error fetching metadata:', error);
+    return null;
+  }
+};
+
+const getImageUrl = (ipfsLink, tokenId = null, metadata = null) => {
+  if (!ipfsLink || ipfsLink.trim() === '') {
+    return null;
+  }
+  
+  if (metadata && metadata.image) {
+    return metadata.image;
+  }
+  
+  let cleanLink = ipfsLink.trim();
+  
+  if (cleanLink.startsWith('http://') || cleanLink.startsWith('https://')) {
+    return cleanLink;
+  }
+  
+  if (cleanLink.startsWith('ipfs://')) {
+    let cid = cleanLink.replace('ipfs://', '').trim();
+    
+    if (cleanLink.includes('.json')) {
+      const parts = cid.split('/');
+      cid = parts[0];
+      if (tokenId) {
+        return `https://ipfs.io/ipfs/${cid}/${tokenId}.png`;
+      }
+      return `https://ipfs.io/ipfs/${cid}`;
+    }
+    
+    return `https://ipfs.io/ipfs/${cid}`;
+  }
+  
+  if (cleanLink.match(/^[a-zA-Z0-9]{46,59}$/) || cleanLink.startsWith('Qm') || cleanLink.startsWith('bafy')) {
+    return `https://ipfs.io/ipfs/${cleanLink}${tokenId ? `/${tokenId}.png` : ''}`;
+  }
+  
+  return `https://ipfs.io/ipfs/${cleanLink}`;
+};
 
 const OrderForm = () => {
   const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized, selectedPrice, setSelectedPrice } = useTradingData();
   const { isConnected, connectWallet, isConnecting } = useWallet();
+  const { selectedNFT } = useNFT();
   const { addNotification } = useNotifications();
   const { t } = useTranslation();
   
@@ -16,13 +83,15 @@ const OrderForm = () => {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(null);
+  const [showNFTModal, setShowNFTModal] = useState(false);
+  const [nftImageUrl, setNftImageUrl] = useState(null);
+  const [nftMetadata, setNftMetadata] = useState(null);
   
   const currentTicker = tickers.find(t => t.symbol === selectedSymbol) || { last: 0 };
   const bestBid = orderBook?.bids?.[0]?.price || 0;
   const bestAsk = orderBook?.asks?.[0]?.price || 0;
   const midPrice = bestBid && bestAsk ? ((bestBid + bestAsk) / 2) : currentTicker.last;
   
-  // Update price when selectedPrice changes from OrderBook
   useEffect(() => {
     if (selectedPrice && orderType === 'limit') {
       setPrice(selectedPrice.toFixed(2));
@@ -37,6 +106,28 @@ const OrderForm = () => {
       setPrice(midPrice.toFixed(2));
     }
   }, [orderType, midPrice, price]);
+
+  useEffect(() => {
+    if (selectedNFT && selectedNFT.ipfsLink) {
+      if (selectedNFT.ipfsLink.includes('.json') && !nftMetadata) {
+        getNftMetadata(selectedNFT.ipfsLink).then(meta => {
+          if (meta && meta.image) {
+            setNftMetadata(meta);
+            setNftImageUrl(meta.image);
+          } else {
+            setNftImageUrl(getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId));
+          }
+        }).catch(() => {
+          setNftImageUrl(getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId));
+        });
+      } else {
+        setNftImageUrl(getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId, nftMetadata));
+      }
+    } else {
+      setNftImageUrl(null);
+      setNftMetadata(null);
+    }
+  }, [selectedNFT, nftMetadata]);
   
   const handlePriceClick = (priceValue) => {
     if (orderType === 'limit') {
@@ -52,6 +143,15 @@ const OrderForm = () => {
         type: 'warning',
         title: t('trading.wallet_not_connected'),
         message: t('trading.connect_wallet_to_place_orders')
+      });
+      return;
+    }
+    
+    if (!selectedNFT) {
+      addNotification({
+        type: 'warning',
+        title: t('nft.no_nft_selected'),
+        message: t('nft.select_nft_to_trade')
       });
       return;
     }
@@ -88,7 +188,6 @@ const OrderForm = () => {
       const orderPrice = orderType === 'market' ? midPrice : parseFloat(price);
       const total = (orderPrice * parseFloat(amount)).toFixed(2);
       
-      // Show pending notification
       addNotification({
         type: 'info',
         title: '⏳ Placing Order...',
@@ -99,7 +198,8 @@ const OrderForm = () => {
         side,
         type: orderType,
         price: orderPrice,
-        size: parseFloat(amount)
+        size: parseFloat(amount),
+        nftId: selectedNFT.tokenId
       });
       
       if (result.success) {
@@ -111,7 +211,6 @@ const OrderForm = () => {
           message: `${side.toUpperCase()} ${amount} ${selectedSymbol.split('/')[0]} ${orderType === 'market' ? 'at market' : `@ $${orderPrice}`}\nTotal: $${total}${result.orderId ? `\nOrder ID: ${result.orderId}` : ''}`
         });
         
-        // Clear form
         setAmount('');
         if (orderType === 'limit') {
           setPrice(midPrice.toFixed(2));
@@ -133,12 +232,71 @@ const OrderForm = () => {
     <div className="card order-form-container">
       <div className="order-form-header">
         <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px'}}>{t('trading.order_form')}</h6>
-        {isConnected && (
-          <span className="wallet-status-badge connected">
-            <span className="status-dot"></span>
-            Connected
-          </span>
-        )}
+        <div className="d-flex align-items-center gap-2">
+          {selectedNFT && isConnected && (
+            <span 
+              className="badge" 
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: '#fff',
+                fontSize: '11px',
+                padding: '4px 8px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setShowNFTModal(true)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              title={`${t('nft.nft_selected')}: ${selectedNFT.name} (ID: ${selectedNFT.tokenId}) - ${t('nft.click_to_change') || 'Click para cambiar'}`}
+            >
+              {nftImageUrl ? (
+                <img
+                  src={nftImageUrl}
+                  alt={selectedNFT.name}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <i className="fa fa-image" style={{ fontSize: '10px' }}></i>
+                </div>
+              )}
+              <span>NFT: {selectedNFT.name} #{selectedNFT.tokenId}</span>
+            </span>
+          )}
+          {isConnected && (
+            <span className="wallet-status-badge connected">
+              <span className="status-dot"></span>
+              {t('trading.connected')}
+            </span>
+          )}
+        </div>
       </div>
       <div className="order-form-body" style={{padding:'14px 16px 18px'}}>
         <form onSubmit={handleSubmit}>
@@ -293,6 +451,12 @@ const OrderForm = () => {
           </button>
         </form>
       </div>
+      {/* Modal de selección de NFT */}
+      <NFTSelectionModal 
+        forceShow={showNFTModal}
+        onClose={() => setShowNFTModal(false)}
+        onSelect={() => setShowNFTModal(false)}
+      />
     </div>
   );
 };

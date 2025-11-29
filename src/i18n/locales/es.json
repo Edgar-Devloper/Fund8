@@ -211,7 +211,51 @@
     "push_notifications": "Notificaciones Push"
   },
   "header": {
-    "search_placeholder": "Buscar algo aquí..."
+    "search_placeholder": "Buscar algo aquí...",
+    "select_nft": "Seleccionar NFT",
+    "profile": "Perfil",
+    "profile_name": "Admin",
+    "profile_role": "Administrador",
+    "inbox": "Bandeja de Entrada",
+    "logout": "Cerrar Sesión"
+  },
+  "nft": {
+    "select_nft": "Selecciona un NFT",
+    "select_nft_description": "Selecciona el NFT que deseas usar para tus operaciones de trading. Puedes cambiar esta selección en cualquier momento.",
+    "selected": "Seleccionado",
+    "deselect": "Deseleccionar",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "select_nft_to_continue": "Selecciona un NFT para continuar con tus operaciones de trading",
+    "nft_selected": "NFT Seleccionado",
+    "name": "Nombre",
+    "nft_id": "NFT ID",
+    "token_id": "NFT ID",
+    "type": "Tipo",
+    "wallet": "Wallet",
+    "owner_id": "OWNER ID",
+    "left": "Left",
+    "right": "Right",
+    "referrals": "Referidos",
+    "all": "Todos",
+    "defily": "Defily",
+    "fund8": "Fund8",
+    "loading_nfts": "Cargando NFTs...",
+    "no_nfts_found": "No se encontraron NFTs en tu wallet.",
+    "no_nfts_found_description": "Asegúrate de tener NFTs de Defily o Fund8 en la wallet conectada a BSC.",
+    "no_nfts_type": "No se encontraron NFTs del tipo seleccionado.",
+    "show_all": "Mostrar todos",
+    "error_loading": "Error al cargar NFTs",
+    "error_loading_description": "Verifica que estés conectado a la red correcta (BSC Testnet o Mainnet) y que la dirección del contrato sea correcta.",
+    "retry": "Reintentar",
+    "no_nft_selected": "NFT no seleccionado",
+    "select_nft_to_trade": "Por favor, selecciona un NFT antes de realizar operaciones de trading.",
+    "click_to_change": "Click para cambiar",
+    "referral_links": "Enlaces de Referido",
+    "copy_left_referral_link": "Copiar enlace de referido izquierdo",
+    "copy_right_referral_link": "Copiar enlace de referido derecho",
+    "copied": "Copiado",
+    "error_copying_link": "Error al copiar el enlace"
   }
 }
 

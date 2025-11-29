@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { WalletProvider } from './context/WalletContext.js';
+import { NFTProvider } from './context/NFTContext.js';
 import { NotificationProvider } from './context/NotificationContext.js';
 import { SettingsProvider } from './context/SettingsContext.js';
 import ThemeContext from './context/ThemeContext';
@@ -28,9 +29,11 @@ root.render(
         <ThemeContext>
           <NotificationProvider>
             <WalletProvider>
-              <SettingsProvider>
-                <Markup />
-              </SettingsProvider>
+              <NFTProvider>
+                <SettingsProvider>
+                  <Markup />
+                </SettingsProvider>
+              </NFTProvider>
             </WalletProvider>
           </NotificationProvider>
         </ThemeContext>

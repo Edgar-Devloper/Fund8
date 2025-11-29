@@ -14,10 +14,15 @@ import NotificationDropdown from "../../components/Notifications/NotificationDro
 import { useWalletNotifications } from "../../../hooks/useWalletNotifications";
 import LanguageSelector from "../../components/LanguageSelector";
 import { useTranslation } from 'react-i18next';
+import { useNFT } from "../../../context/NFTContext";
+import { useState } from "react";
+import NFTSelectionModal from "../../components/NFTSelectionModal";
 
 const Header = ({ onNote }) => {
   const { changeBackground, background } = useContext(ThemeContext);
   const { t } = useTranslation();
+  const { selectedNFT } = useNFT();
+  const [showNFTModal, setShowNFTModal] = useState(false);
   
   // Integrar notificaciones de wallet
   useWalletNotifications();
@@ -219,6 +224,87 @@ const Header = ({ onNote }) => {
 
               <NotificationDropdown />
               
+              {/* NFT Selected Indicator o Botón para abrir modal */}
+              {selectedNFT ? (
+                <li className="nav-item" style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>
+                  <div 
+                    className="badge" 
+                    style={{ 
+                      padding: '6px 12px', 
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)'
+                    }}
+                    onClick={() => setShowNFTModal(true)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.9';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(102, 126, 234, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(102, 126, 234, 0.3)';
+                    }}
+                    title={`${t('nft.nft_selected')}: ${selectedNFT.name} (ID: ${selectedNFT.tokenId}) - ${t('nft.click_to_change') || 'Click para cambiar'}`}
+                  >
+                    {(() => {
+                      const getImageUrl = (ipfsLink, tokenId) => {
+                        if (!ipfsLink) return null;
+                        if (ipfsLink.startsWith('http://') || ipfsLink.startsWith('https://')) return ipfsLink;
+                        if (ipfsLink.startsWith('ipfs://')) {
+                          const cid = ipfsLink.replace('ipfs://', '').replace('.json', '');
+                          return `https://ipfs.io/ipfs/${cid}`;
+                        }
+                        if (ipfsLink.match(/^[a-zA-Z0-9]{46,59}$/)) {
+                          return `https://ipfs.io/ipfs/${ipfsLink}${tokenId ? `/${tokenId}.png` : ''}`;
+                        }
+                        return `https://ipfs.io/ipfs/${ipfsLink}`;
+                      };
+                      const imageUrl = getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId);
+                      return imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={selectedNFT.name}
+                          style={{
+                            width: '20px',
+                            height: '20px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            border: '1px solid rgba(255, 255, 255, 0.3)'
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : null;
+                    })()}
+                    <span style={{ fontWeight: '600' }}>NFT ID:</span>
+                    <span>{selectedNFT.tokenId}</span>
+                    <i className="fa fa-edit" style={{ fontSize: '10px', marginLeft: '4px', opacity: 0.8 }}></i>
+                  </div>
+                </li>
+              ) : (
+                <li className="nav-item" style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>
+                  <button
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => setShowNFTModal(true)}
+                    title={t('header.select_nft')}
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  >
+                    {t('header.select_nft')}
+                  </button>
+                </li>
+              )}
+              
               {/* Language Selector */}
               <li className="nav-item">
                 <LanguageSelector variant="compact" />
@@ -397,6 +483,12 @@ const Header = ({ onNote }) => {
           </div>
         </nav>
       </div>
+      {/* Modal de selección de NFT (se puede abrir manualmente) */}
+      <NFTSelectionModal 
+        forceShow={showNFTModal}
+        onClose={() => setShowNFTModal(false)}
+        onSelect={() => setShowNFTModal(false)}
+      />
     </div>
   );
 };

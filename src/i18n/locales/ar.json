@@ -211,7 +211,51 @@
     "push_notifications": "الإشعارات الفورية"
   },
   "header": {
-    "search_placeholder": "ابحث عن شيء هنا..."
+    "search_placeholder": "ابحث عن شيء هنا...",
+    "select_nft": "اختر NFT",
+    "profile": "الملف الشخصي",
+    "profile_name": "المسؤول",
+    "profile_role": "مدير",
+    "inbox": "صندوق الوارد",
+    "logout": "تسجيل الخروج"
+  },
+  "nft": {
+    "select_nft": "اختر NFT",
+    "select_nft_description": "اختر NFT الذي تريد استخدامه لعمليات التداول الخاصة بك. يمكنك تغيير هذا الاختيار في أي وقت.",
+    "selected": "محدد",
+    "deselect": "إلغاء التحديد",
+    "cancel": "إلغاء",
+    "continue": "متابعة",
+    "select_nft_to_continue": "اختر NFT للمتابعة مع عمليات التداول الخاصة بك",
+    "nft_selected": "NFT المحدد",
+    "name": "الاسم",
+    "nft_id": "معرف NFT",
+    "token_id": "معرف NFT",
+    "type": "النوع",
+    "wallet": "المحفظة",
+    "owner_id": "معرف المالك",
+    "left": "يسار",
+    "right": "يمين",
+    "referrals": "الإحالات",
+    "all": "الكل",
+    "defily": "Defily",
+    "fund8": "Fund8",
+    "loading_nfts": "جاري تحميل NFTs...",
+    "no_nfts_found": "لم يتم العثور على NFTs في محفظتك.",
+    "no_nfts_found_description": "تأكد من أن لديك NFTs من Defily أو Fund8 في المحفظة المتصلة بـ BSC.",
+    "no_nfts_type": "لم يتم العثور على NFTs من النوع المحدد.",
+    "show_all": "عرض الكل",
+    "error_loading": "خطأ في تحميل NFTs",
+    "error_loading_description": "تحقق من أنك متصل بالشبكة الصحيحة (BSC Testnet أو Mainnet) وأن عنوان العقد صحيح.",
+    "retry": "إعادة المحاولة",
+    "no_nft_selected": "لم يتم اختيار NFT",
+    "select_nft_to_trade": "يرجى اختيار NFT قبل إجراء عمليات التداول.",
+    "click_to_change": "انقر للتغيير",
+    "referral_links": "روابط الإحالة",
+    "copy_left_referral_link": "نسخ رابط الإحالة الأيسر",
+    "copy_right_referral_link": "نسخ رابط الإحالة الأيمن",
+    "copied": "تم النسخ",
+    "error_copying_link": "خطأ في نسخ الرابط"
   }
 }
 
