@@ -120,6 +120,20 @@ export const getAllMyNFT = async (provider, walletAddress) => {
 
     const formattedNFTs = nftIdsArray.map((id, index) => {
       const data = nftData[index];
+      const referralsLink = data.referralsLink;
+      let ownerId = null;
+      
+      if (referralsLink) {
+        if (!isNaN(Number(referralsLink)) && referralsLink.trim() !== '') {
+          ownerId = Number(referralsLink);
+        } else {
+          const numericMatch = referralsLink.match(/\d+/);
+          if (numericMatch && numericMatch[0].length >= 2) {
+            ownerId = Number(numericMatch[0]);
+          }
+        }
+      }
+      
       return {
         id: Number(data.tokenId.toString()),
         name: data.name,
@@ -127,7 +141,7 @@ export const getAllMyNFT = async (provider, walletAddress) => {
         NFT_COLLECTION_ID: Number(data.NFT_COLLECTION_ID.toString()),
         tokenId: Number(data.tokenId.toString()),
         ownerAddress: data.ownerAddress,
-        referralsLink: data.referralsLink,
+        referralsLink: referralsLink,
         leftSide: data.leftSide.map(s => Number(s.toString())),
         rightSide: data.rightSide.map(s => Number(s.toString())),
         planId: Number(data.planId.toString()),
@@ -135,7 +149,22 @@ export const getAllMyNFT = async (provider, walletAddress) => {
         membershipPlanBoughtDate: Number(data.membershipPlanBoughtDate.toString()),
         ipfsLink: ipfsLinks[index] || null,
         type: Number(data.NFT_COLLECTION_ID.toString()) === 0 ? 'defily' : 'fund8',
+        ownerId: ownerId,
       };
+    });
+
+    console.log('[Storage Administrator] Datos Recibidos', {
+      contrato: STORAGE_ADMINISTRATOR_ADDRESS,
+      cantidadNFTs: formattedNFTs.length,
+      nfts: formattedNFTs.map(nft => ({
+        ...nft,
+        ownerInfo: {
+          tieneReferralsLink: !!nft.referralsLink,
+          referralsLink: nft.referralsLink || null,
+          tieneOwnerId: !!nft.ownerId,
+          ownerId: nft.ownerId || null
+        }
+      }))
     });
 
     return formattedNFTs;
@@ -173,7 +202,7 @@ export const getNFTById = async (provider, tokenId) => {
     }
 
     const data = nftData[0];
-    return {
+    const nft = {
       id: Number(data.tokenId.toString()),
       name: data.name,
       nftImgId: Number(data.nftImgId.toString()),
@@ -189,6 +218,13 @@ export const getNFTById = async (provider, tokenId) => {
       ipfsLink: ipfsLinks[0] || null,
       type: Number(data.NFT_COLLECTION_ID.toString()) === 0 ? 'defily' : 'fund8',
     };
+
+    console.log('[Storage Administrator] Datos Recibidos', {
+      contrato: STORAGE_ADMINISTRATOR_ADDRESS,
+      nft: nft
+    });
+
+    return nft;
   } catch (error) {
     console.error('[NFT Service] Error al obtener NFT por ID:', error);
     throw new Error(`Error al obtener NFT: ${error.message}`);

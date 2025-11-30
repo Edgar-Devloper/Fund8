@@ -158,27 +158,26 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
         className={`card nft-card ${isSelected ? 'border-success shadow-lg' : 'border-secondary'}`}
         style={{ 
           cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-          borderRadius: '12px',
+          transition: 'all 0.2s ease',
+          borderRadius: '8px',
           overflow: 'hidden',
-          borderWidth: isSelected ? '2px' : '1px',
-          background: isSelected ? 'linear-gradient(135deg, #1e3a5f 0%, #16213e 100%)' : '#16213e',
-          borderColor: isSelected ? '#48bb78' : '#2d3748',
-          color: '#e2e8f0',
+          borderWidth: isSelected ? '1px' : '1px',
+          background: isSelected ? '#1f2640' : '#151a2e',
+          borderColor: isSelected ? '#00c087' : '#1e2541',
+          color: '#ffffff',
           position: 'relative'
         }}
         onClick={onSelect}
         onMouseEnter={(e) => {
           if (!isSelected) {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+            e.currentTarget.style.background = '#1f2640';
+            e.currentTarget.style.borderColor = '#1e2541';
           }
         }}
         onMouseLeave={(e) => {
           if (!isSelected) {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.background = '#151a2e';
+            e.currentTarget.style.borderColor = '#1e2541';
           }
         }}
       >
@@ -192,9 +191,9 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                   width: '120px',
                   height: '120px',
                   objectFit: 'cover',
-                  borderRadius: '12px',
-                  border: isSelected ? '3px solid #48bb78' : '2px solid #2d3748',
-                  boxShadow: isSelected ? '0 4px 12px rgba(72, 187, 120, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  borderRadius: '8px',
+                  border: isSelected ? '1px solid #00c087' : '1px solid #1e2541',
+                  boxShadow: isSelected ? '0 0 0 2px rgba(0, 192, 135, 0.2)' : 'none',
                   transition: 'all 0.3s ease',
                   backgroundColor: '#1a1a2e'
                 }}
@@ -209,13 +208,13 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
               <div style={{
                 width: '120px',
                 height: '120px',
-                background: '#1a1a2e',
-                borderRadius: '12px',
+                background: '#0a0e27',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto',
-                border: '2px solid #2d3748'
+                border: '1px solid #1e2541'
               }}>
                 <div className="spinner-border spinner-border-sm text-primary" role="status">
                   <span className="sr-only">Loading...</span>
@@ -227,16 +226,16 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
               <div style={{
                 width: '120px',
                 height: '120px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '12px',
+                background: '#0a0e27',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'white',
+                color: '#718096',
                 fontSize: '32px',
                 margin: '0 auto',
-                border: isSelected ? '3px solid #48bb78' : '2px solid #2d3748',
-                boxShadow: isSelected ? '0 4px 12px rgba(72, 187, 120, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.2)'
+                border: isSelected ? '1px solid #00c087' : '1px solid #1e2541',
+                boxShadow: isSelected ? '0 0 0 2px rgba(0, 192, 135, 0.2)' : 'none'
               }}>
                 <i className="fa fa-image"></i>
               </div>
@@ -246,17 +245,21 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
           <div className="d-flex justify-content-between align-items-start mb-3">
             <div className="flex-grow-1">
               <h6 className="card-title mb-2" style={{ 
-                fontSize: '16px', 
+                fontSize: '14px', 
                 fontWeight: '600',
-                color: '#e2e8f0',
+                color: '#ffffff',
                 textAlign: 'center'
               }}>
                 {nft.name || `NFT #${nft.id}`}
               </h6>
               <div className="text-center">
-                <span className={`badge ${nft.type === 'defily' ? 'bg-info' : 'bg-success'}`} style={{
+                <span className="badge" style={{
                   fontSize: '11px',
-                  padding: '4px 10px'
+                  padding: '4px 10px',
+                  background: nft.type === 'defily' ? 'rgba(0, 229, 204, 0.1)' : 'rgba(0, 192, 135, 0.1)',
+                  color: nft.type === 'defily' ? '#00e5cc' : '#00c087',
+                  border: `1px solid ${nft.type === 'defily' ? 'rgba(0, 229, 204, 0.2)' : 'rgba(0, 192, 135, 0.2)'}`,
+                  borderRadius: '6px'
                 }}>
                   {nft.type === 'defily' ? 'Defily' : 'Fund8'}
                 </span>
@@ -269,28 +272,25 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                   onDeselect();
                 }}
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   borderRadius: '50%',
-                  background: '#48bb78',
+                  background: '#00c087',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(72, 187, 120, 0.3)',
                   position: 'absolute',
                   top: '12px',
                   right: '12px'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#38a169';
-                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.background = '#00b079';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#48bb78';
-                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.background = '#00c087';
                 }}
                 title={t('nft.deselect')}
               >
@@ -300,56 +300,66 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
           </div>
           
           <div className="nft-details small" style={{ 
-            color: '#cbd5e0',
+            color: '#a0aec0',
             lineHeight: '1.8',
-            background: '#1a1a2e',
+            background: '#0a0e27',
             padding: '12px',
             borderRadius: '8px',
             marginBottom: '12px',
-            border: '1px solid #2d3748'
+            border: '1px solid #1e2541',
+            minHeight: '120px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }}>
-            <div className="d-flex justify-content-between mb-1">
-              <span style={{ color: '#a0aec0' }}><strong>{t('nft.nft_id')}:</strong></span>
-              <span style={{ color: '#e2e8f0', fontWeight: '600' }}>#{nft.tokenId}</span>
-            </div>
-            <div className="d-flex flex-column gap-1">
-              <div className="d-flex justify-content-between">
-                <span style={{ color: '#a0aec0' }}><strong>{t('nft.left')}:</strong></span>
-                <span style={{ color: '#4299e1', fontWeight: '600' }}>{nft.leftSide.length}</span>
+            <div>
+              <div className="d-flex justify-content-between mb-1">
+                <span style={{ color: '#718096', fontSize: '11px' }}><strong>{t('nft.nft_id')}:</strong></span>
+                <span style={{ color: '#ffffff', fontWeight: '600', fontSize: '11px', fontFamily: 'monospace' }}>#{nft.tokenId}</span>
               </div>
-              <div className="d-flex justify-content-between">
-                <span style={{ color: '#a0aec0' }}><strong>{t('nft.right')}:</strong></span>
-                <span style={{ color: '#48bb78', fontWeight: '600' }}>{nft.rightSide.length}</span>
-              </div>
-            </div>
-            {nft.referralsLink && (() => {
-              let ownerId = null;
-              if (!isNaN(Number(nft.referralsLink)) && nft.referralsLink.trim() !== '') {
-                ownerId = Number(nft.referralsLink);
-              } else {
-                const numericMatch = nft.referralsLink.match(/\d+/);
-                if (numericMatch && numericMatch[0].length >= 2) {
-                  ownerId = Number(numericMatch[0]);
-                }
-              }
-              
-              return ownerId ? (
-                <div className="mt-2 pt-2" style={{ borderTop: '1px solid #2d3748' }}>
-                  <div className="d-flex justify-content-between">
-                    <span style={{ color: '#a0aec0' }}><strong>{t('nft.owner_id')}:</strong></span>
-                    <span style={{ color: '#667eea', fontWeight: '600', fontSize: '12px' }}>{ownerId}</span>
-                  </div>
+              <div className="d-flex flex-column gap-1">
+                <div className="d-flex justify-content-between">
+                  <span style={{ color: '#718096', fontSize: '11px' }}><strong>{t('nft.left')}:</strong></span>
+                  <span style={{ color: '#00e5cc', fontWeight: '600', fontSize: '11px' }}>{nft.leftSide.length}</span>
                 </div>
-              ) : null;
-            })()}
+                <div className="d-flex justify-content-between">
+                  <span style={{ color: '#718096', fontSize: '11px' }}><strong>{t('nft.right')}:</strong></span>
+                  <span style={{ color: '#00c087', fontWeight: '600', fontSize: '11px' }}>{nft.rightSide.length}</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ borderTop: '1px solid #1e2541', paddingTop: '8px', marginTop: '8px' }}>
+              {(() => {
+                let ownerId = null;
+                if (nft.referralsLink) {
+                  if (!isNaN(Number(nft.referralsLink)) && nft.referralsLink.trim() !== '') {
+                    ownerId = Number(nft.referralsLink);
+                  } else {
+                    const numericMatch = nft.referralsLink.match(/\d+/);
+                    if (numericMatch && numericMatch[0].length >= 2) {
+                      ownerId = Number(numericMatch[0]);
+                    }
+                  }
+                }
+                
+                return (
+                  <div className="d-flex justify-content-between">
+                    <span style={{ color: '#718096', fontSize: '11px' }}><strong>{t('nft.owner_id')}:</strong></span>
+                    <span style={{ color: ownerId ? '#00e5cc' : '#718096', fontWeight: '600', fontSize: '11px' }}>
+                      {ownerId || '-'}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
           
           {nft.referralsLink && (
             <div className="referral-links-section mt-3" style={{
-              background: '#16213e',
+              background: '#0a0e27',
               padding: '12px',
               borderRadius: '8px',
-              border: '1px solid #2d3748'
+              border: '1px solid #1e2541'
             }}>
               <div className="mb-2" style={{ 
                 fontSize: '11px', 
@@ -361,131 +371,129 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                 {t('nft.referral_links')}
               </div>
               <div className="d-flex flex-column gap-2">
-                <div className="d-flex align-items-center gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const leftLink = generateReferralLink(nft.referralsLink, 'left');
-                      if (leftLink) {
-                        copyToClipboard(
-                          leftLink,
-                          () => {
-                            setCopiedLink('left');
-                            setTimeout(() => setCopiedLink(null), 2000);
-                          },
-                          () => {
-                            alert(t('nft.error_copying_link'));
-                          }
-                        );
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      background: copiedLink === 'left' ? '#48bb78' : 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      padding: '6px 12px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (copiedLink !== 'left') {
-                        e.currentTarget.style.opacity = '0.9';
-                        e.currentTarget.style.transform = 'scale(1.02)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (copiedLink !== 'left') {
-                        e.currentTarget.style.opacity = '1';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }
-                    }}
-                    title={t('nft.copy_left_referral_link')}
-                  >
-                    {copiedLink === 'left' ? (
-                      <>
-                        <i className="fa fa-check"></i>
-                        <span>{t('nft.copied')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa fa-link"></i>
-                        <span>{t('nft.left')}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const leftLink = generateReferralLink(nft.referralsLink, 'left');
+                    if (leftLink) {
+                      copyToClipboard(
+                        leftLink,
+                        () => {
+                          setCopiedLink('left');
+                          setTimeout(() => setCopiedLink(null), 2000);
+                        },
+                        () => {
+                          alert(t('nft.error_copying_link'));
+                        }
+                      );
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    minHeight: '32px',
+                    background: copiedLink === 'left' ? '#00c087' : 'transparent',
+                    color: copiedLink === 'left' ? '#fff' : '#00e5cc',
+                    border: `1px solid ${copiedLink === 'left' ? '#00c087' : 'rgba(0, 229, 204, 0.3)'}`,
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (copiedLink !== 'left') {
+                      e.currentTarget.style.background = 'rgba(0, 229, 204, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(0, 229, 204, 0.5)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (copiedLink !== 'left') {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(0, 229, 204, 0.3)';
+                    }
+                  }}
+                  title={t('nft.copy_left_referral_link')}
+                >
+                  {copiedLink === 'left' ? (
+                    <>
+                      <i className="fa fa-check"></i>
+                      <span>{t('nft.copied')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa fa-link"></i>
+                      <span>{t('nft.left')}</span>
+                    </>
+                  )}
+                </button>
                 
-                <div className="d-flex align-items-center gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const rightLink = generateReferralLink(nft.referralsLink, 'right');
-                      if (rightLink) {
-                        copyToClipboard(
-                          rightLink,
-                          () => {
-                            setCopiedLink('right');
-                            setTimeout(() => setCopiedLink(null), 2000);
-                          },
-                          () => {
-                            alert(t('nft.error_copying_link'));
-                          }
-                        );
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      background: copiedLink === 'right' ? '#48bb78' : 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      padding: '6px 12px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (copiedLink !== 'right') {
-                        e.currentTarget.style.opacity = '0.9';
-                        e.currentTarget.style.transform = 'scale(1.02)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (copiedLink !== 'right') {
-                        e.currentTarget.style.opacity = '1';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }
-                    }}
-                    title={t('nft.copy_right_referral_link')}
-                  >
-                    {copiedLink === 'right' ? (
-                      <>
-                        <i className="fa fa-check"></i>
-                        <span>{t('nft.copied')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa fa-link"></i>
-                        <span>{t('nft.right')}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const rightLink = generateReferralLink(nft.referralsLink, 'right');
+                    if (rightLink) {
+                      copyToClipboard(
+                        rightLink,
+                        () => {
+                          setCopiedLink('right');
+                          setTimeout(() => setCopiedLink(null), 2000);
+                        },
+                        () => {
+                          alert(t('nft.error_copying_link'));
+                        }
+                      );
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    minHeight: '32px',
+                    background: copiedLink === 'right' ? '#00c087' : 'transparent',
+                    color: copiedLink === 'right' ? '#fff' : '#00c087',
+                    border: `1px solid ${copiedLink === 'right' ? '#00c087' : 'rgba(0, 192, 135, 0.3)'}`,
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (copiedLink !== 'right') {
+                      e.currentTarget.style.background = 'rgba(0, 192, 135, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(0, 192, 135, 0.5)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (copiedLink !== 'right') {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(0, 192, 135, 0.3)';
+                    }
+                  }}
+                  title={t('nft.copy_right_referral_link')}
+                >
+                  {copiedLink === 'right' ? (
+                    <>
+                      <i className="fa fa-check"></i>
+                      <span>{t('nft.copied')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa fa-link"></i>
+                      <span>{t('nft.right')}</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}
@@ -509,22 +517,68 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
     hasNFTs
   } = useNFT();
 
-  const [filter, setFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // 2 columnas x 3 filas
 
   const filteredNFTs = useMemo(() => {
     if (showOnlyFund8) {
       return fund8NFTs;
     } else if (showOnlyDefily) {
       return defilyNFTs;
-    } else {
-      if (filter === 'defily') {
-        return defilyNFTs;
-      } else if (filter === 'fund8') {
-        return fund8NFTs;
-      }
-      return nfts;
     }
-  }, [showOnlyFund8, showOnlyDefily, filter, nfts, defilyNFTs, fund8NFTs]);
+    return nfts;
+  }, [showOnlyFund8, showOnlyDefily, nfts, defilyNFTs, fund8NFTs]);
+
+  const totalPages = Math.ceil(filteredNFTs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentNFTs = filteredNFTs.slice(startIndex, endIndex);
+
+  // Resetear a la primera página cuando cambien los NFTs filtrados
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredNFTs.length]);
+
+  // Generar números de página con puntos
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5; // Máximo de números visibles
+    
+    if (totalPages <= maxVisible) {
+      // Si hay pocas páginas, mostrar todas
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Siempre mostrar primera página
+      pages.push(1);
+      
+      if (currentPage <= 3) {
+        // Cerca del inicio
+        for (let i = 2; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        // Cerca del final
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        // En el medio
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   const handleSelectNFT = useCallback((nft) => {
     if (selectedNFT && selectedNFT.id === nft.id) {
@@ -582,79 +636,17 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
         <p className="text-muted">
           {t('nft.no_nfts_type')}
         </p>
-        {!showOnlyFund8 && !showOnlyDefily && (
-          <button 
-            className="btn btn-sm btn-outline-primary mt-2"
-            onClick={() => setFilter('all')}
-          >
-            {t('nft.show_all')}
-          </button>
-        )}
       </div>
     );
   }
 
+  const pageNumbers = getPageNumbers();
+
   return (
     <div className="nft-selector">
-      {!showOnlyFund8 && !showOnlyDefily && nfts.length > 0 && (
-        <div className="nft-selector-filters mb-4">
-          <div className="btn-group w-100" role="group" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '8px'
-          }}>
-            <button
-              type="button"
-              className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
-              onClick={() => setFilter('all')}
-              style={{
-                borderRadius: '8px',
-                fontWeight: filter === 'all' ? '600' : '400',
-                transition: 'all 0.2s ease',
-                background: filter === 'all' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
-                borderColor: filter === 'all' ? '#667eea' : '#4299e1',
-                color: filter === 'all' ? '#fff' : '#4299e1'
-              }}
-            >
-              {t('nft.all')} ({nfts.length})
-            </button>
-            <button
-              type="button"
-              className={`btn ${filter === 'defily' ? 'btn-primary' : 'btn-outline-primary'}`}
-              onClick={() => setFilter('defily')}
-              style={{
-                borderRadius: '8px',
-                fontWeight: filter === 'defily' ? '600' : '400',
-                transition: 'all 0.2s ease',
-                background: filter === 'defily' ? '#17a2b8' : 'transparent',
-                borderColor: filter === 'defily' ? '#17a2b8' : '#17a2b8',
-                color: filter === 'defily' ? '#fff' : '#17a2b8'
-              }}
-            >
-              {t('nft.defily')} ({defilyNFTs.length})
-            </button>
-            <button
-              type="button"
-              className={`btn ${filter === 'fund8' ? 'btn-primary' : 'btn-outline-primary'}`}
-              onClick={() => setFilter('fund8')}
-              style={{
-                borderRadius: '8px',
-                fontWeight: filter === 'fund8' ? '600' : '400',
-                transition: 'all 0.2s ease',
-                background: filter === 'fund8' ? '#48bb78' : 'transparent',
-                borderColor: filter === 'fund8' ? '#48bb78' : '#48bb78',
-                color: filter === 'fund8' ? '#fff' : '#48bb78'
-              }}
-            >
-              {t('nft.fund8')} ({fund8NFTs.length})
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="nft-list">
         <div className="row">
-          {filteredNFTs.map((nft) => {
+          {currentNFTs.map((nft) => {
             return <NFTCard 
               key={nft.id} 
               nft={nft} 
@@ -667,38 +659,132 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
         </div>
       </div>
 
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-2 mt-4" style={{ flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            style={{
+              borderRadius: '6px',
+              background: currentPage === 1 ? 'transparent' : '#1f2640',
+              border: '1px solid #1e2541',
+              color: currentPage === 1 ? '#718096' : '#ffffff',
+              fontSize: '12px',
+              padding: '6px 12px',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentPage === 1 ? 0.5 : 1
+            }}
+          >
+            ‹
+          </button>
+
+          {pageNumbers.map((page, index) => {
+            if (page === '...') {
+              return (
+                <span
+                  key={`dots-${index}`}
+                  style={{
+                    color: '#718096',
+                    fontSize: '12px',
+                    padding: '0 4px'
+                  }}
+                >
+                  ...
+                </span>
+              );
+            }
+
+            return (
+              <button
+                key={page}
+                type="button"
+                className="btn"
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  borderRadius: '6px',
+                  background: currentPage === page ? '#1f2640' : 'transparent',
+                  border: `1px solid ${currentPage === page ? '#00e5cc' : '#1e2541'}`,
+                  color: currentPage === page ? '#00e5cc' : '#a0aec0',
+                  fontSize: '12px',
+                  padding: '6px 12px',
+                  minWidth: '36px',
+                  fontWeight: currentPage === page ? '600' : '500',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (currentPage !== page) {
+                    e.currentTarget.style.background = '#1f2640';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentPage !== page) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            style={{
+              borderRadius: '6px',
+              background: currentPage === totalPages ? 'transparent' : '#1f2640',
+              border: '1px solid #1e2541',
+              color: currentPage === totalPages ? '#718096' : '#ffffff',
+              fontSize: '12px',
+              padding: '6px 12px',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              opacity: currentPage === totalPages ? 0.5 : 1
+            }}
+          >
+            ›
+          </button>
+        </div>
+      )}
+
       {selectedNFT && (
-        <div className="selected-nft-info mt-4" style={{
-          background: 'linear-gradient(135deg, #1e3a5f 0%, #16213e 100%)',
-          padding: '24px',
-          borderRadius: '16px',
-          border: '2px solid #48bb78',
-          boxShadow: '0 8px 24px rgba(72, 187, 120, 0.25)'
+        <div className="selected-nft-info mt-3" style={{
+          background: '#0a0e27',
+          padding: '16px',
+          borderRadius: '8px',
+          border: '1px solid #1e2541'
         }}>
-          <div className="d-flex align-items-center justify-content-between mb-4">
+          <div className="d-flex align-items-center justify-content-between mb-3">
             <div className="d-flex align-items-center">
               <div style={{
-                width: '32px',
-                height: '32px',
+                width: '20px',
+                height: '20px',
                 borderRadius: '50%',
-                background: '#48bb78',
+                background: '#00c087',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginRight: '12px',
-                boxShadow: '0 4px 12px rgba(72, 187, 120, 0.4)'
+                marginRight: '8px'
               }}>
-                <i className="fa fa-check" style={{ color: '#fff', fontSize: '14px' }}></i>
+                <i className="fa fa-check" style={{ color: '#fff', fontSize: '10px' }}></i>
               </div>
-              <h6 className="mb-0" style={{ color: '#e2e8f0', fontWeight: '600', fontSize: '18px' }}>{t('nft.nft_selected')}</h6>
+              <h6 className="mb-0" style={{ 
+                color: '#ffffff', 
+                fontWeight: '600', 
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>{t('nft.nft_selected')}</h6>
             </div>
           </div>
           <div style={{ 
-            background: '#1a1a2e', 
-            padding: '20px', 
-            borderRadius: '12px',
-            border: '1px solid #2d3748',
-            boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)'
+            background: '#151a2e', 
+            padding: '16px', 
+            borderRadius: '8px',
+            border: '1px solid #1e2541'
           }}>
             <div style={{
               display: 'grid',
@@ -707,8 +793,8 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
               alignItems: 'center'
             }}>
               <div style={{ 
-                color: '#a0aec0', 
-                fontSize: '13px',
+                color: '#718096', 
+                fontSize: '11px',
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
@@ -718,7 +804,7 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px'
+                gap: '10px'
               }}>
                 {(() => {
                   const imageUrl = getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId);
@@ -728,12 +814,12 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
                         src={imageUrl}
                         alt={selectedNFT.name}
                         style={{
-                          width: '40px',
-                          height: '40px',
+                          width: '32px',
+                          height: '32px',
                           objectFit: 'cover',
-                          borderRadius: '8px',
-                          border: '2px solid #2d3748',
-                          backgroundColor: '#1a1a2e'
+                          borderRadius: '6px',
+                          border: '1px solid #1e2541',
+                          backgroundColor: '#0a0e27'
                         }}
                         onError={(e) => {
                           console.error('[NFT Selected] Error cargando imagen:', imageUrl);
@@ -747,24 +833,25 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
                   }
                   return (
                     <div style={{
-                      width: '40px',
-                      height: '40px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: '8px',
+                      width: '32px',
+                      height: '32px',
+                      background: '#0a0e27',
+                      borderRadius: '6px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: 'white',
-                      fontSize: '16px'
+                      color: '#718096',
+                      fontSize: '14px',
+                      border: '1px solid #1e2541'
                     }}>
                       <i className="fa fa-image"></i>
                     </div>
                   );
                 })()}
                 <span style={{ 
-                  color: '#667eea', 
+                  color: '#ffffff', 
                   fontWeight: '600', 
-                  fontSize: '15px',
+                  fontSize: '13px',
                   wordBreak: 'break-word'
                 }}>
                   {selectedNFT.name}
@@ -772,8 +859,8 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
               </div>
 
               <div style={{ 
-                color: '#a0aec0', 
-                fontSize: '13px',
+                color: '#718096', 
+                fontSize: '11px',
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
@@ -781,22 +868,23 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
                 {t('nft.nft_id')}
               </div>
               <div style={{ 
-                color: '#e2e8f0', 
+                color: '#ffffff', 
                 fontWeight: '600', 
-                fontSize: '15px',
+                fontSize: '12px',
                 fontFamily: 'monospace',
-                background: '#0f1419',
-                padding: '6px 12px',
+                background: '#0a0e27',
+                padding: '4px 10px',
                 borderRadius: '6px',
                 display: 'inline-block',
-                width: 'fit-content'
+                width: 'fit-content',
+                border: '1px solid #1e2541'
               }}>
                 #{selectedNFT.tokenId}
               </div>
 
               <div style={{ 
-                color: '#a0aec0', 
-                fontSize: '13px',
+                color: '#718096', 
+                fontSize: '11px',
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
@@ -804,19 +892,22 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
                 {t('nft.type')}
               </div>
               <div>
-                <span className={`badge ${selectedNFT.type === 'defily' ? 'bg-info' : 'bg-success'}`} style={{ 
-                  fontSize: '12px',
-                  padding: '6px 12px',
+                <span className="badge" style={{ 
+                  fontSize: '11px',
+                  padding: '4px 10px',
                   borderRadius: '6px',
-                  fontWeight: '600'
+                  fontWeight: '500',
+                  background: selectedNFT.type === 'defily' ? 'rgba(0, 229, 204, 0.1)' : 'rgba(0, 192, 135, 0.1)',
+                  color: selectedNFT.type === 'defily' ? '#00e5cc' : '#00c087',
+                  border: `1px solid ${selectedNFT.type === 'defily' ? 'rgba(0, 229, 204, 0.2)' : 'rgba(0, 192, 135, 0.2)'}`
                 }}>
                   {selectedNFT.type === 'defily' ? t('nft.defily') : t('nft.fund8')}
                 </span>
               </div>
 
               <div style={{ 
-                color: '#a0aec0', 
-                fontSize: '13px',
+                color: '#718096', 
+                fontSize: '11px',
                 fontWeight: '500',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
@@ -824,17 +915,18 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
                 {t('nft.wallet')}
               </div>
               <div style={{ 
-                color: '#cbd5e0', 
-                fontSize: '12px',
+                color: '#a0aec0', 
+                fontSize: '11px',
                 fontFamily: 'monospace',
-                background: '#0f1419',
-                padding: '6px 12px',
+                background: '#0a0e27',
+                padding: '4px 10px',
                 borderRadius: '6px',
                 display: 'inline-block',
                 maxWidth: '100%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                border: '1px solid #1e2541'
               }} title={selectedNFT.ownerAddress}>
                 {selectedNFT.ownerAddress}
               </div>
