@@ -30,9 +30,9 @@ root.render(
           <NotificationProvider>
             <WalletProvider>
               <NFTProvider>
-                <SettingsProvider>
-                  <Markup />
-                </SettingsProvider>
+              <SettingsProvider>
+                <Markup />
+              </SettingsProvider>
               </NFTProvider>
             </WalletProvider>
           </NotificationProvider>

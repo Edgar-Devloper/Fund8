@@ -290,12 +290,12 @@ const OrderForm = () => {
               <span>NFT: {selectedNFT.name} #{selectedNFT.tokenId}</span>
             </span>
           )}
-          {isConnected && (
-            <span className="wallet-status-badge connected">
-              <span className="status-dot"></span>
+        {isConnected && (
+          <span className="wallet-status-badge connected">
+            <span className="status-dot"></span>
               {t('trading.connected')}
-            </span>
-          )}
+          </span>
+        )}
         </div>
       </div>
       <div className="order-form-body" style={{padding:'14px 16px 18px'}}>

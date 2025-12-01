@@ -1,0 +1,72 @@
+const DEFILY_URL = 'https://app.defily.ai';
+
+const extractReferralCode = (referralsLink) => {
+  if (!referralsLink) {
+    return null;
+  }
+
+  const trimmed = referralsLink.trim();
+  
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    const refParam = url.searchParams.get('ref');
+    if (refParam) {
+      return refParam;
+    }
+  } catch {
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      const match = trimmed.match(/[?&]ref=([^&]+)/);
+      if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+      }
+    }
+  }
+
+  if (trimmed.length > 200) {
+    return null;
+  }
+
+  return trimmed;
+};
+
+export const generateReferralLink = (referralsLink, side, tokenId = null) => {
+  const sideValue = side === 'left' ? '0' : '1';
+  const baseUrl = DEFILY_URL;
+  
+  let refCode = extractReferralCode(referralsLink);
+  
+  if (!refCode && tokenId !== null) {
+    refCode = tokenId.toString();
+  }
+  
+  if (!refCode) {
+    return null;
+  }
+  
+  try {
+    const url = new URL(baseUrl);
+    url.searchParams.set('ref', refCode);
+    url.searchParams.set('side', sideValue);
+    return url.toString();
+  } catch {
+    return `${baseUrl}?ref=${encodeURIComponent(refCode)}&side=${sideValue}`;
+  }
+};
+
+export const getDefilyBuyUrl = (referralTokenId = 0, side = 0) => {
+  return `${DEFILY_URL}?ref=${referralTokenId}&side=${side}`;
+};
+
+export const openReferralLink = (referralsLink, side, tokenId = null) => {
+  const link = generateReferralLink(referralsLink, side, tokenId);
+  if (link) {
+    window.open(link, '_blank', 'noopener,noreferrer');
+  }
+};
+
+export { DEFILY_URL };
+
