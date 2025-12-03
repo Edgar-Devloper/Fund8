@@ -4,7 +4,7 @@ import {
   runLogoutTimer,
   saveTokenInLocalStorage,
   signUp,
-} from '../../services/AuthService';
+} from '../../services/AuthService.js';
 
 export const SIGNUP_CONFIRMED_ACTION = '[signup action] confirmed signup';
 export const SIGNUP_FAILED_ACTION = '[signup action] failed signup';

@@ -15,10 +15,12 @@ import LogoutPage from './Logout';
 
 import profile from "../../../images/profile/pic1.jpg";
 
-const reducer = (previousState, updatedState) => ({
-  ...previousState,
-  ...updatedState,
-});
+const reducer = (previousState, updatedState) => {
+  return {
+    ...previousState,
+    ...updatedState,
+  };
+};
 
 const initialState = {
   active : "",
@@ -30,6 +32,7 @@ const initialState = {
 const SideBar = () => {
   const { t } = useTranslation();
   var d  = new Date();
+  
 	const {
 		iconHover,
 		sidebarposition,
@@ -60,16 +63,18 @@ const SideBar = () => {
 	)
 
  
-	const handleMenuActive = status => {		
-		setState({active : status});			
-		if(state.active === status){				
+	const handleMenuActive = (status) => {
+		if(state.active === status){
 			setState({active : ""});
+		} else {
+			setState({active : status});
 		}   
 	}
 	const handleSubmenuActive = (status) => {		
-		setState({activeSubmenu : status})
 		if(state.activeSubmenu === status){
 			setState({activeSubmenu : ""})			
+		} else {
+			setState({activeSubmenu : status})
 		}    
 	}
 	// Menu dropdown list End
@@ -92,9 +97,32 @@ const SideBar = () => {
             : ""
           : ""
       }`}
+      style={{
+        cursor: 'default',
+        pointerEvents: 'auto',
+        zIndex: 100
+      }}
     >
-      <PerfectScrollbar className="deznav-scroll">         
-          <ul className="metismenu" id="menu">
+      <div 
+        style={{ 
+          height: '100%',
+          overflow: 'auto',
+          pointerEvents: 'auto',
+          position: 'relative',
+          zIndex: 100
+        }}
+        className="deznav-scroll"
+      >         
+          <ul 
+            className="metismenu" 
+            id="menu" 
+            style={{ 
+              pointerEvents: 'auto', 
+              position: 'relative', 
+              zIndex: 101,
+              touchAction: 'auto'
+            }}
+          >
               <Dropdown as="li" className="nav-item dropdown header-profile">
                 <Dropdown.Toggle
                   variant=""
@@ -149,22 +177,72 @@ const SideBar = () => {
                         key={index} 
                       >
                         
-                        {data.content && data.content.length > 0 ?
-                            <Link to={"#"} 
-                              className="has-arrow"
-                              onClick={() => {handleMenuActive(data.title)}}
+                        {data.content && data.content.length > 0 ? (
+                            <div 
+                              className={`sidebar-menu-item ${state.active === data.title ? 'active' : ''} ${data.title === 'nav.trader' ? 'sidebar-menu-item-trader' : ''}`}
+                              data-menu-title={data.title}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleMenuActive(data.title);
+                              }}
+                              style={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '0.75rem 1.5rem',
+                                position: 'relative',
+                                transition: 'all 0.2s ease',
+                                borderRadius: '0.5rem',
+                                margin: '0.25rem 0.5rem',
+                                pointerEvents: 'auto',
+                                userSelect: 'none'
+                              }}
                             >								
-								                {data.iconStyle}
-                                <span className="nav-text">{t(data.title)}</span>
-                            </Link>
-                        :
-                          <Link  to={data.to} >
-                              {data.iconStyle}
+                              <span style={{ marginRight: '0.75rem', fontSize: '1.2rem' }}>
+                                {data.iconStyle}
+                              </span>
+                              <span className="nav-text" style={{ flex: 1 }}>
+                                {t(data.title)}
+                              </span>
+                              <span 
+                                style={{
+                                  fontSize: '0.75rem',
+                                  transition: 'transform 0.3s ease',
+                                  transform: state.active === data.title ? 'rotate(180deg)' : 'rotate(0deg)',
+                                  opacity: 0.7,
+                                  marginLeft: '0.5rem'
+                                }}
+                              >
+                                ▼
+                              </span>
+                            </div>
+                        ) : (
+                          <Link to={data.to} className="sidebar-menu-item" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '0.5rem',
+                            margin: '0.25rem 0.5rem',
+                            textDecoration: 'none'
+                          }}>
+                              <span style={{ marginRight: '0.75rem', fontSize: '1.2rem' }}>
+                                {data.iconStyle}
+                              </span>
                               <span className="nav-text">{t(data.title)}</span>
                           </Link>
-                        }
-                        <Collapse in={state.active === data.title ? true :false}>
-                          <ul className={`${menuClass === "mm-collapse" ? "mm-show" : ""}`}>
+                        )}
+                        {data.content && data.content.length > 0 && (
+                          <div
+                            style={{
+                              maxHeight: state.active === data.title ? '1000px' : '0',
+                              overflow: 'hidden',
+                              transition: 'max-height 0.3s ease, opacity 0.3s ease',
+                              opacity: state.active === data.title ? 1 : 0,
+                              marginLeft: '1rem'
+                            }}
+                          >
+                            <ul className={`${menuClass === "mm-collapse" ? "mm-show" : ""}`} style={{padding: '0.5rem 0'}}>
                             {data.content && data.content.map((data,index) => {									
                               return(	
                                   <li key={index}
@@ -177,19 +255,15 @@ const SideBar = () => {
                                           >
                                             {t(data.title)}
                                           </Link>
-                                          <Collapse in={state.activeSubmenu === data.title ? true :false}>
-                                              <ul className={`${menuClass === "mm-collapse" ? "mm-show" : ""}`}>
-                                                {data.content && data.content.map((data,index) => {
-                                                  return(	
-                                                    <>
-                                                      <li key={index}>
-                                                        <Link className={`${path === data.to ? "mm-active" : ""}`} to={data.to}>{t(data.title)}</Link>
-                                                      </li>
-                                                    </>
-                                                  )
-                                                })}
-                                              </ul>
-                                          </Collapse>
+                                          <ul className={`${menuClass === "mm-collapse" ? "mm-show" : ""} ${state.activeSubmenu === data.title ? "mm-show" : ""}`} style={{display: state.activeSubmenu === data.title ? 'block' : 'none'}}>
+                                            {data.content && data.content.map((data,index) => {
+                                              return(	
+                                                  <li key={index}>
+                                                    <Link className={`${path === data.to ? "mm-active" : ""}`} to={data.to}>{t(data.title)}</Link>
+                                                  </li>
+                                              )
+                                            })}
+                                          </ul>
                                         </>
                                       :
                                       <Link to={data.to}>
@@ -201,8 +275,9 @@ const SideBar = () => {
                                 
                               )
                             })}
-                          </ul>
-                        </Collapse>
+                            </ul>
+                          </div>
+                        )}
                       </li>	
                     )
                 }
@@ -212,7 +287,7 @@ const SideBar = () => {
             <p><strong>Fund8-Tradin Panel</strong> © {d.getFullYear()} All Rights Reserved</p>
             <p className="fs-12">Made with <span className="heart" onClick={()=>heartBlast()}></span> by AmoDevelopers</p>
           </div>  
-        </PerfectScrollbar>
+        </div>
       </div>
     );
 };

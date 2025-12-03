@@ -1,3 +1,134 @@
+/* FORZAR EVENTOS EN EL MENÚ - DESBLOQUEAR CLICKS Y ELIMINAR ICONO DE BLOQUEO */
+/* PROBLEMA ENCONTRADO: hyperliquid-nav-container está encima del sidebar bloqueando clicks */
+/* SOLUCIÓN: Aumentar z-index del sidebar para que esté encima del hyperliquid-nav (z-index: 1000) */
+
+.deznav {
+  z-index: 1001 !important; /* Mayor que hyperliquid-nav que tiene z-index: 1000 */
+  position: relative !important;
+}
+
+.deznav,
+.deznav *,
+.deznav *::before,
+.deznav *::after {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Hacer que hyperliquid-nav-container no bloquee el sidebar */
+/* Solo desactivar pointer-events en el área donde está el sidebar */
+.hyperliquid-nav-container {
+  pointer-events: auto !important;
+}
+
+/* El sidebar debe estar encima del hyperliquid-nav */
+.deznav {
+  z-index: 1001 !important; /* Mayor que hyperliquid-nav que tiene z-index: 1000 */
+  position: relative !important;
+}
+
+/* Pero permitir clicks en el contenido del sidebar */
+.deznav,
+.deznav * {
+  pointer-events: auto !important;
+}
+
+/* Override específico para cualquier cursor not-allowed */
+.deznav *[style*="not-allowed"],
+.deznav *[style*="blocked"],
+.deznav *[class*="disabled"],
+.deznav *[class*="blocked"],
+.deznav *[class*="not-allowed"] {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Override cualquier CSS que pueda estar aplicando cursor not-allowed */
+.deznav * {
+  cursor: pointer !important;
+}
+
+.deznav input,
+.deznav textarea,
+.deznav select {
+  cursor: text !important;
+}
+
+/* Específicamente para elementos del menú */
+.metismenu,
+.metismenu *,
+.metismenu li,
+.metismenu li *,
+.metismenu a,
+.metismenu a *,
+.metismenu div,
+.metismenu span {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.sidebar-menu-item,
+.sidebar-menu-item *,
+.sidebar-menu-item::before,
+.sidebar-menu-item::after {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Eliminar CUALQUIER cursor not-allowed o blocked */
+.deznav *:not(input):not(textarea):not(select),
+.deznav a,
+.deznav button,
+.deznav div,
+.deznav span,
+.deznav li {
+  cursor: pointer !important;
+}
+
+/* Override cualquier cursor not-allowed */
+.deznav *[style*="not-allowed"],
+.deznav *[style*="blocked"],
+.deznav *[class*="disabled"],
+.deznav *[class*="blocked"] {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* PerfectScrollbar - desbloquear eventos */
+.deznav-scroll {
+  pointer-events: auto !important;
+  cursor: default !important;
+}
+
+.deznav-scroll * {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.ps__rail-x,
+.ps__rail-y {
+  pointer-events: none !important;
+}
+
+/* Forzar que el contenido del scroll sea clickeable */
+.deznav-scroll > * {
+  pointer-events: auto !important;
+}
+
+.deznav-scroll .metismenu,
+.deznav-scroll .metismenu * {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* TEST: Hacer visible el menú TRADER */
+.sidebar-menu-item-trader {
+  background-color: rgba(255, 0, 0, 0.3) !important;
+  border: 3px solid red !important;
+  z-index: 99999 !important;
+  position: relative !important;
+}
+
 .testimonial-one img {
   display: unset !important;
   width: 90%;
@@ -689,4 +820,25 @@ button.react-calendar__tile.react-calendar__tile--active.react-calendar__tile--r
 	width: auto;
 	height: auto;
 	display: contents;
+}
+
+/* Estilos modernos para el menú del sidebar */
+.sidebar-menu-item {
+	position: relative;
+	transition: all 0.2s ease;
+}
+
+.sidebar-menu-item:hover {
+	background: rgba(255, 255, 255, 0.05) !important;
+	border-radius: 0.5rem;
+}
+
+.sidebar-menu-item.active {
+	background: rgba(0, 229, 204, 0.1) !important;
+	border-left: 3px solid #00e5cc;
+}
+
+.sidebar-menu-item.active .nav-text {
+	color: #00e5cc;
+	font-weight: 600;
 }

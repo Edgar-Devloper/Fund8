@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { WalletProvider } from './context/WalletContext.js';
+import { AuthProvider } from './context/AuthContext.js';
 import { NFTProvider } from './context/NFTContext.js';
 import { NotificationProvider } from './context/NotificationContext.js';
 import { SettingsProvider } from './context/SettingsContext.js';
@@ -23,22 +24,25 @@ import './jsx/global-hyperliquid-theme.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  // StrictMode deshabilitado temporalmente para mejorar rendimiento inicial
+  // <React.StrictMode>
     <BrowserRouter>
       <Provider store={store}>
         <ThemeContext>
           <NotificationProvider>
             <WalletProvider>
-              <NFTProvider>
-              <SettingsProvider>
-                <Markup />
-              </SettingsProvider>
-              </NFTProvider>
+              <AuthProvider>
+                <NFTProvider>
+                <SettingsProvider>
+                  <Markup />
+                </SettingsProvider>
+                </NFTProvider>
+              </AuthProvider>
             </WalletProvider>
           </NotificationProvider>
         </ThemeContext>
       </Provider>
     </BrowserRouter>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 

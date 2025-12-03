@@ -1,271 +1,250 @@
-import React, { useContext } from "react";
+import React, { useContext, lazy, Suspense } from "react";
 
 /// React router dom
 import {  Routes, Route, Outlet  } from "react-router-dom";
 
+/// Context
+import { ThemeContext } from "../context/ThemeContext";
+
 /// Css
-//import "swiper/css";
 import "./index.css";
 import "./chart.css";
 import "./step.css";
 
-/// Layout
+/// Layout - Cargar siempre (necesarios para la estructura)
 import Nav from "./layouts/nav";
 import Footer from "./layouts/Footer";
 import ScrollToTop from './pages/ScrollToTop';
 import NFTSelectionModal from "./components/NFTSelectionModal";
-/// Dashboard
-import Home from "./components/Dashboard/Home";
-import CoinDetails from "./components/Dashboard/CoinDetails";
-import MyWallet from "./components/Dashboard/MyWallet";
-import Transactions from "./components/Dashboard/Transactions";
-import Portofolio from "./components/Dashboard/Portofolio";
-import MarketCapital from "./components/Dashboard/MarketCapital";
-import Task from "./components/Dashboard/Task";
-
-
-/// App
-import AppProfile from "./components/AppsMenu/AppProfile/AppProfile";
-import Compose from "./components/AppsMenu/Email/Compose/Compose";
-import Inbox from "./components/AppsMenu/Email/Inbox/Inbox";
-import Read from "./components/AppsMenu/Email/Read/Read";
-import Calendar from "./components/AppsMenu/Calendar/Calendar";
-import PostDetails from "./components/AppsMenu/AppProfile/PostDetails";
-
-/// Product List
-import ProductGrid from "./components/AppsMenu/Shop/ProductGrid/ProductGrid";
-import ProductList from "./components/AppsMenu/Shop/ProductList/ProductList";
-import ProductDetail from "./components/AppsMenu/Shop/ProductGrid/ProductDetail";
-import Checkout from "./components/AppsMenu/Shop/Checkout/Checkout";
-import Invoice from "./components/AppsMenu/Shop/Invoice/Invoice";
-import ProductOrder from "./components/AppsMenu/Shop/ProductOrder";
-import Customers from "./components/AppsMenu/Shop/Customers/Customers";
-
-/// Charts
-import SparklineChart from "./components/charts/Sparkline";
-import ChartJs from "./components/charts/Chartjs";
-//import Chartist from "./components/charts/chartist";
-import RechartJs from "./components/charts/rechart";
-import ApexChart from "./components/charts/apexcharts";
-
-/// Bootstrap
-import UiAlert from "./components/bootstrap/Alert";
-import UiAccordion from "./components/bootstrap/Accordion";
-import UiBadge from "./components/bootstrap/Badge";
-import UiButton from "./components/bootstrap/Button";
-import UiModal from "./components/bootstrap/Modal";
-import UiButtonGroup from "./components/bootstrap/ButtonGroup";
-import UiListGroup from "./components/bootstrap/ListGroup";
-import UiCards from "./components/bootstrap/Cards";
-import UiCarousel from "./components/bootstrap/Carousel";
-import UiDropDown from "./components/bootstrap/DropDown";
-import UiPopOver from "./components/bootstrap/PopOver";
-import UiProgressBar from "./components/bootstrap/ProgressBar";
-import UiTab from "./components/bootstrap/Tab";
-import UiPagination from "./components/bootstrap/Pagination";
-import UiGrid from "./components/bootstrap/Grid";
-import UiTypography from "./components/bootstrap/Typography";
-
-/// Plugins
-import Select2 from "./components/PluginsMenu/Select2/Select2";
-//import Nestable from "./components/PluginsMenu/Nestable/Nestable";
-import MainNouiSlider from "./components/PluginsMenu/NouiSlider/MainNouiSlider";
-import MainSweetAlert from "./components/PluginsMenu/SweetAlert/SweetAlert";
-import Toastr from "./components/PluginsMenu/Toastr/Toastr";
-import JqvMap from "./components/PluginsMenu/JqvMap/JqvMap";
-import Lightgallery from "./components/PluginsMenu/Lightgallery/Lightgallery";
-
-//Redux
-import Todo from "./pages/Todo";
-//import ReduxForm from "./components/Forms/ReduxForm/ReduxForm";
-//import WizardForm from "./components/Forms/ReduxWizard/Index";
-
-/// Widget
-import Widget from "./pages/Widget";
-
-/// Table
-import SortingTable from "./components/table/SortingTable/SortingTable";
-import FilteringTable from "./components/table/FilteringTable/FilteringTable";
-import DataTable from "./components/table/DataTable";
-import BootstrapTable from "./components/table/BootstrapTable";
-
-/// Form
-import Element from "./components/Forms/Element/Element";
-import Wizard from "./components/Forms/Wizard/Wizard";
-import CkEditor from "./components/Forms/CkEditor/CkEditor";
-import Pickers from "./components/Forms/Pickers/Pickers";
-import FormValidation from "./components/Forms/FormValidation/FormValidation";
-
-/// Pages
-import Registration from "./pages/Registration";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import LockScreen from "./pages/LockScreen";
-import Error400 from "./pages/Error400";
-import Error403 from "./pages/Error403";
-import Error404 from "./pages/Error404";
-import Error500 from "./pages/Error500";
-import Error503 from "./pages/Error503";
 import Setting from "./layouts/Setting";
-import { ThemeContext } from "../context/ThemeContext";
-// Trader pages (fase 1)
+
+/// Dashboard - Cargar solo los esenciales, el resto lazy
+import Home from "./components/Dashboard/Home";
+import TradingPage from './pages/Trading'; // Página principal
 import MarketPage from './pages/Market';
-import TradingPage from './pages/Trading';
 import OrdersPage from './pages/Orders';
 import OrderHistoryPage from './pages/OrderHistory';
 import PortfolioPage from './pages/Portfolio';
 
+// Lazy load de componentes pesados que no se usan en la página inicial
+const CoinDetails = lazy(() => import("./components/Dashboard/CoinDetails"));
+const MyWallet = lazy(() => import("./components/Dashboard/MyWallet"));
+const Transactions = lazy(() => import("./components/Dashboard/Transactions"));
+const Portofolio = lazy(() => import("./components/Dashboard/Portofolio"));
+const MarketCapital = lazy(() => import("./components/Dashboard/MarketCapital"));
+const Task = lazy(() => import("./components/Dashboard/Task"));
+
+/// App - Lazy load (no se usan en página inicial)
+const AppProfile = lazy(() => import("./components/AppsMenu/AppProfile/AppProfile"));
+const Compose = lazy(() => import("./components/AppsMenu/Email/Compose/Compose"));
+const Inbox = lazy(() => import("./components/AppsMenu/Email/Inbox/Inbox"));
+const Read = lazy(() => import("./components/AppsMenu/Email/Read/Read"));
+const Calendar = lazy(() => import("./components/AppsMenu/Calendar/Calendar"));
+const PostDetails = lazy(() => import("./components/AppsMenu/AppProfile/PostDetails"));
+
+/// Product List - Lazy load
+const ProductGrid = lazy(() => import("./components/AppsMenu/Shop/ProductGrid/ProductGrid"));
+const ProductList = lazy(() => import("./components/AppsMenu/Shop/ProductList/ProductList"));
+const ProductDetail = lazy(() => import("./components/AppsMenu/Shop/ProductGrid/ProductDetail"));
+const Checkout = lazy(() => import("./components/AppsMenu/Shop/Checkout/Checkout"));
+const Invoice = lazy(() => import("./components/AppsMenu/Shop/Invoice/Invoice"));
+const ProductOrder = lazy(() => import("./components/AppsMenu/Shop/ProductOrder"));
+const Customers = lazy(() => import("./components/AppsMenu/Shop/Customers/Customers"));
+
+/// Charts - Lazy load (muy pesados)
+const SparklineChart = lazy(() => import("./components/charts/Sparkline"));
+const ChartJs = lazy(() => import("./components/charts/Chartjs"));
+const RechartJs = lazy(() => import("./components/charts/rechart"));
+const ApexChart = lazy(() => import("./components/charts/apexcharts"));
+
+/// Bootstrap - Lazy load (no se usan en página inicial)
+const UiAlert = lazy(() => import("./components/bootstrap/Alert"));
+const UiAccordion = lazy(() => import("./components/bootstrap/Accordion"));
+const UiBadge = lazy(() => import("./components/bootstrap/Badge"));
+const UiButton = lazy(() => import("./components/bootstrap/Button"));
+const UiModal = lazy(() => import("./components/bootstrap/Modal"));
+const UiButtonGroup = lazy(() => import("./components/bootstrap/ButtonGroup"));
+const UiListGroup = lazy(() => import("./components/bootstrap/ListGroup"));
+const UiCards = lazy(() => import("./components/bootstrap/Cards"));
+const UiCarousel = lazy(() => import("./components/bootstrap/Carousel"));
+const UiDropDown = lazy(() => import("./components/bootstrap/DropDown"));
+const UiPopOver = lazy(() => import("./components/bootstrap/PopOver"));
+const UiProgressBar = lazy(() => import("./components/bootstrap/ProgressBar"));
+const UiTab = lazy(() => import("./components/bootstrap/Tab"));
+const UiPagination = lazy(() => import("./components/bootstrap/Pagination"));
+const UiGrid = lazy(() => import("./components/bootstrap/Grid"));
+const UiTypography = lazy(() => import("./components/bootstrap/Typography"));
+
+/// Plugins - Lazy load (muy pesados)
+const Select2 = lazy(() => import("./components/PluginsMenu/Select2/Select2"));
+const MainNouiSlider = lazy(() => import("./components/PluginsMenu/NouiSlider/MainNouiSlider"));
+const MainSweetAlert = lazy(() => import("./components/PluginsMenu/SweetAlert/SweetAlert"));
+const Toastr = lazy(() => import("./components/PluginsMenu/Toastr/Toastr"));
+const JqvMap = lazy(() => import("./components/PluginsMenu/JqvMap/JqvMap"));
+const Lightgallery = lazy(() => import("./components/PluginsMenu/Lightgallery/Lightgallery"));
+
+//Redux
+const Todo = lazy(() => import("./pages/Todo"));
+
+/// Widget
+const Widget = lazy(() => import("./pages/Widget"));
+
+/// Table - Lazy load
+const SortingTable = lazy(() => import("./components/table/SortingTable/SortingTable"));
+const FilteringTable = lazy(() => import("./components/table/FilteringTable/FilteringTable"));
+const DataTable = lazy(() => import("./components/table/DataTable"));
+const BootstrapTable = lazy(() => import("./components/table/BootstrapTable"));
+
+/// Form - Lazy load (CKEditor es muy pesado)
+const Element = lazy(() => import("./components/Forms/Element/Element"));
+const Wizard = lazy(() => import("./components/Forms/Wizard/Wizard"));
+const CkEditor = lazy(() => import("./components/Forms/CkEditor/CkEditor"));
+const Pickers = lazy(() => import("./components/Forms/Pickers/Pickers"));
+const FormValidation = lazy(() => import("./components/Forms/FormValidation/FormValidation"));
+
+/// Pages - Lazy load
+const Registration = lazy(() => import("./pages/Registration"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const LockScreen = lazy(() => import("./pages/LockScreen"));
+const Error400 = lazy(() => import("./pages/Error400"));
+const Error403 = lazy(() => import("./pages/Error403"));
+const Error404 = lazy(() => import("./pages/Error404"));
+const Error500 = lazy(() => import("./pages/Error500"));
+const Error503 = lazy(() => import("./pages/Error503"));
+
+// Componente de carga para Suspense
+const LoadingFallback = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    minHeight: '200px' 
+  }}>
+    <div>Cargando...</div>
+  </div>
+);
+
+// Wrapper para componentes lazy
+const LazyWrapper = ({ Component }) => (
+  <Suspense fallback={<LoadingFallback />}>
+    <Component />
+  </Suspense>
+);
+
 const Markup = () => {
-  //const { menuToggle } = useContext(ThemeContext);
   const allroutes = [
     /// Trading como página principal
-    { url: "", component: <TradingPage /> },
-    { url: "trading", component: <TradingPage /> },
+    { url: "", component: TradingPage },
+    { url: "trading", component: TradingPage },
+    { url: 'market', component: MarketPage },
+    { url: 'orders', component: OrdersPage },
+    { url: 'order-history', component: OrderHistoryPage },
+    { url: 'portfolio', component: PortfolioPage },
     /// Dashboard
-    { url: "dashboard", component: <Home /> },
-    { url: "coin-details", component: <CoinDetails/> },
-    { url: "my-wallet", component: <MyWallet /> },
-    { url: "transactions", component: <Transactions /> },
-    { url: "portofolio", component: <Portofolio /> },
-    { url: "market-capital", component: <MarketCapital /> },
-    { url: "task", component: <Task/> },
+    { url: "dashboard", component: Home },
+    { url: "coin-details", component: CoinDetails, lazy: true },
+    { url: "my-wallet", component: MyWallet, lazy: true },
+    { url: "transactions", component: Transactions, lazy: true },
+    { url: "portofolio", component: Portofolio, lazy: true },
+    { url: "market-capital", component: MarketCapital, lazy: true },
+    { url: "task", component: Task, lazy: true },
 
     /// Apps
-    { url: "app-profile", component: <AppProfile /> },
-    { url: "email-compose", component: <Compose /> },
-    { url: "email-inbox", component: <Inbox/>},
-    { url: "email-read", component: <Read/> },
-    { url: "app-calender", component: <Calendar /> },
-    { url: "post-details", component: <PostDetails/> },
+    { url: "app-profile", component: AppProfile, lazy: true },
+    { url: "email-compose", component: Compose, lazy: true },
+    { url: "email-inbox", component: Inbox, lazy: true },
+    { url: "email-read", component: Read, lazy: true },
+    { url: "app-calender", component: Calendar, lazy: true },
+    { url: "post-details", component: PostDetails, lazy: true },
 
     /// Chart
-    { url: "chart-sparkline", component: <SparklineChart /> },
-    { url: "chart-chartjs", component: <ChartJs /> },
-    //{ url: "chart-chartist", component: Chartist },
-    { url: "chart-apexchart", component: <ApexChart /> },
-    { url: "chart-rechart", component: <RechartJs /> },
+    { url: "chart-sparkline", component: SparklineChart, lazy: true },
+    { url: "chart-chartjs", component: ChartJs, lazy: true },
+    { url: "chart-apexchart", component: ApexChart, lazy: true },
+    { url: "chart-rechart", component: RechartJs, lazy: true },
 
     /// Bootstrap
-    { url: "ui-alert", component: <UiAlert /> },
-    { url: "ui-badge", component: <UiBadge/> },
-    { url: "ui-button", component: <UiButton /> },
-    { url: "ui-modal", component: <UiModal /> },
-    { url: "ui-button-group", component: <UiButtonGroup /> },
-    { url: "ui-accordion", component: <UiAccordion/> },
-    { url: "ui-list-group", component: <UiListGroup /> },
-    //{ url: "ui-media-object", component: UiMediaObject },
-    { url: "ui-card", component: <UiCards/> },
-    { url: "ui-carousel", component: <UiCarousel/> },
-    { url: "ui-dropdown", component: <UiDropDown/> },
-    { url: "ui-popover", component: <UiPopOver /> },
-    { url: "ui-progressbar", component: <UiProgressBar /> },
-    { url: "ui-tab", component: <UiTab /> },
-    { url: "ui-pagination", component: <UiPagination /> },
-    { url: "ui-typography", component: <UiTypography/> },
-    { url: "ui-grid", component: <UiGrid/> },
+    { url: "ui-alert", component: UiAlert, lazy: true },
+    { url: "ui-badge", component: UiBadge, lazy: true },
+    { url: "ui-button", component: UiButton, lazy: true },
+    { url: "ui-modal", component: UiModal, lazy: true },
+    { url: "ui-button-group", component: UiButtonGroup, lazy: true },
+    { url: "ui-accordion", component: UiAccordion, lazy: true },
+    { url: "ui-list-group", component: UiListGroup, lazy: true },
+    { url: "ui-card", component: UiCards, lazy: true },
+    { url: "ui-carousel", component: UiCarousel, lazy: true },
+    { url: "ui-dropdown", component: UiDropDown, lazy: true },
+    { url: "ui-popover", component: UiPopOver, lazy: true },
+    { url: "ui-progressbar", component: UiProgressBar, lazy: true },
+    { url: "ui-tab", component: UiTab, lazy: true },
+    { url: "ui-pagination", component: UiPagination, lazy: true },
+    { url: "ui-typography", component: UiTypography, lazy: true },
+    { url: "ui-grid", component: UiGrid, lazy: true },
 
     /// Plugin
-    { url: "uc-select2", component: <Select2 /> },
-    //{ url: "uc-nestable", component: Nestable },
-    { url: "uc-noui-slider", component: <MainNouiSlider/> },
-    { url: "uc-sweetalert", component: <MainSweetAlert/> },
-    { url: "uc-toastr", component: <Toastr/> },
-    { url: "map-jqvmap", component: <JqvMap/> },
-    { url: "uc-lightgallery", component: <Lightgallery/> },
+    { url: "uc-select2", component: Select2, lazy: true },
+    { url: "uc-noui-slider", component: MainNouiSlider, lazy: true },
+    { url: "uc-sweetalert", component: MainSweetAlert, lazy: true },
+    { url: "uc-toastr", component: Toastr, lazy: true },
+    { url: "map-jqvmap", component: JqvMap, lazy: true },
+    { url: "uc-lightgallery", component: Lightgallery, lazy: true },
 
 	///Redux
-	{ url: "todo", component: <Todo/> },
-	//{ url: "redux-form", component: ReduxForm },
-    //{ url: "redux-wizard", component: WizardForm },
+	{ url: "todo", component: Todo, lazy: true },
 	
     /// Widget
-    { url: "widget-basic", component: <Widget/> },
+    { url: "widget-basic", component: Widget, lazy: true },
 
     /// Shop
-    { url: "ecom-product-grid", component: <ProductGrid /> },
-    { url: "ecom-product-list", component: <ProductList/> },
-    { url: "ecom-product-detail", component: <ProductDetail/> },
-    { url: "ecom-product-order", component: <ProductOrder/> },
-    { url: "ecom-checkout", component: <Checkout /> },
-    { url: "ecom-invoice", component: <Invoice /> },
-    { url: "ecom-product-detail", component: <ProductDetail/> },
-    { url: "ecom-customers", component: <Customers/> },
+    { url: "ecom-product-grid", component: ProductGrid, lazy: true },
+    { url: "ecom-product-list", component: ProductList, lazy: true },
+    { url: "ecom-product-detail", component: ProductDetail, lazy: true },
+    { url: "ecom-product-order", component: ProductOrder, lazy: true },
+    { url: "ecom-checkout", component: Checkout, lazy: true },
+    { url: "ecom-invoice", component: Invoice, lazy: true },
+    { url: "ecom-customers", component: Customers, lazy: true },
 
     /// Form
-    { url: "form-element", component: <Element/> },
-    { url: "form-wizard", component: <Wizard/> },
-    { url: "form-ckeditor", component: <CkEditor /> },
-    { url: "form-pickers", component: <Pickers /> },
-    { url: "form-validation", component: <FormValidation /> },
+    { url: "form-element", component: Element, lazy: true },
+    { url: "form-wizard", component: Wizard, lazy: true },
+    { url: "form-ckeditor", component: CkEditor, lazy: true },
+    { url: "form-pickers", component: Pickers, lazy: true },
+    { url: "form-validation", component: FormValidation, lazy: true },
 
     /// table
-	{ url: 'table-filtering', component: <FilteringTable /> },
-    { url: 'table-sorting', component: <SortingTable /> },
-    { url: "table-datatable-basic", component: <DataTable /> },
-    { url: "table-bootstrap-basic", component: <BootstrapTable /> },
+	{ url: 'table-filtering', component: FilteringTable, lazy: true },
+    { url: 'table-sorting', component: SortingTable, lazy: true },
+    { url: "table-datatable-basic", component: DataTable, lazy: true },
+    { url: "table-bootstrap-basic", component: BootstrapTable, lazy: true },
 
     /// pages
-    { url: "page-register", component: <Registration /> },
-    { url: "page-lock-screen", component: <LockScreen /> },
-    { url: "page-login", component: <Login /> },
-    { url: "page-forgot-password", component: <ForgotPassword /> },
-    { url: "page-error-400", component: <Error400/> },
-    { url: "page-error-403", component: <Error403/> },
-    { url: "page-error-404", component: <Error404 /> },
-    { url: "page-error-500", component: <Error500/> },
-    { url: "page-error-503", component: <Error503/> },
-    // Trader
-    { url: 'trading', component: <TradingPage /> },
-    { url: 'market', component: <MarketPage /> },
-    { url: 'orders', component: <OrdersPage /> },
-    { url: 'order-history', component: <OrderHistoryPage /> },
-    { url: 'portfolio', component: <PortfolioPage /> },
+    { url: "page-register", component: Registration, lazy: true },
+    { url: "page-lock-screen", component: LockScreen, lazy: true },
+    { url: "page-login", component: Login, lazy: true },
+    { url: "page-forgot-password", component: ForgotPassword, lazy: true },
+    { url: "page-error-400", component: Error400, lazy: true },
+    { url: "page-error-403", component: Error403, lazy: true },
+    { url: "page-error-404", component: Error404, lazy: true },
+    { url: "page-error-500", component: Error500, lazy: true },
+    { url: "page-error-503", component: Error503, lazy: true },
   ];
-  // Se elimina cálculo de path porque no se utiliza en la versión con <Routes>.
 
-  // Nota: lógica anterior de pagePath eliminada; ya no se usa para condicionar layout.
   return (
     <>
-      {/* <div
-        id={`${!pagePath ? "main-wrapper" : ""}`}
-        className={`${!pagePath ? "show" : "mh100vh"}  ${
-          menuToggle ? "menu-toggle" : ""
-        }`}
-      >
-        {!pagePath && <Nav />}
-
-        <div className={`${!pagePath ? "content-body" : ""}`}>
-          <div
-            className={`${!pagePath ? "container-fluid" : ""}`}
-            style={{ minHeight: window.screen.height - 60 }}
-          >
-            <Switch>
-              {routes.map((data, i) => (
-                <Route
-                  key={i}
-                  exact
-                  path={`/${data.url}`}
-                  component={data.component}
-                />
-              ))}
-            </Switch>
-          </div>
-        </div>
-        {!pagePath && <Footer />}
-      </div> */}
       <Routes>
-          <Route path='/page-lock-screen' element= {<LockScreen />} />
-          <Route path='/page-error-400' element={<Error400/>} />
-          <Route path='/page-error-403' element={<Error403/>} />
-          <Route path='/page-error-404' element={<Error404/>} />
-          <Route path='/page-error-500' element={<Error500/>} />
-          <Route path='/page-error-503' element={<Error503/>} />
+          <Route path='/page-lock-screen' element={<LazyWrapper Component={LockScreen} />} />
+          <Route path='/page-error-400' element={<LazyWrapper Component={Error400} />} />
+          <Route path='/page-error-403' element={<LazyWrapper Component={Error403} />} />
+          <Route path='/page-error-404' element={<LazyWrapper Component={Error404} />} />
+          <Route path='/page-error-500' element={<LazyWrapper Component={Error500} />} />
+          <Route path='/page-error-503' element={<LazyWrapper Component={Error503} />} />
           <Route element={<MainLayout />} > 
               {allroutes.map((data, i) => (
                 <Route
                   key={i}
                   path={data.url === "" ? "/" : `/${data.url}`}
-                  element={data.component}
+                  element={data.lazy ? <LazyWrapper Component={data.component} /> : <data.component />}
                 />
               ))}
           </Route>
@@ -290,7 +269,6 @@ function MainLayout(){
       <Footer />
     </div>
   )
-
 };
 
 export default Markup;

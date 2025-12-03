@@ -104,14 +104,15 @@ export const WalletProvider = ({ children }) => {
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [address]);
 
   const disconnectWallet = useCallback(() => {
     setAddress(null);
     setProvider(null);
     setSigner(null);
+    setError(null);
     console.log('[Wallet] Desconectado');
-  }, [address]);
+  }, []);
 
   useEffect(() => {
     // Only listen for account/chain changes if wallet is already connected

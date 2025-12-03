@@ -188,3 +188,4 @@ const SelectedNFTInfo = ({ selectedNFT }) => {
 
 export default SelectedNFTInfo;
 
+
