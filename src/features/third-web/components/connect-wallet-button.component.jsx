@@ -27,7 +27,10 @@ const ConnectWalletButtonComponent = ({ className, ...props }) => {
         {...connectButtonOptions}
         {...props}
         autoConnect={true}
-        connectButton={{ label: t("Connect Wallet") }}
+        connectButton={{ 
+          label: t("Connect Wallet"),
+          className: "wallet-connect-btn-thirdweb"
+        }}
       />
     </div>
   );

@@ -5,18 +5,41 @@
   align-items: center;
 }
 
+/* Estilos para el ConnectButton de Thirdweb */
+.wallet-connect-container-hyperliquid button,
+.wallet-connect-container-hyperliquid [data-button],
+.wallet-connect-container-hyperliquid [role="button"],
+.wallet-connect-btn-thirdweb {
+  padding: 6px 16px !important;
+  font-size: 13px !important;
+  border-radius: 6px !important;
+  height: auto !important;
+  min-height: auto !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+
+/* Estilos más específicos para el botón de Thirdweb cuando está conectado */
+.wallet-connect-container-hyperliquid [data-connected="true"] button,
+.wallet-connect-container-hyperliquid [data-connected="true"] [role="button"] {
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+}
+
 /* Connect Button (cuando no está conectado) */
 .wallet-connect-btn {
-  padding: 8px 20px;
+  padding: 6px 16px;
   background: var(--hl-accent-teal, #00e5cc);
   color: #000;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  height: auto;
+  line-height: 1.4;
 }
 
 .wallet-connect-btn:hover:not(:disabled) {

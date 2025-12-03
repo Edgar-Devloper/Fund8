@@ -38,19 +38,41 @@ export const HyperliquidTradingProvider = ({ children }) => {
   
   // Initialize trading service when wallet connects
   useEffect(() => {
-    if (isConnected && provider && signer && !tradingInitialized) {
-      console.log('[HL Provider] Initializing trading service...');
-      hyperliquidTrading.initialize(provider, signer).then((success) => {
-        if (success) {
-          setTradingInitialized(true);
-          console.log('[HL Provider] Trading service initialized successfully');
+    const initTrading = async () => {
+      if (isConnected && provider && signer) {
+        console.log('[HL Provider] Initializing trading service...', {
+          isConnected,
+          hasProvider: !!provider,
+          hasSigner: !!signer,
+          address: address
+        });
+        
+        try {
+          const success = await hyperliquidTrading.initialize(provider, signer);
+          if (success) {
+            setTradingInitialized(true);
+            console.log('[HL Provider] Trading service initialized successfully');
+          } else {
+            console.error('[HL Provider] Trading service initialization failed');
+            setTradingInitialized(false);
+          }
+        } catch (error) {
+          console.error('[HL Provider] Error initializing trading service:', error);
+          setTradingInitialized(false);
         }
-      });
-    } else if (!isConnected && tradingInitialized) {
-      hyperliquidTrading.disconnect();
-      setTradingInitialized(false);
-    }
-  }, [isConnected, provider, signer, tradingInitialized]);
+      } else if (!isConnected && tradingInitialized) {
+        console.log('[HL Provider] Wallet disconnected, cleaning up trading service...');
+        hyperliquidTrading.disconnect();
+        setTradingInitialized(false);
+      } else if (isConnected && (!provider || !signer)) {
+        // Wallet está conectada pero falta provider o signer
+        console.warn('[HL Provider] Wallet connected but missing provider or signer');
+        setTradingInitialized(false);
+      }
+    };
+
+    initTrading();
+  }, [isConnected, provider, signer, address, tradingInitialized]);
   
   // WebSocket connection for real-time data (disabled to avoid rate limits)
   const ws = useHyperliquidWebSocket({
@@ -234,8 +256,26 @@ export const HyperliquidTradingProvider = ({ children }) => {
   }, [openOrders, isConnected]);
   
   const placeOrder = useCallback(async (orderData) => {
+    // Verificar que el servicio esté inicializado
     if (!tradingInitialized) {
-      throw new Error('Trading service not initialized. Please connect your wallet.');
+      // Intentar reinicializar si la wallet está conectada
+      if (isConnected && provider && signer) {
+        console.log('[HL Provider] Trading service not initialized, attempting to initialize...');
+        try {
+          const success = await hyperliquidTrading.initialize(provider, signer);
+          if (success) {
+            setTradingInitialized(true);
+            console.log('[HL Provider] Trading service initialized successfully');
+          } else {
+            throw new Error('Failed to initialize trading service. Please reconnect your wallet.');
+          }
+        } catch (error) {
+          console.error('[HL Provider] Error initializing trading service:', error);
+          throw new Error('Trading service not initialized. Please reconnect your wallet.');
+        }
+      } else {
+        throw new Error('Trading service not initialized. Please connect your wallet.');
+      }
     }
     
     const symbol = selectedSymbol.split('/')[0];
@@ -250,7 +290,8 @@ export const HyperliquidTradingProvider = ({ children }) => {
       size,
       price,
       type: orderData.type,
-      nftId: nftId || 'No NFT selected'
+      nftId: nftId || 'No NFT selected',
+      tradingInitialized
     });
     
     let result;
@@ -278,7 +319,7 @@ export const HyperliquidTradingProvider = ({ children }) => {
     }
     
     return result;
-  }, [tradingInitialized, selectedSymbol]);
+  }, [tradingInitialized, selectedSymbol, isConnected, provider, signer]);
   
   const cancelOrder = useCallback(async (orderId) => {
     if (!tradingInitialized) {

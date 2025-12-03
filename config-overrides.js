@@ -2,6 +2,31 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = function override(config, env) {
+  // Deshabilitar warnings para compilacion mas rapida
+  config.ignoreWarnings = [
+    /Failed to parse source map/,
+    /Module not found/,
+    /Can't resolve/,
+    /Critical dependency/,
+    /export .* was not found in/,
+  ];
+
+  // Reducir verbosidad de webpack - usar preset minimal para menos output
+  config.stats = 'minimal';
+
+  // Deshabilitar ESLint durante compilacion para mas velocidad
+  const eslintRuleIndex = config.module.rules.findIndex(
+    rule => rule.enforce === 'pre' && rule.use && rule.use.some(use => use.loader && use.loader.includes('eslint-loader'))
+  );
+  if (eslintRuleIndex !== -1) {
+    config.module.rules.splice(eslintRuleIndex, 1);
+  }
+
+  // Deshabilitar source maps en desarrollo para compilacion mas rapida (opcional)
+  if (env === 'development') {
+    config.devtool = false; // o 'eval-cheap-module-source-map' para algo mas rapido
+  }
+
   // Polyfills para Node.js modules (ethers.js)
   config.resolve.fallback = {
     ...config.resolve.fallback,

@@ -15,7 +15,7 @@
  * const result = await jwtApiService.post('/api/protected-endpoint', { data: 'value' });
  */
 
-import { authService } from './authService';
+import { authService } from './jwtAuthService';
 
 // Cliente API del backend (ya configurado con interceptor para JWT)
 const api = authService.api;

@@ -57,19 +57,98 @@ class HyperliquidTradingService {
       });
       
       const meta = await infoClient.metaAndAssetCtxs();
-      const universe = meta?.universe || [];
       
-      const coinIndex = universe.findIndex(coin => 
+      // La respuesta puede venir en diferentes formatos:
+      // 1. { universe: [...], assetCtxs: {...} }
+      // 2. [universe, assetCtxs] (array)
+      // 3. Solo universe (array directo)
+      let universe = [];
+      
+      if (Array.isArray(meta)) {
+        if (meta.length > 0 && Array.isArray(meta[0])) {
+          // Formato: [universe, assetCtxs] donde universe es un array
+          universe = meta[0] || [];
+        } else if (meta.length > 0 && typeof meta[0] === 'object' && meta[0] !== null) {
+          // El primer elemento es un objeto
+          if (Array.isArray(meta[0].universe)) {
+            // Formato: [{universe: [...], assetCtxs: {...}}]
+            universe = meta[0].universe;
+          } else if (meta[0].name) {
+            // Formato: array directo de coins [{name: 'BTC', ...}, ...]
+            universe = meta.filter(item => item && typeof item === 'object' && item.name);
+          } else {
+            // Intentar buscar universe en el objeto
+            const possibleUniverse = meta[0].universe || meta[0][0] || meta[0];
+            if (Array.isArray(possibleUniverse)) {
+              universe = possibleUniverse;
+            } else {
+              universe = [];
+            }
+          }
+        } else if (meta.length > 0 && meta[0]?.name) {
+          // Formato: array directo de coins
+          universe = meta;
+        } else {
+          // Fallback: intentar usar el array completo si tiene elementos que parecen coins
+          universe = meta.filter(item => item && typeof item === 'object' && (item.name || Array.isArray(item)));
+        }
+      } else if (meta?.universe) {
+        // Formato: { universe: [...], assetCtxs: {...} }
+        universe = Array.isArray(meta.universe) ? meta.universe : [];
+      } else {
+        universe = [];
+      }
+      
+      // Asegurar que universe es siempre un array
+      if (!Array.isArray(universe)) {
+        universe = [];
+      }
+      
+      // Log final para identificar el universo
+      console.log('[HL Trading] Universe:', {
+        length: universe.length,
+        coins: Array.isArray(universe) ? universe.map(c => c?.name || c).filter(Boolean) : 'NOT AN ARRAY',
+        sample: Array.isArray(universe) && universe.length > 0 ? universe.slice(0, 3) : []
+      });
+      
+      // Normalizar el símbolo buscado (quitar sufijos como USDT, USDC, etc.)
+      const normalizedSymbol = coinSymbol.toUpperCase().replace(/USDT|USDC|PERP/gi, '').trim();
+      
+      // Buscar por nombre exacto primero
+      let coinIndex = universe.findIndex(coin => 
         coin?.name?.toUpperCase() === coinSymbol.toUpperCase()
       );
       
+      // Si no se encuentra, buscar por nombre normalizado (sin sufijos)
       if (coinIndex === -1) {
-        throw new Error(`Coin ${coinSymbol} not found in Hyperliquid universe`);
+        coinIndex = universe.findIndex(coin => {
+          const coinName = coin?.name?.toUpperCase() || '';
+          const normalizedCoinName = coinName.replace(/USDT|USDC|PERP/gi, '').trim();
+          return normalizedCoinName === normalizedSymbol || coinName === normalizedSymbol;
+        });
+      }
+      
+      // Si aún no se encuentra, buscar por coincidencia parcial
+      if (coinIndex === -1) {
+        coinIndex = universe.findIndex(coin => {
+          const coinName = coin?.name?.toUpperCase() || '';
+          return coinName.includes(normalizedSymbol) || normalizedSymbol.includes(coinName);
+        });
+      }
+      
+      if (coinIndex === -1) {
+        const availableCoins = Array.isArray(universe) 
+          ? universe.map(c => c?.name).filter(Boolean).join(', ')
+          : 'universe is not an array';
+        const errorMsg = !Array.isArray(universe) || universe.length === 0 
+          ? `Hyperliquid universe is empty or invalid. Check if you're using the correct environment (testnet/mainnet). Current: ${IS_TESTNET ? 'testnet' : 'mainnet'}. Universe type: ${typeof universe}`
+          : `Coin ${coinSymbol} not found in Hyperliquid universe. Available coins: ${availableCoins || 'none'}`;
+        throw new Error(errorMsg);
       }
       
       return coinIndex;
     } catch (error) {
-      console.error('[HL Trading] Error getting coin index:', error);
+      console.error('[HL Trading] Error getting coin index:', error.message);
       throw error;
     }
   }
@@ -80,9 +159,6 @@ class HyperliquidTradingService {
     }
 
     try {
-      if (nftId) {
-        console.log('[HL Trading] Order linked to NFT ID:', nftId);
-      }
 
       const coinIndex = await this.getCoinIndex(coin);
 

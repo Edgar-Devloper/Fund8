@@ -5,6 +5,7 @@ import { useNFT } from '../../../../context/NFTContext.js';
 import { useNotifications } from '../../../../context/NotificationContext.js';
 import { useTranslation } from 'react-i18next';
 import NFTSelectionModal from '../../../components/NFTSelectionModal';
+import { registerPendingOperation, registerSuccessfulOperation, registerFailedOperation } from '../../../../services/operationsService';
 
 const getNftMetadata = async (ipfsLink) => {
   if (!ipfsLink || !ipfsLink.includes('.json')) {
@@ -184,14 +185,31 @@ const OrderForm = () => {
     }
     
     setLoading(true);
+    
+    const orderPrice = orderType === 'market' ? midPrice : parseFloat(price);
+    const total = (orderPrice * parseFloat(amount)).toFixed(2);
+    const symbol = selectedSymbol.split('/')[0];
+    
+    // 1. Registrar operación como PENDIENTE (antes de ejecutar)
     try {
-      const orderPrice = orderType === 'market' ? midPrice : parseFloat(price);
-      const total = (orderPrice * parseFloat(amount)).toFixed(2);
-      
+      await registerPendingOperation(selectedNFT.tokenId, {
+        side: side, // 'buy' o 'sell'
+        symbol: symbol,
+        amount: parseFloat(amount),
+        price: orderPrice,
+        orderType: orderType, // 'limit' o 'market'
+        source: 'hyperliquid'
+      });
+      console.log('[OrderForm] Operación registrada como PENDIENTE');
+    } catch (error) {
+      console.warn('[OrderForm] Error registrando operación pendiente (no crítico):', error);
+    }
+    
+    try {
       addNotification({
         type: 'info',
         title: '⏳ Placing Order...',
-        message: `${side.toUpperCase()} ${amount} ${selectedSymbol.split('/')[0]} ${orderType === 'market' ? 'at market price' : `@ $${orderPrice}`}`
+        message: `${side.toUpperCase()} ${amount} ${symbol} ${orderType === 'market' ? 'at market price' : `@ $${orderPrice}`}`
       });
       
       const result = await placeOrder({
@@ -205,10 +223,27 @@ const OrderForm = () => {
       if (result.success) {
         setLastOrderId(result.orderId);
         
+        // 2. Registrar operación como EXITOSA (después de ejecutar)
+        try {
+          await registerSuccessfulOperation(selectedNFT.tokenId, {
+            side: side,
+            symbol: symbol,
+            amount: parseFloat(amount),
+            price: orderPrice,
+            orderType: orderType,
+            orderId: result.orderId,
+            hyperliquidOrderId: result.orderId,
+            source: 'hyperliquid'
+          });
+          console.log('[OrderForm] Operación registrada como EXITOSA');
+        } catch (error) {
+          console.warn('[OrderForm] Error registrando operación exitosa (no crítico):', error);
+        }
+        
         addNotification({
           type: 'success',
           title: '✅ Order Placed Successfully!',
-          message: `${side.toUpperCase()} ${amount} ${selectedSymbol.split('/')[0]} ${orderType === 'market' ? 'at market' : `@ $${orderPrice}`}\nTotal: $${total}${result.orderId ? `\nOrder ID: ${result.orderId}` : ''}`
+          message: `${side.toUpperCase()} ${amount} ${symbol} ${orderType === 'market' ? 'at market' : `@ $${orderPrice}`}\nTotal: $${total}${result.orderId ? `\nOrder ID: ${result.orderId}` : ''}`
         });
         
         setAmount('');
@@ -218,6 +253,22 @@ const OrderForm = () => {
       }
     } catch (error) {
       console.error('Error placing order:', error);
+      
+      // 3. Registrar operación como FALLIDA (si falla)
+      try {
+        await registerFailedOperation(selectedNFT.tokenId, {
+          side: side,
+          symbol: symbol,
+          amount: parseFloat(amount),
+          price: orderPrice,
+          orderType: orderType,
+          source: 'hyperliquid'
+        }, error.message || 'Error desconocido al colocar orden');
+        console.log('[OrderForm] Operación registrada como FALLIDA');
+      } catch (regError) {
+        console.warn('[OrderForm] Error registrando operación fallida (no crítico):', regError);
+      }
+      
       addNotification({
         type: 'error',
         title: '❌ Order Failed',

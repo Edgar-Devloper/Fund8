@@ -110,46 +110,128 @@ export const AuthProvider = ({ children }) => {
     }
   }, [isConnected, address, signer, logout, authenticate]);
 
-  // Cargar token desde localStorage al montar
+  // Cargar token desde localStorage al montar (PRIMERO, antes de cualquier autenticación)
   useEffect(() => {
+    // Este efecto se ejecuta primero, al montar el componente
     const storedToken = localStorage.getItem('jwt_token');
     const storedAddress = localStorage.getItem('jwt_wallet_address');
     
     if (storedToken && storedAddress) {
-      // Verificar que el token sea para la wallet actual
-      if (address && address.toLowerCase() === storedAddress.toLowerCase()) {
+      console.log('[Auth] Token encontrado en localStorage al montar');
+      // Guardar el token en el servicio inmediatamente
+      authService.setToken(storedToken);
+    }
+  }, []); // Solo ejecutar al montar
+
+  // Verificar y restaurar token cuando la wallet se conecta o cambia
+  useEffect(() => {
+    if (!address) {
+      // Si no hay wallet, limpiar autenticación
+      if (isAuthenticated) {
+        setAccessToken(null);
+        setIsAuthenticated(false);
+      }
+      return;
+    }
+    
+    const storedToken = localStorage.getItem('jwt_token');
+    const storedAddress = localStorage.getItem('jwt_wallet_address');
+    
+    // Verificar si hay token válido para esta wallet
+    if (storedToken && storedAddress && address.toLowerCase() === storedAddress.toLowerCase()) {
+      // Token válido para esta wallet
+      if (!isAuthenticated || accessToken !== storedToken) {
+        console.log('[Auth] Restaurando sesión desde token guardado para wallet:', address);
         setAccessToken(storedToken);
         setIsAuthenticated(true);
-        // Verificar si el token sigue siendo válido
         authService.setToken(storedToken);
-      } else {
-        // Si la wallet cambió, limpiar el token
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('jwt_wallet_address');
       }
+    } else if (storedToken && storedAddress) {
+      // Token existe pero es para otra wallet
+      console.log('[Auth] Token es para otra wallet, limpiando...');
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('jwt_wallet_address');
+      setAccessToken(null);
+      setIsAuthenticated(false);
+      authService.setToken(null);
+    } else if (!storedToken && isAuthenticated) {
+      // No hay token pero está marcado como autenticado (inconsistencia)
+      console.log('[Auth] Inconsistencia detectada: autenticado pero sin token, limpiando...');
+      setAccessToken(null);
+      setIsAuthenticated(false);
+      authService.setToken(null);
     }
-  }, [address]);
+  }, [address, isAuthenticated, accessToken]);
 
-  // Autenticar automáticamente cuando se conecta la wallet (solo una vez)
+  // Autenticar automáticamente cuando se conecta la wallet (solo si NO hay token válido)
   useEffect(() => {
+    // NO autenticar si ya estamos autenticados
+    if (isAuthenticated) {
+      return;
+    }
+    
+    // Verificar token una vez más antes de autenticar
+    const storedToken = localStorage.getItem('jwt_token');
+    const storedAddress = localStorage.getItem('jwt_wallet_address');
+    const hasValidToken = storedToken && 
+                         storedAddress && 
+                         address && 
+                         address.toLowerCase() === storedAddress.toLowerCase();
+    
     // Solo intentar autenticar si:
     // - Wallet está conectada
-    // - No está autenticado
-    // - No está en proceso de autenticación
-    // - No hay error previo
-    if (isConnected && address && signer && !isAuthenticated && !isAuthenticating && !authError) {
-      console.log('[Auth] Iniciando autenticación automática...');
-      authenticate();
+    // - Hay signer disponible
+    // - NO está autenticado (ya verificado arriba)
+    // - NO está en proceso de autenticación
+    // - NO hay error previo
+    // - NO hay token válido guardado
+    if (isConnected && 
+        address && 
+        signer && 
+        !isAuthenticating && 
+        !authError &&
+        !hasValidToken) {
+      console.log('[Auth] No hay token válido, iniciando autenticación...');
+      // Pequeño delay para asegurar que todos los efectos anteriores hayan terminado
+      const timer = setTimeout(() => {
+        // Verificar una vez más antes de autenticar (por si otro efecto restauró el token)
+        const finalToken = localStorage.getItem('jwt_token');
+        const finalAddress = localStorage.getItem('jwt_wallet_address');
+        const stillNoToken = !finalToken || 
+                            !finalAddress || 
+                            finalAddress.toLowerCase() !== address.toLowerCase();
+        
+        if (stillNoToken && !isAuthenticated) {
+          authenticate();
+        }
+      }, 200);
+      return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, address, signer]); // Solo depender de estos para evitar loops infinitos
+  }, [isConnected, address, signer, isAuthenticated, isAuthenticating, authError]);
 
-  // Limpiar autenticación cuando se desconecta la wallet
+  // Limpiar autenticación cuando se desconecta la wallet (pero no si hay token guardado)
   useEffect(() => {
     if (!isConnected) {
-      logout();
+      // Verificar si hay token guardado antes de limpiar
+      // Si hay token, puede ser que la wallet se esté reconectando
+      const storedToken = localStorage.getItem('jwt_token');
+      const storedAddress = localStorage.getItem('jwt_wallet_address');
+      
+      if (storedToken && storedAddress) {
+        // Hay token guardado, no limpiar todavía
+        // Esperar a ver si la wallet se reconecta
+        console.log('[Auth] Wallet desconectada pero hay token guardado, esperando reconexión...');
+        return;
+      }
+      
+      // No hay token guardado, limpiar autenticación
+      if (isAuthenticated) {
+        console.log('[Auth] Wallet desconectada y sin token guardado, cerrando sesión');
+        logout();
+      }
     }
-  }, [isConnected, logout]);
+  }, [isConnected, logout, isAuthenticated]);
 
   // Escuchar evento de token expirado
   useEffect(() => {
