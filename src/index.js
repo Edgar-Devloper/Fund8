@@ -2,8 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
+import { ThirdwebProvider } from 'thirdweb/react';
+import { client } from './features/third-web/libs/client.lib';
 import { store } from './store/store';
 import { WalletProvider } from './context/WalletContext.js';
+import ThirdwebSync from './context/ThirdwebSync';
 import { AuthProvider } from './context/AuthContext.js';
 import { NFTProvider } from './context/NFTContext.js';
 import { NotificationProvider } from './context/NotificationContext.js';
@@ -28,19 +31,38 @@ root.render(
   // <React.StrictMode>
     <BrowserRouter>
       <Provider store={store}>
-        <ThemeContext>
-          <NotificationProvider>
+        {client && ThirdwebProvider ? (
+          <ThirdwebProvider>
             <WalletProvider>
-              <AuthProvider>
+              <ThirdwebSync />
+              <ThemeContext>
+                <NotificationProvider>
+                  <AuthProvider>
+                  <NFTProvider>
+                  <SettingsProvider>
+                    <Markup />
+                  </SettingsProvider>
+                  </NFTProvider>
+                  </AuthProvider>
+                </NotificationProvider>
+              </ThemeContext>
+            </WalletProvider>
+          </ThirdwebProvider>
+        ) : (
+          <ThemeContext>
+            <NotificationProvider>
+              <WalletProvider>
+                <AuthProvider>
                 <NFTProvider>
                 <SettingsProvider>
                   <Markup />
                 </SettingsProvider>
                 </NFTProvider>
-              </AuthProvider>
-            </WalletProvider>
-          </NotificationProvider>
-        </ThemeContext>
+                </AuthProvider>
+              </WalletProvider>
+            </NotificationProvider>
+          </ThemeContext>
+        )}
       </Provider>
     </BrowserRouter>
   // </React.StrictMode>

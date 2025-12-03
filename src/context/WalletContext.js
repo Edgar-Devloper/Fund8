@@ -17,6 +17,39 @@ export const WalletProvider = ({ children }) => {
   const [signer, setSigner] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
+
+  // Verificar si hay una cuenta conectada al montar (puede ser de Thirdweb)
+  useEffect(() => {
+    const checkInitialConnection = async () => {
+      try {
+        if (typeof window.ethereum !== 'undefined') {
+          const accounts = await window.ethereum.request({ 
+            method: 'eth_accounts',
+            params: []
+          });
+          
+          if (accounts && accounts.length > 0) {
+            const connectedAddress = accounts[0];
+            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+            const web3Signer = web3Provider.getSigner();
+            setAddress(connectedAddress);
+            setProvider(web3Provider);
+            setSigner(web3Signer);
+            console.log('[Wallet] Cuenta detectada al iniciar:', connectedAddress);
+          }
+        }
+      } catch (err) {
+        console.debug('[Wallet] Error al verificar cuenta inicial:', err);
+      }
+    };
+
+    // Delay para permitir que Thirdweb se conecte primero
+    const timeoutId = setTimeout(() => {
+      checkInitialConnection();
+    }, 1000); // Aumentado a 1 segundo para dar tiempo a Thirdweb
+
+    return () => clearTimeout(timeoutId);
+  }, []); // Solo ejecutar una vez al montar
   
   // Don't check for MetaMask on mount - only when user clicks connect
 
@@ -114,41 +147,51 @@ export const WalletProvider = ({ children }) => {
     console.log('[Wallet] Desconectado');
   }, []);
 
+  // Escuchar cambios de cuenta/chain (incluyendo cuando Thirdweb conecta)
   useEffect(() => {
-    // Only listen for account/chain changes if wallet is already connected
-    // This prevents automatic reconnection on page load
-    if (typeof window.ethereum !== 'undefined' && address && provider && signer) {
-      const handleAccountsChanged = (accounts) => {
-        // If accounts array is empty, user disconnected in MetaMask
-        if (accounts.length === 0) {
-          disconnectWallet();
-        } else if (accounts[0].toLowerCase() !== address.toLowerCase()) {
-          // User switched account in MetaMask - update to new account
-          // Use existing provider/signer to avoid triggering MetaMask popup
-          if (!provider || !signer) return;
-          
-          // Just update the address from the accounts array
-          setAddress(accounts[0]);
-          console.log('[Wallet] Cuenta cambiada a:', accounts[0]);
-        }
-      };
-
-      const handleChainChanged = () => {
-        // Reload page when network changes
-        window.location.reload();
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        if (window.ethereum) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-          window.ethereum.removeListener('chainChanged', handleChainChanged);
-        }
-      };
+    if (typeof window.ethereum === 'undefined') {
+      return;
     }
-  }, [address, provider, signer, disconnectWallet]);
+
+    const handleAccountsChanged = (accounts) => {
+      if (accounts && accounts.length > 0) {
+        const newAddress = accounts[0];
+        // Si la dirección cambió, actualizar (puede ser por Thirdweb o cambio manual)
+        setAddress((currentAddress) => {
+          if (newAddress.toLowerCase() !== currentAddress?.toLowerCase()) {
+            // Actualizar provider/signer
+            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+            const web3Signer = web3Provider.getSigner();
+            setProvider(web3Provider);
+            setSigner(web3Signer);
+            console.log('[Wallet] Cuenta sincronizada:', newAddress);
+            return newAddress;
+          }
+          return currentAddress;
+        });
+      } else {
+        // Desconectado
+        setAddress(null);
+        setProvider(null);
+        setSigner(null);
+        setError(null);
+      }
+    };
+
+    const handleChainChanged = () => {
+      window.location.reload();
+    };
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      }
+    };
+  }, []); // Sin dependencias para evitar bucles infinitos
 
   const value = {
     address,
@@ -158,7 +201,11 @@ export const WalletProvider = ({ children }) => {
     isConnecting,
     error,
     connectWallet,
-    disconnectWallet
+    disconnectWallet,
+    // Exponer setters para sincronización con Thirdweb
+    setAddress,
+    setProvider,
+    setSigner
   };
 
   return (
