@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { useWallet } from '../../../../context/WalletContext.js';
 import { useNFT } from '../../../../context/NFTContext.js';
@@ -71,7 +71,7 @@ const getImageUrl = (ipfsLink, tokenId = null, metadata = null) => {
   return `https://ipfs.io/ipfs/${cleanLink}`;
 };
 
-const OrderForm = () => {
+const OrderForm = ({ orderConfig, setOrderConfig }) => {
   const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized, selectedPrice, setSelectedPrice } = useTradingData();
   const { isConnected, connectWallet, isConnecting } = useWallet();
   const { selectedNFT } = useNFT();
@@ -79,34 +79,75 @@ const OrderForm = () => {
   const { t } = useTranslation();
   
   const [side, setSide] = useState('buy');
-  const [orderType, setOrderType] = useState('limit');
-  const [price, setPrice] = useState('');
-  const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastOrderId, setLastOrderId] = useState(null);
   const [showNFTModal, setShowNFTModal] = useState(false);
   const [nftImageUrl, setNftImageUrl] = useState(null);
   const [nftMetadata, setNftMetadata] = useState(null);
+  const [sizeAnimating, setSizeAnimating] = useState(false);
+  const [totalAnimating, setTotalAnimating] = useState(false);
+  const prevAmountRef = useRef('');
+  const prevTotalRef = useRef(0);
+  
+  // Use shared config from props, with fallback defaults
+  const {
+    orderType = 'limit',
+    price = '',
+    amount = '',
+    marginMode = 'Cross',
+    tpSl = false,
+    hiddenOrder = false,
+    reduceOnly = false,
+    timeInForce = 'GTC',
+    stopPrice = '',
+    trailingPercent = ''
+  } = orderConfig || {};
   
   const currentTicker = tickers.find(t => t.symbol === selectedSymbol) || { last: 0 };
   const bestBid = orderBook?.bids?.[0]?.price || 0;
   const bestAsk = orderBook?.asks?.[0]?.price || 0;
   const midPrice = bestBid && bestAsk ? ((bestBid + bestAsk) / 2) : currentTicker.last;
   
+  // Update config when price is selected from order book
   useEffect(() => {
-    if (selectedPrice && orderType === 'limit') {
-      setPrice(selectedPrice.toFixed(2));
+    if (selectedPrice && orderType === 'limit' && setOrderConfig) {
+      setOrderConfig(prev => ({ ...prev, price: selectedPrice.toFixed(2) }));
       setSelectedPrice(null); // Clear after using
     }
-  }, [selectedPrice, orderType, setSelectedPrice]);
+  }, [selectedPrice, orderType, setSelectedPrice, setOrderConfig]);
   
+  // Set default price when order type changes
   useEffect(() => {
-    if (orderType === 'market') {
-      setPrice('');
-    } else if (!price && midPrice > 0) {
-      setPrice(midPrice.toFixed(2));
+    if (setOrderConfig) {
+      if (orderType === 'market') {
+        setOrderConfig(prev => ({ ...prev, price: '' }));
+      } else if (!price && midPrice > 0) {
+        setOrderConfig(prev => ({ ...prev, price: midPrice.toFixed(2) }));
+      }
     }
-  }, [orderType, midPrice, price]);
+  }, [orderType, midPrice, price, setOrderConfig]);
+
+  // Animate size changes
+  useEffect(() => {
+    if (amount !== prevAmountRef.current && amount) {
+      setSizeAnimating(true);
+      prevAmountRef.current = amount;
+      setTimeout(() => setSizeAnimating(false), 500);
+    }
+  }, [amount]);
+
+  // Animate total changes
+  useEffect(() => {
+    const currentTotal = amount && (orderType === 'market' ? midPrice : price) 
+      ? ((parseFloat(amount) || 0) * (orderType === 'market' ? midPrice : parseFloat(price) || 0))
+      : 0;
+    
+    if (currentTotal !== prevTotalRef.current && currentTotal > 0) {
+      setTotalAnimating(true);
+      prevTotalRef.current = currentTotal;
+      setTimeout(() => setTotalAnimating(false), 500);
+    }
+  }, [amount, price, midPrice, orderType]);
 
   useEffect(() => {
     if (selectedNFT && selectedNFT.ipfsLink) {
@@ -131,8 +172,8 @@ const OrderForm = () => {
   }, [selectedNFT, nftMetadata]);
   
   const handlePriceClick = (priceValue) => {
-    if (orderType === 'limit') {
-      setPrice(priceValue.toFixed(2));
+    if (orderType === 'limit' && setOrderConfig) {
+      setOrderConfig(prev => ({ ...prev, price: priceValue.toFixed(2) }));
     }
   };
   
@@ -157,11 +198,42 @@ const OrderForm = () => {
       return;
     }
     
-    if (orderType === 'limit' && (!price || parseFloat(price) <= 0)) {
+    // Validate price based on order type
+    if ((orderType === 'limit' || orderType === 'post-only') && (!price || parseFloat(price) <= 0)) {
       addNotification({
         type: 'warning',
         title: t('trading.invalid_price'),
         message: t('trading.enter_valid_price')
+      });
+      return;
+    }
+    
+    // Validate stop price for stop orders
+    if ((orderType === 'stop-limit' || orderType === 'stop-market') && (!stopPrice || parseFloat(stopPrice) <= 0)) {
+      addNotification({
+        type: 'warning',
+        title: 'Invalid Stop Price',
+        message: 'Please enter a valid stop price to trigger the order'
+      });
+      return;
+    }
+    
+    // Validate limit price for stop-limit orders
+    if (orderType === 'stop-limit' && (!price || parseFloat(price) <= 0)) {
+      addNotification({
+        type: 'warning',
+        title: 'Invalid Limit Price',
+        message: 'Please enter a valid limit price for the stop-limit order'
+      });
+      return;
+    }
+    
+    // Validate trailing percent for trailing stop orders
+    if (orderType === 'trailing-stop' && (!trailingPercent || parseFloat(trailingPercent) <= 0 || parseFloat(trailingPercent) > 100)) {
+      addNotification({
+        type: 'warning',
+        title: 'Invalid Trailing Distance',
+        message: 'Please enter a valid trailing distance between 0.01% and 100%'
       });
       return;
     }
@@ -186,7 +258,17 @@ const OrderForm = () => {
     
     setLoading(true);
     
-    const orderPrice = orderType === 'market' ? midPrice : parseFloat(price);
+    // Calculate order price based on order type
+    let orderPrice;
+    if (orderType === 'market' || orderType === 'stop-market') {
+      orderPrice = midPrice;
+    } else if (orderType === 'trailing-stop') {
+      // For trailing stop, use current price (the stop will trail from here)
+      orderPrice = midPrice;
+    } else {
+      orderPrice = parseFloat(price);
+    }
+    
     const total = (orderPrice * parseFloat(amount)).toFixed(2);
     const symbol = selectedSymbol.split('/')[0];
     
@@ -212,13 +294,31 @@ const OrderForm = () => {
         message: `${side.toUpperCase()} ${amount} ${symbol} ${orderType === 'market' ? 'at market price' : `@ $${orderPrice}`}`
       });
       
-      const result = await placeOrder({
+      const orderParams = {
         side,
         type: orderType,
         price: orderPrice,
         size: parseFloat(amount),
-        nftId: selectedNFT.tokenId
-      });
+        nftId: selectedNFT.tokenId,
+        reduceOnly: reduceOnly || false,
+        timeInForce: timeInForce || 'GTC',
+        hidden: hiddenOrder || false
+      };
+      
+      // Add stop-specific parameters
+      if (orderType === 'stop-limit' || orderType === 'stop-market') {
+        orderParams.stopPrice = parseFloat(stopPrice);
+      }
+      
+      if (orderType === 'trailing-stop') {
+        orderParams.trailingPercent = parseFloat(trailingPercent);
+      }
+      
+      if (orderType === 'post-only') {
+        orderParams.postOnly = true;
+      }
+      
+      const result = await placeOrder(orderParams);
       
       if (result.success) {
         setLastOrderId(result.orderId);
@@ -246,9 +346,13 @@ const OrderForm = () => {
           message: `${side.toUpperCase()} ${amount} ${symbol} ${orderType === 'market' ? 'at market' : `@ $${orderPrice}`}\nTotal: $${total}${result.orderId ? `\nOrder ID: ${result.orderId}` : ''}`
         });
         
-        setAmount('');
-        if (orderType === 'limit') {
-          setPrice(midPrice.toFixed(2));
+        // Reset form using shared config
+        if (setOrderConfig) {
+          setOrderConfig(prev => ({
+            ...prev,
+            amount: '',
+            price: orderType === 'limit' ? midPrice.toFixed(2) : ''
+          }));
         }
       }
     } catch (error) {
@@ -400,31 +504,29 @@ const OrderForm = () => {
             </button>
           )}
           
-          <div className="mb-3">
-            <label className="form-label small text-muted">{t('trading.order_type')}</label>
-            <select
-              className="form-select form-select-sm"
-              value={orderType}
-              onChange={(e) => setOrderType(e.target.value)}
-            >
-              <option value="limit">{t('trading.limit')}</option>
-              <option value="market">{t('trading.market')}</option>
-            </select>
-          </div>
-          
-          {orderType === 'limit' && (
+          {/* Price Input for Limit and Post Only */}
+          {(orderType === 'limit' || orderType === 'post-only') && (
             <div className="mb-3">
-              <label className="form-label small text-muted">{t('trading.price')} (USDC)</label>
+              <label className="form-label small text-muted d-flex align-items-center">
+                <span>{t('trading.price')} (USDC)</span>
+                {orderType === 'post-only' && (
+                  <span className="info-icon-tooltip-inline ms-2" title="Post Only orders are placed as maker orders only. If the order would execute immediately as taker, it is rejected.">ℹ️</span>
+                )}
+              </label>
               <div className="input-group input-group-sm">
                 <input
                   type="number"
                   className="form-control"
                   placeholder="0.00"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  value={price || ''}
+                  onChange={(e) => {
+                    if (setOrderConfig) {
+                      setOrderConfig(prev => ({ ...prev, price: e.target.value }));
+                    }
+                  }}
                   step="0.01"
                   min="0"
-                  required={orderType === 'limit'}
+                  required={orderType === 'limit' || orderType === 'post-only'}
                 />
                 <button
                   type="button"
@@ -445,6 +547,114 @@ const OrderForm = () => {
               </div>
             </div>
           )}
+
+          {/* Stop Price Input for Stop Limit and Stop Market */}
+          {(orderType === 'stop-limit' || orderType === 'stop-market') && (
+            <>
+              <div className="mb-3">
+                <label className="form-label small text-muted d-flex align-items-center">
+                  <span>Stop Price (USDC)</span>
+                  <span className="info-icon-tooltip-inline ms-2" title="The price at which the stop order will be triggered. When this price is reached, the order will activate.">ℹ️</span>
+                </label>
+                <div className="input-group input-group-sm">
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="0.00"
+                    value={orderConfig?.stopPrice || ''}
+                    onChange={(e) => {
+                      if (setOrderConfig) {
+                        setOrderConfig(prev => ({ ...prev, stopPrice: e.target.value }));
+                      }
+                    }}
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => {
+                      if (setOrderConfig) {
+                        setOrderConfig(prev => ({ ...prev, stopPrice: midPrice.toFixed(2) }));
+                      }
+                    }}
+                    title="Use Current Price"
+                  >
+                    Current
+                  </button>
+                </div>
+              </div>
+              {orderType === 'stop-limit' && (
+                <div className="mb-3">
+                  <label className="form-label small text-muted d-flex align-items-center">
+                    <span>Limit Price (USDC)</span>
+                    <span className="info-icon-tooltip-inline ms-2" title="The price at which the order will execute after the stop is triggered. This is your maximum/minimum execution price.">ℹ️</span>
+                  </label>
+                  <div className="input-group input-group-sm">
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="0.00"
+                      value={price || ''}
+                      onChange={(e) => {
+                        if (setOrderConfig) {
+                          setOrderConfig(prev => ({ ...prev, price: e.target.value }));
+                        }
+                      }}
+                      step="0.01"
+                      min="0"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() => handlePriceClick(bestBid)}
+                      title={t('trading.use_best_bid')}
+                    >
+                      Bid
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() => handlePriceClick(bestAsk)}
+                      title={t('trading.use_best_ask')}
+                    >
+                      Ask
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Trailing Stop Input */}
+          {orderType === 'trailing-stop' && (
+            <div className="mb-3">
+              <label className="form-label small text-muted d-flex align-items-center">
+                <span>Trailing Distance (%)</span>
+                <span className="info-icon-tooltip-inline ms-2" title="The percentage distance the stop will trail behind the current price. If price rises, the stop adjusts upward. Protects profits while allowing gains.">ℹ️</span>
+              </label>
+              <div className="input-group input-group-sm">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="5.00"
+                  value={orderConfig?.trailingPercent || ''}
+                  onChange={(e) => {
+                    if (setOrderConfig) {
+                      setOrderConfig(prev => ({ ...prev, trailingPercent: e.target.value }));
+                    }
+                  }}
+                  step="0.01"
+                  min="0.01"
+                  max="100"
+                  required
+                />
+                <span className="input-group-text">%</span>
+              </div>
+            </div>
+          )}
           
           {orderType === 'market' && (
             <div className="mb-3">
@@ -455,25 +665,70 @@ const OrderForm = () => {
           )}
           
           <div className="mb-3">
-            <label className="form-label small text-muted">{t('trading.amount')}</label>
+            <label className="form-label small text-muted d-flex justify-content-between align-items-center">
+              <span>{t('trading.amount')}</span>
+              {amount && parseFloat(amount) > 0 && (
+                <span className={`size-display ${sizeAnimating ? 'updating' : ''}`} style={{ 
+                  fontSize: '12px', 
+                  fontWeight: 600,
+                  color: 'var(--hl-accent-teal, #00e5cc)'
+                }}>
+                  Size: {parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+                </span>
+              )}
+            </label>
             <input
               type="number"
               className="form-control form-control-sm"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.0000"
+              value={amount || ''}
+              onChange={(e) => {
+                if (setOrderConfig) {
+                  setOrderConfig(prev => ({ ...prev, amount: e.target.value }));
+                }
+              }}
               step="0.0001"
               min="0"
               required
+              style={{
+                fontFeatureSettings: "'tnum'",
+                fontWeight: 600,
+                fontSize: '15px'
+              }}
             />
+            {amount && parseFloat(amount) > 0 && (
+              <div className="mt-1 d-flex justify-content-between align-items-center">
+                <small className="text-muted" style={{ fontSize: '10px' }}>
+                  {parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })} {selectedSymbol.split('/')[0]}
+                </small>
+                <div className="size-indicator" style={{
+                  width: `${Math.min((parseFloat(amount) / 10) * 100, 100)}%`,
+                  height: '2px',
+                  background: 'linear-gradient(90deg, var(--hl-accent-teal, #00e5cc), var(--hl-accent-green, #00c087))',
+                  borderRadius: '2px',
+                  transition: 'width 0.3s ease',
+                  opacity: 0.6
+                }}></div>
+              </div>
+            )}
           </div>
           
           <div className="mb-3">
-            <div className="d-flex justify-content-between small text-muted mb-1">
-              <span>{t('trading.total')}:</span>
-              <span>
+            <div className="d-flex justify-content-between align-items-center small mb-1" style={{
+              padding: '8px 12px',
+              background: 'var(--hl-dark-bg, #0a0e27)',
+              borderRadius: '6px',
+              border: '1px solid var(--hl-dark-border, #1e2541)'
+            }}>
+              <span className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('trading.total')}:</span>
+              <span className={`animated-number ${totalAnimating ? 'changing' : ''}`} style={{
+                fontSize: '16px',
+                fontWeight: 700,
+                color: 'var(--hl-text-primary, #ffffff)',
+                fontFeatureSettings: "'tnum'"
+              }}>
                 {amount && (orderType === 'market' ? midPrice : price) 
-                  ? `$${((parseFloat(amount) || 0) * (orderType === 'market' ? midPrice : parseFloat(price) || 0)).toFixed(2)}`
+                  ? `$${((parseFloat(amount) || 0) * (orderType === 'market' ? midPrice : parseFloat(price) || 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : '$0.00'}
               </span>
             </div>

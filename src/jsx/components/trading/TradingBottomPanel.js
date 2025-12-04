@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '../../../context/WalletContext';
 import hyperliquidTrading from '../../../services/hyperliquidTrading';
 import { useTranslation } from 'react-i18next';
 import './TradingBottomPanel.css';
+import './animations.css';
 
 const TradingBottomPanel = () => {
   const { t } = useTranslation();
@@ -13,6 +14,8 @@ const TradingBottomPanel = () => {
   const [loading, setLoading] = useState(false);
   const [cancellingOrder, setCancellingOrder] = useState(null);
   const [closingPosition, setClosingPosition] = useState(null);
+  const prevOrdersRef = useRef([]);
+  const prevPositionsRef = useRef([]);
 
   useEffect(() => {
     if (!isConnected || !address) {
@@ -26,7 +29,13 @@ const TradingBottomPanel = () => {
       try {
         // Fetch open orders
         const orders = await hyperliquidTrading.getOpenOrders();
-        setOpenOrders(orders || []);
+        const newOrders = orders || [];
+        
+        // Check for changes to trigger animations
+        if (JSON.stringify(prevOrdersRef.current) !== JSON.stringify(newOrders)) {
+          prevOrdersRef.current = newOrders;
+        }
+        setOpenOrders(newOrders);
 
         // Fetch positions from user state
         const userState = await hyperliquidTrading.getUserState();
@@ -34,6 +43,11 @@ const TradingBottomPanel = () => {
           const activePositions = userState.assetPositions.filter(
             pos => parseFloat(pos.position.szi) !== 0
           );
+          
+          // Check for changes to trigger animations
+          if (JSON.stringify(prevPositionsRef.current) !== JSON.stringify(activePositions)) {
+            prevPositionsRef.current = activePositions;
+          }
           setPositions(activePositions);
         } else {
           setPositions([]);
@@ -218,8 +232,8 @@ const TradingBottomPanel = () => {
                         <td className={`side-cell ${isBuy ? 'buy' : 'sell'}`}>
                           {isBuy ? 'BUY' : 'SELL'}
                         </td>
-                        <td className="price-cell">${formatPrice(order.limitPx)}</td>
-                        <td className="amount-cell">{formatSize(order.sz)}</td>
+                        <td className="price-cell animated-number">${formatPrice(order.limitPx)}</td>
+                        <td className="amount-cell animated-number size-display">{formatSize(order.sz)}</td>
                         <td className="filled-cell">{filledPercent.toFixed(0)}%</td>
                         <td className="total-cell">
                           ${(parseFloat(order.limitPx) * parseFloat(order.sz)).toFixed(2)}
@@ -281,9 +295,9 @@ const TradingBottomPanel = () => {
                         <td className={`side-cell ${isLong ? 'buy' : 'sell'}`}>
                           {isLong ? 'LONG' : 'SHORT'}
                         </td>
-                        <td className="size-cell">{formatSize(Math.abs(size))}</td>
-                        <td className="price-cell">${formatPrice(entryPrice)}</td>
-                        <td className="price-cell">${formatPrice(markPrice)}</td>
+                        <td className="size-cell animated-number size-display">{formatSize(Math.abs(size))}</td>
+                        <td className="price-cell animated-number">${formatPrice(entryPrice)}</td>
+                        <td className="price-cell animated-number">${formatPrice(markPrice)}</td>
                         <td className="price-cell">
                           ${formatPrice(position.position.liquidationPx || 0)}
                         </td>
@@ -314,7 +328,7 @@ const TradingBottomPanel = () => {
 
         {/* Trade History Tab */}
         {activeTab === 'history' && !loading && (
-          <div className="bottom-panel-empty">
+          <div className="bottom-panel-empty history-empty">
             <p>Trade history coming soon</p>
           </div>
         )}

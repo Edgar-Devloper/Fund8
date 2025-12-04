@@ -20,9 +20,10 @@ const ChartWrapper = () => {
   const [hoverVolume, setHoverVolume] = useState(null); // Volume on hover
   
   // Drawing tools state
-  const [drawingMode, setDrawingMode] = useState(null); // null | 'line' | 'fibonacci'
+  const [drawingMode, setDrawingMode] = useState(null); // null | 'line' | 'fibonacci' | 'trendline' | 'text' | 'network' | 'ruler' | 'zoom'
   const [drawings, setDrawings] = useState([]);
   const drawingsRef = useRef([]);
+  const [activeTool, setActiveTool] = useState(null);
   
   // get coin id from symbol
   const coinId = selectedSymbol && selectedSymbol.includes('/') 
@@ -532,8 +533,8 @@ const ChartWrapper = () => {
   };
 
   return (
-      <div className="card h-100 chart-wrapper-container" style={{borderRadius:22, background: 'var(--hl-dark-card, #151a2e)', border: '1px solid var(--hl-dark-border, #1e2541)'}}>
-        <div className="card-header d-flex flex-wrap gap-2 align-items-center chart-header" style={{borderTopLeftRadius:22, borderTopRightRadius:22, background: 'var(--hl-dark-card, #151a2e)', borderBottom: '1px solid var(--hl-dark-border, #1e2541)'}}>
+      <div className="card h-100 chart-wrapper-container" style={{borderRadius:0, background: 'var(--hl-dark-card, #151a2e)', border: '1px solid var(--hl-dark-border, #1e2541)', height: '100%', display: 'flex', flexDirection: 'column'}}>
+        <div className="card-header d-flex flex-wrap gap-2 align-items-center chart-header" style={{borderTopLeftRadius:0, borderTopRightRadius:0, background: 'var(--hl-dark-card, #151a2e)', borderBottom: '1px solid var(--hl-dark-border, #1e2541)', flexShrink: 0}}>
           <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px', color: 'var(--hl-text-primary, #ffffff)', flexShrink: 0}}>Chart</h6>
           
           {/* OHLC Display */}
@@ -663,6 +664,157 @@ const ChartWrapper = () => {
             </div>
           )}
           <div className="chart-canvas-container" style={{cursor: drawingMode ? 'crosshair' : 'default'}}>
+            {/* Chart Drawing Tools Bar */}
+            <div className="chart-tools-bar">
+              <div className="chart-tools-group">
+                <button
+                  className={`chart-tool-btn ${activeTool === 'select' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'select' ? null : 'select');
+                    setDrawingMode(null);
+                  }}
+                  title="Select Tool"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 2V14M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M8 1V3M8 13V15M1 8H3M13 8H15" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'trendline' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'trendline' ? null : 'trendline');
+                    setDrawingMode('trendline');
+                  }}
+                  title="Trend Line"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="3" cy="13" r="2" fill="currentColor"/>
+                    <circle cx="13" cy="3" r="2" fill="currentColor"/>
+                    <path d="M5 11L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M3 13L5 11M11 5L13 3" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'settings' ? 'active' : ''}`}
+                  onClick={() => setActiveTool(activeTool === 'settings' ? null : 'settings')}
+                  title="Settings"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4H6M10 4H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M2 8H6M10 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M2 12H6M10 12H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <circle cx="8" cy="4" r="1.5" fill="currentColor"/>
+                    <circle cx="8" cy="12" r="1.5" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'brush' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'brush' ? null : 'brush');
+                    setDrawingMode('brush');
+                  }}
+                  title="Brush Tool"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 13L8 8L10 10L13 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M10 10L12 8L13 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'text' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'text' ? null : 'text');
+                    setDrawingMode('text');
+                  }}
+                  title="Text Tool"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 3V13M8 3V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'network' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'network' ? null : 'network');
+                    setDrawingMode('network');
+                  }}
+                  title="Network/Graph"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="3" cy="3" r="1.5" fill="currentColor"/>
+                    <circle cx="13" cy="3" r="1.5" fill="currentColor"/>
+                    <circle cx="3" cy="13" r="1.5" fill="currentColor"/>
+                    <circle cx="13" cy="13" r="1.5" fill="currentColor"/>
+                    <path d="M8 8L3 3M8 8L13 3M8 8L3 13M8 8L13 13M3 3L13 3M3 13L13 13" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'advanced' ? 'active' : ''}`}
+                  onClick={() => setActiveTool(activeTool === 'advanced' ? null : 'advanced')}
+                  title="Advanced Settings"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4H6M10 4H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M2 8H6M10 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M2 12H6M10 12H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <circle cx="8" cy="4" r="1.5" fill="currentColor"/>
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="8" cy="12" r="1.5" fill="currentColor"/>
+                    <circle cx="8" cy="8" r="0.5" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'emoji' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'emoji' ? null : 'emoji');
+                    setDrawingMode('emoji');
+                  }}
+                  title="Add Comment/Emoji"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
+                    <circle cx="6" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="10" cy="6" r="1" fill="currentColor"/>
+                    <path d="M6 10C6 10 7 11 8 11C9 11 10 10 10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="chart-tools-separator"></div>
+              <div className="chart-tools-group">
+                <button
+                  className={`chart-tool-btn ${activeTool === 'ruler' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'ruler' ? null : 'ruler');
+                    setDrawingMode('ruler');
+                  }}
+                  title="Ruler Tool"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 12L12 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M3 10L5 12M7 8L9 10M11 6L13 8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <button
+                  className={`chart-tool-btn ${activeTool === 'zoom' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTool(activeTool === 'zoom' ? null : 'zoom');
+                    if (chartRef.current) {
+                      chartRef.current.timeScale().fitContent();
+                    }
+                  }}
+                  title="Zoom In"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="7" cy="7" r="4" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M10 10L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M7 5V9M5 7H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
             <div ref={containerRef} className="chart-canvas-inner" />
           </div>
         </div>

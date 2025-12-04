@@ -153,25 +153,88 @@ class HyperliquidTradingService {
     }
   }
 
-  async placeOrder({ coin, isBuy, price, size, orderType = 'limit', nftId = null }) {
+  async placeOrder({ coin, isBuy, price, size, orderType = 'limit', nftId = null, stopPrice = null, trailingPercent = null, postOnly = false, reduceOnly = false, timeInForce = 'GTC', hidden = false }) {
     if (!this.exchangeClient || !this.address) {
       throw new Error('Wallet not connected. Please connect your wallet first.');
     }
 
     try {
-
       const coinIndex = await this.getCoinIndex(coin);
 
-      const order = {
+      // Build order object based on order type
+      let order = {
         a: coinIndex,
         b: isBuy,
         p: price.toString(),
         s: size.toString(),
-        r: false,
-        t: orderType === 'market' 
-          ? { limit: { tif: 'Ioc' } }
-          : { limit: { tif: 'Gtc' } }
+        r: reduceOnly || false
       };
+
+      // Handle different order types
+      if (orderType === 'market') {
+        // Market order: use IOC (Immediate or Cancel)
+        order.t = { limit: { tif: 'Ioc' } };
+        // For market orders, use extreme price to ensure execution
+        order.p = isBuy ? '999999999' : '0.01';
+      } else if (orderType === 'stop-limit' || orderType === 'stop-market') {
+        // Stop orders require stop price
+        if (!stopPrice) {
+          throw new Error('Stop price is required for stop orders');
+        }
+        
+        if (orderType === 'stop-limit') {
+          // Stop Limit: trigger at stopPrice, execute at limit price
+          order.t = {
+            trigger: {
+              triggerPx: stopPrice.toString(),
+              isMarket: false,
+              tpsl: null
+            }
+          };
+        } else {
+          // Stop Market: trigger at stopPrice, execute at market
+          order.t = {
+            trigger: {
+              triggerPx: stopPrice.toString(),
+              isMarket: true,
+              tpsl: null
+            }
+          };
+        }
+      } else if (orderType === 'trailing-stop') {
+        // Trailing stop: requires trailing distance
+        if (!trailingPercent) {
+          throw new Error('Trailing percent is required for trailing stop orders');
+        }
+        
+        // Convert percentage to basis points (1% = 100 bps)
+        const trailingBps = Math.round(parseFloat(trailingPercent) * 100);
+        
+        order.t = {
+          trigger: {
+            triggerPx: null, // Will be calculated dynamically
+            isMarket: true,
+            tpsl: 'sl', // Stop loss
+            trailingPercent: trailingBps
+          }
+        };
+      } else if (orderType === 'post-only') {
+        // Post Only: must be maker, reject if would be taker
+        order.t = { limit: { tif: 'Gtc', postOnly: true } };
+      } else {
+        // Default: Limit order
+        const tifMap = {
+          'GTC': 'Gtc',
+          'IOC': 'Ioc',
+          'FOK': 'Fok'
+        };
+        order.t = { limit: { tif: tifMap[timeInForce] || 'Gtc' } };
+      }
+
+      // Add hidden order flag if specified
+      if (hidden) {
+        order.hidden = true;
+      }
 
       const result = await this.exchangeClient.order({
         orders: [order],
@@ -180,7 +243,8 @@ class HyperliquidTradingService {
 
       if (result && result.status === 'ok') {
         const orderId = result.response?.statuses?.[0]?.resting?.oid || 
-                       result.response?.statuses?.[0]?.filled?.oid;
+                       result.response?.statuses?.[0]?.filled?.oid ||
+                       result.response?.statuses?.[0]?.triggered?.oid;
         
         return {
           success: true,

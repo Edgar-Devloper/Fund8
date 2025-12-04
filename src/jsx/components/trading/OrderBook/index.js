@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 // import '../DepositModal.css';
 // import '../WithdrawModal.css';
 import './OrderBook.css';
+import '../animations.css';
 
 // Import crypto icons
 import btcIcon from '../../../../images/icons/btc.png';
@@ -31,6 +32,12 @@ const OrderBook = () => {
   const { orderBook, selectedSymbol, trades, tickers, setSelectedSymbol, setSelectedPrice } = useTradingData();
   const { t } = useTranslation(); // eslint-disable-line
   const { bids = [], asks = [] } = orderBook || {};
+  
+  // Debug: Log bids and asks
+  useEffect(() => {
+    console.log('[OrderBook] Bids:', bids.length, bids);
+    console.log('[OrderBook] Asks:', asks.length, asks);
+  }, [bids, asks]);
   
   const [activeTab, setActiveTab] = useState('orderbook'); // 'orderbook' | 'trades'
   const [grouping, setGrouping] = useState('0.1');
@@ -180,12 +187,14 @@ const OrderBook = () => {
           <button 
             className={`tab-btn ${activeTab === 'orderbook' ? 'active' : ''}`}
             onClick={() => setActiveTab('orderbook')}
+            type="button"
           >
             Order Book
           </button>
           <button 
             className={`tab-btn ${activeTab === 'trades' ? 'active' : ''}`}
             onClick={() => setActiveTab('trades')}
+            type="button"
           >
             Trades
           </button>
@@ -290,9 +299,9 @@ const OrderBook = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="depth-bar ask-bar" style={{ width: `${(ask.total / maxTotal) * 100}%` }} />
-                  <span className="price ask-price">{ask.price.toFixed(priceDecimals)}</span>
-                  <span className="size">{ask.amount.toFixed(4)}</span>
-                  <span className="total">{ask.total.toFixed(4)}</span>
+                  <span className="price ask-price animated-number">{ask.price.toFixed(priceDecimals)}</span>
+                  <span className="size animated-number">{ask.amount.toFixed(4)}</span>
+                  <span className="total animated-number">{ask.total.toFixed(4)}</span>
                 </div>
               ))}
             </div>
@@ -321,9 +330,9 @@ const OrderBook = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="depth-bar bid-bar" style={{ width: `${(bid.total / maxTotal) * 100}%` }} />
-                  <span className="price bid-price">{bid.price.toFixed(priceDecimals)}</span>
-                  <span className="size">{bid.amount.toFixed(4)}</span>
-                  <span className="total">{bid.total.toFixed(4)}</span>
+                  <span className="price bid-price animated-number">{bid.price.toFixed(priceDecimals)}</span>
+                  <span className="size animated-number">{bid.amount.toFixed(4)}</span>
+                  <span className="total animated-number">{bid.total.toFixed(4)}</span>
                 </div>
               ))}
             </div>
@@ -351,10 +360,10 @@ const OrderBook = () => {
                     key={uniqueKey}
                     className={`trades-row ${trade.side === 'buy' ? 'buy-trade' : 'sell-trade'}`}
                   >
-                    <span className={`price ${trade.side === 'buy' ? 'buy-price' : 'sell-price'}`}>
+                    <span className={`price animated-number ${trade.side === 'buy' ? 'buy-price' : 'sell-price'}`}>
                       {typeof trade.price === 'number' ? trade.price.toFixed(1) : trade.price}
                     </span>
-                    <span className="size">
+                    <span className="size animated-number slide-in-new">
                       {typeof trade.amount === 'number' ? trade.amount.toFixed(4) : trade.amount}
                     </span>
                     <span className="time">

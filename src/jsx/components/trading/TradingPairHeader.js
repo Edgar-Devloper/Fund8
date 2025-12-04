@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTradingData } from './context/HyperliquidTradingProvider';
 import './TradingPairHeader.css';
+import './animations.css';
 
 // Import crypto icons
 import btcIcon from '../../../images/icons/btc.png';
@@ -25,8 +26,11 @@ const iconMap = {
 const TradingPairHeader = () => {
   const { selectedSymbol, tickers, setSelectedSymbol } = useTradingData();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [leverage, setLeverage] = useState('20x');
   const dropdownRef = useRef(null);
   const selectorRef = useRef(null);
+  const prevPriceRef = useRef(0);
+  const [priceAnimation, setPriceAnimation] = useState('');
 
   // Encontrar el ticker actual
   const currentTicker = tickers?.find(t => t.symbol === selectedSymbol) || {
@@ -43,6 +47,17 @@ const TradingPairHeader = () => {
   // Usar el porcentaje de cambio ya calculado
   const changePercent = (currentTicker.change24hPercent || 0).toFixed(2);
   const isPositive = parseFloat(currentTicker.change24h) >= 0;
+  
+  // Animate price changes
+  useEffect(() => {
+    const currentPrice = currentTicker.last || 0;
+    if (prevPriceRef.current !== 0 && prevPriceRef.current !== currentPrice) {
+      const direction = currentPrice > prevPriceRef.current ? 'up' : 'down';
+      setPriceAnimation(direction);
+      setTimeout(() => setPriceAnimation(''), 500);
+    }
+    prevPriceRef.current = currentPrice;
+  }, [currentTicker.last]);
 
   // Formatear números grandes (volumen, market cap)
   const formatLargeNumber = (num) => {
@@ -146,7 +161,6 @@ const TradingPairHeader = () => {
           <span className="pair-symbol">{currentTicker.symbol}</span>
           <span className="pair-badge">Spot</span>
           <span className="pair-arrow">▾</span>
-          <span className="pair-star">⭐</span>
         </button>
 
         {showDropdown && (
@@ -204,7 +218,22 @@ const TradingPairHeader = () => {
       {/* Current Price */}
       <div className="price-display">
         <span className="price-label">Price</span>
-        <span className="price-value">${currentTicker.last.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span className={`price-value animated-number ${priceAnimation ? `ticker-${priceAnimation}` : ''}`} style={{
+          fontFeatureSettings: "'tnum'",
+          letterSpacing: '-0.5px'
+        }}>
+          ${currentTicker.last.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        {priceAnimation && (
+          <span className="price-change-indicator" style={{
+            fontSize: '10px',
+            marginLeft: '8px',
+            opacity: 0.7,
+            animation: 'fadeOut 0.5s ease-out'
+          }}>
+            {priceAnimation === 'up' ? '↑' : '↓'}
+          </span>
+        )}
       </div>
 
       {/* 24h Change */}
@@ -230,13 +259,31 @@ const TradingPairHeader = () => {
       {/* 24h Volume */}
       <div className="stat-item">
         <div className="stat-label">24h Volume</div>
-        <div className="stat-value">{formatLargeNumber(currentTicker.volume24h)}</div>
+        <div className="stat-value animated-number">{formatLargeNumber(currentTicker.volume24h)}</div>
       </div>
 
       {/* Market Cap */}
       <div className="stat-item">
         <div className="stat-label">Market Cap</div>
         <div className="stat-value">{formatLargeNumber(marketCap)}</div>
+      </div>
+
+      {/* Leverage Controls - Right side (Cross moved to OrderBook) */}
+      <div className="margin-controls">
+        <button
+          className="leverage-btn"
+          onClick={() => {
+            const leverages = ['1x', '2x', '5x', '10x', '20x', '50x', '100x'];
+            const currentIndex = leverages.indexOf(leverage);
+            const nextIndex = (currentIndex + 1) % leverages.length;
+            setLeverage(leverages[nextIndex]);
+          }}
+        >
+          {leverage}
+        </button>
+        <button className="margin-menu-btn" title="Margin Settings">
+          M
+        </button>
       </div>
 
       {/* Data Source Indicator */}

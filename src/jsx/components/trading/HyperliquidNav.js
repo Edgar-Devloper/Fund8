@@ -12,6 +12,7 @@ const HyperliquidNav = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Handle scroll to show/hide nav
   useEffect(() => {
@@ -49,14 +50,12 @@ const HyperliquidNav = () => {
     };
   }, [isVisible]);
 
+  // Navigation items - Trade active, others show as coming soon
   const navItems = [
     { path: '/', label: 'Trade', icon: null, enabled: true },
-    { path: '#', label: 'Vaults', icon: null, enabled: false, comingSoon: true },
     { path: '#', label: 'Portfolio', icon: null, enabled: false, comingSoon: true },
+    { path: '#', label: 'Vaults', icon: null, enabled: false, comingSoon: true },
     { path: '#', label: 'Staking', icon: null, enabled: false, comingSoon: true },
-    { path: '#', label: 'Referrals', icon: null, enabled: false, comingSoon: true },
-    { path: '#', label: 'Leaderboard', icon: null, enabled: false, comingSoon: true },
-    { path: '#', label: 'More', icon: '▾', enabled: false, isDropdown: true, comingSoon: true },
   ];
 
   const isActive = (path) => {
@@ -81,38 +80,46 @@ const HyperliquidNav = () => {
           />
         </Link>
 
-        {/* Navigation Links */}
-        <div className="hyperliquid-nav-links">
-          {navItems.map((item) => (
-            <div key={item.label} className="nav-link-wrapper">
-              {item.enabled ? (
-                <Link
-                  to={item.path}
-                  className={`nav-link-item ${isActive(item.path) ? 'active' : ''}`}
+        {/* Navigation Links - Removed */}
+
+        {/* Mobile Menu Button */}
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className={`hamburger ${mobileMenuOpen ? 'active' : ''}`}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <div className="mobile-menu-content" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-menu-header">
+                <img 
+                  src={fund8Logo} 
+                  alt="Fund8" 
+                  className="fund8-logo"
+                  style={{ height: '32px', width: 'auto' }}
+                />
+                <button 
+                  className="mobile-menu-close"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close menu"
                 >
-                  <span className="nav-label">{item.label}</span>
-                  {item.icon && <span className="nav-icon">{item.icon}</span>}
-                </Link>
-              ) : (
-                <div className={`nav-link-item disabled ${item.comingSoon ? 'has-tooltip' : ''}`}>
-                  <span className="nav-label">{item.label}</span>
-                  {item.icon && <span className="nav-icon">{item.icon}</span>}
-                  
-                  {item.comingSoon && (
-                    <div className="coming-soon-tooltip">
-                      <div className="tooltip-content">
-                        <div className="tooltip-title">Coming Soon</div>
-                        <div className="tooltip-description">
-                          This feature will be available soon
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                  ×
+                </button>
+              </div>
+              <div className="mobile-menu-links">
+                {/* Navigation links removed */}
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
         {/* Right Actions */}
         <div className="hyperliquid-nav-actions">

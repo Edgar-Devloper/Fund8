@@ -7,16 +7,24 @@
    VARIABLES CSS PARA HYPERLIQUID
    ============================================ */
 :root {
-  --hl-dark-bg: #0a0e27;
-  --hl-dark-card: #151a2e;
-  --hl-dark-border: #1e2541;
-  --hl-accent-teal: #00e5cc;
+  /* Corporate Dark Theme - Professional Black */
+  --hl-dark-bg: #0d1117;
+  --hl-dark-card: #161b22;
+  --hl-dark-border: #21262d;
+  --hl-accent-teal: #00d4aa;
   --hl-accent-green: #00c087;
-  --hl-accent-red: #ff5c5c;
-  --hl-text-primary: #ffffff;
-  --hl-text-secondary: #a0aec0;
-  --hl-text-muted: #718096;
-  --hl-hover: #1f2640;
+  --hl-accent-red: #f85149;
+  --hl-text-primary: #f0f6fc;
+  --hl-text-secondary: #c9d1d9;
+  --hl-text-muted: #8b949e;
+  --hl-hover: #1c2128;
+  
+  /* Corporate Accent Colors */
+  --corp-primary: #00d4aa;
+  --corp-secondary: #00a8ff;
+  --corp-success: #00c087;
+  --corp-danger: #f85149;
+  --corp-warning: #ffa500;
 }
 
 /* ============================================

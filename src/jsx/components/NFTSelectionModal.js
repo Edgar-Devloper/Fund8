@@ -12,6 +12,14 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
   const hasShownOnceRef = useRef(false);
   const wasConnectedRef = useRef(false);
 
+  // Check if modal was already shown (persisted in localStorage)
+  useEffect(() => {
+    const hasShownBefore = localStorage.getItem('nftModalShownOnce');
+    if (hasShownBefore === 'true') {
+      hasShownOnceRef.current = true;
+    }
+  }, []);
+
   useEffect(() => {
     if (forceShow) {
       setShowModal(true);
@@ -22,7 +30,6 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
   useEffect(() => {
     if (!isConnected) {
       setShowModal(false);
-      hasShownOnceRef.current = false;
       wasConnectedRef.current = false;
       return;
     }
@@ -33,17 +40,24 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
       return;
     }
 
-    if (!hasShownOnceRef.current) {
+    // Only show automatically if never shown before AND user has NFTs AND not loading AND no NFT selected
+    if (!hasShownOnceRef.current && !selectedNFT) {
       if (hasNFTs && !isLoading) {
         setShowModal(true);
         hasShownOnceRef.current = true;
+        localStorage.setItem('nftModalShownOnce', 'true');
       }
+    } else if (selectedNFT) {
+      // If NFT is already selected, mark as shown
+      hasShownOnceRef.current = true;
+      localStorage.setItem('nftModalShownOnce', 'true');
     }
-  }, [isConnected, hasNFTs, isLoading, forceShow]);
+  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT]);
 
   const handleClose = () => {
     setShowModal(false);
     hasShownOnceRef.current = true;
+    localStorage.setItem('nftModalShownOnce', 'true');
     if (onClose) {
       onClose();
     }
@@ -102,7 +116,7 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
               </div>
               <div className="modal-body" style={{ 
                 padding: '16px', 
-                maxHeight: '70vh', 
+                maxHeight: '60vh', 
                 overflowY: 'auto',
                 background: '#151a2e',
                 color: '#ffffff'

@@ -106,15 +106,63 @@ export const HyperliquidTradingProvider = ({ children }) => {
         const metaData = metaResponse.data || metaResponse;
         
         // Parse metaAndAssetCtxs correctly
-        let assetCtxs = {};
+        // Format: [universe, assetCtxs] where both are arrays
+        let universe = [];
+        let assetCtxs = [];
+        
         if (Array.isArray(metaData)) {
           // Format: [universe, assetCtxs]
-          assetCtxs = metaData[1] || {};
-        } else if (metaData?.assetCtxs) {
-          assetCtxs = metaData.assetCtxs;
+          universe = Array.isArray(metaData[0]) ? metaData[0] : [];
+          assetCtxs = Array.isArray(metaData[1]) ? metaData[1] : (typeof metaData[1] === 'object' ? Object.values(metaData[1]) : []);
+        } else if (metaData && typeof metaData === 'object') {
+          universe = Array.isArray(metaData.universe) ? metaData.universe : [];
+          assetCtxs = Array.isArray(metaData.assetCtxs) 
+            ? metaData.assetCtxs 
+            : (typeof metaData.assetCtxs === 'object' ? Object.values(metaData.assetCtxs) : []);
         }
         
-        // console.log('[HyperliquidTradingProvider] assetCtxs:', assetCtxs);
+        // Create a map for quick lookup: symbol -> index -> ctx
+        // Since universe might be empty, we'll use allPrices keys to map
+        const symbolToIndexMap = {};
+        
+        // Try to map from universe first
+        if (Array.isArray(universe) && universe.length > 0) {
+          universe.forEach((coin, index) => {
+            const coinName = coin?.name || coin;
+            if (coinName) {
+              symbolToIndexMap[coinName] = index;
+            }
+          });
+        } else {
+          // If universe is empty, try to map from allPrices keys
+          // The keys in allPrices might correspond to indices in assetCtxs
+          const allPricesKeys = Object.keys(allPrices || {});
+          allPricesKeys.forEach((key, index) => {
+            if (index < assetCtxs.length) {
+              symbolToIndexMap[key] = index;
+            }
+          });
+        }
+        
+        // Check if allPrices has our symbols
+        const btcPrice = allPrices['BTC'] || allPrices['btc'] || null;
+        const ethPrice = allPrices['ETH'] || allPrices['eth'] || null;
+        
+        console.log('[HyperliquidTradingProvider] Debug:', {
+          metaDataType: Array.isArray(metaData) ? 'array' : typeof metaData,
+          universeType: Array.isArray(universe) ? 'array' : typeof universe,
+          universeLength: Array.isArray(universe) ? universe.length : 'N/A',
+          assetCtxsType: Array.isArray(assetCtxs) ? 'array' : typeof assetCtxs,
+          assetCtxsLength: Array.isArray(assetCtxs) ? assetCtxs.length : 'N/A',
+          symbolToIndexMap,
+          sampleCtx: Array.isArray(assetCtxs) ? assetCtxs[0] : (typeof assetCtxs === 'object' ? Object.values(assetCtxs)[0] : null),
+          allPricesKeys: Object.keys(allPrices || {}).slice(0, 10),
+          btcPrice,
+          ethPrice,
+          hasBTC: !!btcPrice,
+          hasETH: !!ethPrice,
+          firstFewAssetCtxs: Array.isArray(assetCtxs) ? assetCtxs.slice(0, 3) : null
+        });
         
         // Para high/low 24h, usamos candles de últimas 24h
         const getLast24hStats = async (symbol) => {
@@ -154,18 +202,63 @@ export const HyperliquidTradingProvider = ({ children }) => {
           const pair = SYMBOL_TO_PAIR[symbol];
           
           const currentPrice = parseFloat(allPrices[symbol] || 0);
-          const ctx = assetCtxs[symbol] || {};
-          const prevDayPx = parseFloat(ctx.prevDayPx || 0);
+          
+          // Try multiple ways to find the context
+          let ctx = {};
+          let ctxIndex = -1;
+          
+          // Method 1: Try direct symbol mapping from universe (if available)
+          ctxIndex = symbolToIndexMap[symbol] ?? symbolToIndexMap[coinId] ?? -1;
+          
+          // Method 2: If not found and we have a current price, search by price match
+          // This is the most reliable method when universe is empty
+          if (ctxIndex < 0 && currentPrice > 0 && Array.isArray(assetCtxs)) {
+            let closestIndex = -1;
+            let closestDiff = Infinity;
+            
+            assetCtxs.forEach((c, idx) => {
+              const prevPx = parseFloat(c.prevDayPx || c.markPx || 0);
+              if (prevPx > 0) {
+                // Calculate percentage difference (should be very small for same coin)
+                const diff = Math.abs(prevPx - currentPrice) / Math.max(prevPx, currentPrice);
+                // Match if within 5% (prices should be very close for same coin)
+                if (diff < 0.05 && diff < closestDiff) {
+                  closestDiff = diff;
+                  closestIndex = idx;
+                }
+              }
+            });
+            
+            if (closestIndex >= 0) {
+              ctxIndex = closestIndex;
+            }
+          }
+          
+          if (ctxIndex >= 0 && Array.isArray(assetCtxs) && assetCtxs[ctxIndex]) {
+            ctx = assetCtxs[ctxIndex];
+          }
+          
+          const prevDayPx = parseFloat(ctx.prevDayPx || ctx.markPx || 0);
           const change24h = prevDayPx > 0 ? currentPrice - prevDayPx : 0;
+          const change24hPercent = prevDayPx > 0 ? ((change24h / prevDayPx) * 100) : 0;
           const volume24h = parseFloat(ctx.dayNtlVlm || 0);
           
-          // console.log(`[Ticker ${symbol}] price: ${currentPrice}, prevDay: ${prevDayPx}, change: ${change24h}, ctx:`, ctx);
+          console.log(`[Ticker ${symbol}]`, {
+            currentPrice,
+            prevDayPx,
+            change24h: change24h.toFixed(2),
+            change24hPercent: change24hPercent.toFixed(2) + '%',
+            ctxIndex,
+            hasCtx: !!ctx.prevDayPx,
+            allPricesHasSymbol: !!(allPrices[symbol]),
+            ctxSample: ctxIndex >= 0 ? assetCtxs[ctxIndex] : null
+          });
           
           return {
             symbol: pair,
             last: currentPrice,
             change24h: change24h,
-            change24hPercent: prevDayPx > 0 ? ((change24h / prevDayPx) * 100) : 0,
+            change24hPercent: change24hPercent,
             volume24h: volume24h,
             high24h: currentPrice, // temporal
             low24h: currentPrice, // temporal
