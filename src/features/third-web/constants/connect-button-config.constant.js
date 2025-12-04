@@ -3,14 +3,36 @@ import { darkTheme } from "thirdweb/react";
 import { thirdwebSelectedChain } from "../chains/thirdweb.chain";
 import { polygon } from "thirdweb/chains";
 
-const ecosystemId = process.env.REACT_APP_ECOSYSTEM_ID;
-const partnerId = process.env.REACT_APP_PARTNER_ID;
+// Función para limpiar comillas de las variables de entorno
+const cleanEnvVar = (value) => {
+  if (!value) return value;
+  // Remover comillas dobles al inicio y final si existen
+  return value.replace(/^["']|["']$/g, '').trim();
+};
+
+// Función para normalizar el ecosystemId
+// Thirdweb agrega automáticamente el prefijo "ecosystem.", así que si la variable
+// ya lo incluye, lo removemos para evitar duplicación
+const normalizeEcosystemId = (value) => {
+  if (!value) return value;
+  const cleaned = cleanEnvVar(value);
+  // Si ya tiene el prefijo "ecosystem.", lo removemos
+  if (cleaned.startsWith('ecosystem.')) {
+    return cleaned.replace(/^ecosystem\./, '');
+  }
+  return cleaned;
+};
+
+const ecosystemId = normalizeEcosystemId(process.env.REACT_APP_ECOSYSTEM_ID);
+const partnerId = cleanEnvVar(process.env.REACT_APP_PARTNER_ID);
 
 const configuredWallets = [createWallet("io.metamask")];
 
 if (ecosystemId) {
+  // Thirdweb agrega automáticamente el prefijo "ecosystem." al ecosystemId
+  // Por lo tanto, la variable de entorno debe ser solo el ID sin prefijo (ej: "defily")
   configuredWallets.push(
-    ecosystemWallet(`ecosystem.${ecosystemId}`, {
+    ecosystemWallet(ecosystemId, {
       partnerId,
     })
   );
