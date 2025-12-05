@@ -163,8 +163,8 @@ export const AuthProvider = ({ children }) => {
     } else if (storedToken && storedAddress) {
       // Token existe pero es para otra wallet
       console.log('[Auth] Token es para otra wallet, limpiando...');
-      localStorage.removeItem('jwt_token');
-      localStorage.removeItem('jwt_wallet_address');
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('jwt_wallet_address');
       setAccessToken(null);
       setIsAuthenticated(false);
       authService.setToken(null);
@@ -216,7 +216,7 @@ export const AuthProvider = ({ children }) => {
                             finalAddress.toLowerCase() !== address.toLowerCase();
         
         if (stillNoToken && !isAuthenticated) {
-          authenticate();
+      authenticate();
         }
       }, 200);
       return () => clearTimeout(timer);
@@ -242,8 +242,8 @@ export const AuthProvider = ({ children }) => {
       // No hay token guardado, limpiar autenticación
       if (isAuthenticated) {
         console.log('[Auth] Wallet desconectada y sin token guardado, cerrando sesión');
-        logout();
-      }
+      logout();
+    }
     }
   }, [isConnected, logout, isAuthenticated]);
 
