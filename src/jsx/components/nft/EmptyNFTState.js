@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getDefilyBuyUrl } from '../../../utils/referralLinks';
+import { getFund8DefaultReferralUrl } from '../../../utils/referralLinks';
 
 const EmptyNFTState = () => {
   const { t } = useTranslation();
-  const defilyBuyUrl = getDefilyBuyUrl(0, 2);
+  const defilyBuyUrl = getFund8DefaultReferralUrl();
   
   return (
     <div className="nft-selector-empty" style={{

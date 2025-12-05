@@ -61,6 +61,12 @@ export const getDefilyBuyUrl = (referralTokenId = 0, side = 0) => {
   return `${DEFILY_URL}?ref=${referralTokenId}&side=${side}`;
 };
 
+// Default referral link for Fund8 users without referral link
+// Points to Fund8 genesis account (NFT #2904) in DeFily tree
+export const getFund8DefaultReferralUrl = () => {
+  return `${DEFILY_URL}?nftId=2904&side=A`;
+};
+
 export const openReferralLink = (referralsLink, side, tokenId = null) => {
   const link = generateReferralLink(referralsLink, side, tokenId);
   if (link) {
