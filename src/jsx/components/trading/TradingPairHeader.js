@@ -290,7 +290,7 @@ const TradingPairHeader = () => {
       <div className="data-source-indicator">
         <div className="source-badge">
           <span className="source-dot"></span>
-          <span className="source-text">Hyperliquid</span>
+          <span className="source-text">Powered by HYPERLIQUID</span>
         </div>
       </div>
     </div>

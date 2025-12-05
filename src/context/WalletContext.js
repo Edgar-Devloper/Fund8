@@ -17,7 +17,7 @@ export const WalletProvider = ({ children }) => {
   const [signer, setSigner] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
-
+  
   // Verificar si hay una cuenta conectada al montar (puede ser de Thirdweb)
   useEffect(() => {
     const checkInitialConnection = async () => {
@@ -153,7 +153,7 @@ export const WalletProvider = ({ children }) => {
       return;
     }
 
-    const handleAccountsChanged = (accounts) => {
+      const handleAccountsChanged = (accounts) => {
       if (accounts && accounts.length > 0) {
         const newAddress = accounts[0];
         // Si la dirección cambió, actualizar (puede ser por Thirdweb o cambio manual)
@@ -175,22 +175,22 @@ export const WalletProvider = ({ children }) => {
         setProvider(null);
         setSigner(null);
         setError(null);
-      }
-    };
+        }
+      };
 
-    const handleChainChanged = () => {
-      window.location.reload();
-    };
+      const handleChainChanged = () => {
+        window.location.reload();
+      };
 
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
 
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-      }
-    };
+      return () => {
+        if (window.ethereum) {
+          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+          window.ethereum.removeListener('chainChanged', handleChainChanged);
+        }
+      };
   }, []); // Sin dependencias para evitar bucles infinitos
 
   const value = {

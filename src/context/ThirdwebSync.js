@@ -15,13 +15,17 @@ const ThirdwebSync = () => {
   useEffect(() => {
     if (account?.address) {
       const thirdwebAddress = account.address;
+      console.log('[ThirdwebSync] Account detectado:', thirdwebAddress, 'Address actual:', address);
+      
       // Si Thirdweb tiene una cuenta pero WalletContext no está sincronizado, sincronizar
       if (thirdwebAddress.toLowerCase() !== address?.toLowerCase()) {
+        console.log('[ThirdwebSync] Sincronizando address...');
         // Siempre actualizar el address (necesario para leer NFTs)
         setAddress(thirdwebAddress);
         
         // Intentar crear provider/signer según el tipo de wallet
         if (typeof window.ethereum !== 'undefined') {
+          console.log('[ThirdwebSync] Detectado window.ethereum, usando MetaMask provider');
           // MetaMask o wallet externa: usar window.ethereum
           try {
             const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -35,6 +39,7 @@ const ThirdwebSync = () => {
         } else {
           // Embedded wallet (email): crear provider de BSC para lectura
           // getAllMyNFT usa su propio BSC provider, pero necesitamos uno para el contexto
+          console.log('[ThirdwebSync] No hay window.ethereum, configurando para embedded wallet');
           try {
             const BSC_MAINNET_RPC = process.env.REACT_APP_BSC_RPC_URL || 'https://bsc-dataseed1.binance.org/';
             const BSC_TESTNET_RPC = process.env.REACT_APP_BSC_TESTNET_RPC_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/';

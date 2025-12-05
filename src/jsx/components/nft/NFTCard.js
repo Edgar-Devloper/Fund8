@@ -79,22 +79,34 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
 
   const ownerId = extractOwnerId(nft.referralsLink);
 
+  const handleCardClick = (e) => {
+    e.stopPropagation();
+    if (onSelect) {
+      onSelect();
+    }
+  };
+
   return (
-    <div className="col-md-6 col-lg-4 mb-3">
+    <div className="col-md-6 col-lg-4 mb-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
       <div
         className={`card nft-card ${isSelected ? 'border-success shadow-lg' : 'border-secondary'}`}
         style={{ 
           cursor: 'pointer',
           transition: 'all 0.2s ease',
           borderRadius: '8px',
-          overflow: 'hidden',
+          overflow: 'visible',
           borderWidth: isSelected ? '1px' : '1px',
           background: isSelected ? '#1f2640' : '#151a2e',
           borderColor: isSelected ? '#00c087' : '#1e2541',
           color: '#ffffff',
-          position: 'relative'
+          position: 'relative',
+          pointerEvents: 'auto',
+          zIndex: 10
         }}
-        onClick={onSelect}
+        onClick={handleCardClick}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+        }}
         onMouseEnter={(e) => {
           if (!isSelected) {
             e.currentTarget.style.background = '#1f2640';

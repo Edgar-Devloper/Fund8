@@ -6,19 +6,71 @@ import NFTSelector from './NFTSelector';
 
 const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
   const { t } = useTranslation();
-  const { isConnected } = useWallet();
-  const { selectedNFT, hasNFTs, isLoading, error, loadNFTs, deselectNFT } = useNFT();
+  const { isConnected, address } = useWallet();
+  const { selectedNFT, hasNFTs, isLoading, error, loadNFTs, deselectNFT, selectNFT } = useNFT();
   const [showModal, setShowModal] = useState(false);
   const hasShownOnceRef = useRef(false);
   const wasConnectedRef = useRef(false);
+  const prevAddressRef = useRef(null);
 
-  // Check if modal was already shown (persisted in localStorage)
+  // Get storage key for this specific wallet
+  const getModalShownKey = (walletAddress) => {
+    return walletAddress ? `nftModalShownOnce_${walletAddress.toLowerCase()}` : 'nftModalShownOnce';
+  };
+
   useEffect(() => {
-    const hasShownBefore = localStorage.getItem('nftModalShownOnce');
-    if (hasShownBefore === 'true') {
-      hasShownOnceRef.current = true;
+    if (address) {
+      const oldGlobalFlag = localStorage.getItem('nftModalShownOnce');
+      if (oldGlobalFlag === 'true') {
+        localStorage.removeItem('nftModalShownOnce');
+      }
+
+      const storageKey = getModalShownKey(address);
+      const hasShownBefore = localStorage.getItem(storageKey);
+      
+      if (hasShownBefore === 'true') {
+        if (selectedNFT && selectedNFT.id === 0) {
+          hasShownOnceRef.current = false;
+          localStorage.removeItem(storageKey);
+          deselectNFT();
+          const nftStorageKey = `selectedNFTId_${address.toLowerCase()}`;
+          localStorage.removeItem(nftStorageKey);
+        } else {
+          hasShownOnceRef.current = true;
+        }
+      } else {
+        hasShownOnceRef.current = false;
+        if (selectedNFT && !showModal) {
+          deselectNFT();
+          const nftStorageKey = `selectedNFTId_${address.toLowerCase()}`;
+          localStorage.removeItem(nftStorageKey);
+        } else if (selectedNFT && showModal) {
+          if (storageKey) {
+            localStorage.setItem(storageKey, 'true');
+            hasShownOnceRef.current = true;
+          }
+        }
+      }
+      
+      const walletChanged = prevAddressRef.current && 
+        prevAddressRef.current.toLowerCase() !== address.toLowerCase();
+      
+      if (walletChanged) {
+        hasShownOnceRef.current = false;
+        if (prevAddressRef.current) {
+          const oldStorageKey = getModalShownKey(prevAddressRef.current);
+          localStorage.removeItem(oldStorageKey);
+        }
+        if (storageKey) {
+          localStorage.removeItem(storageKey);
+        }
+        if (selectedNFT) {
+          deselectNFT();
+        }
+      }
+      prevAddressRef.current = address;
     }
-  }, []);
+  }, [address, deselectNFT, selectedNFT, showModal]);
 
   useEffect(() => {
     if (forceShow) {
@@ -28,42 +80,84 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
   }, [forceShow]);
 
   useEffect(() => {
-    if (!isConnected) {
+    const storageKey = address ? getModalShownKey(address) : null;
+    const hasShownBefore = storageKey ? localStorage.getItem(storageKey) === 'true' : false;
+
+    if (!isConnected || !address) {
       setShowModal(false);
       wasConnectedRef.current = false;
       return;
     }
 
+    const isNewConnection = !wasConnectedRef.current && isConnected;
+    if (isNewConnection) {
+      hasShownOnceRef.current = false;
+      if (storageKey) {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
     wasConnectedRef.current = true;
 
     if (forceShow) {
+      setShowModal(true);
+      hasShownOnceRef.current = false;
       return;
     }
 
-    // Only show automatically if never shown before AND user has NFTs AND not loading AND no NFT selected
-    if (!hasShownOnceRef.current && !selectedNFT) {
-      if (hasNFTs && !isLoading) {
+    if (hasNFTs && !isLoading) {
+      if (selectedNFT && selectedNFT.id === 0) {
+        deselectNFT();
+        const nftStorageKey = `selectedNFTId_${address.toLowerCase()}`;
+        localStorage.removeItem(nftStorageKey);
+        if (storageKey) {
+          localStorage.removeItem(storageKey);
+        }
         setShowModal(true);
         hasShownOnceRef.current = true;
-        localStorage.setItem('nftModalShownOnce', 'true');
+        return;
       }
-    } else if (selectedNFT) {
-      // If NFT is already selected, mark as shown
-      hasShownOnceRef.current = true;
-      localStorage.setItem('nftModalShownOnce', 'true');
+      
+      if (!selectedNFT) {
+        if (hasShownBefore) {
+          if (storageKey) {
+            localStorage.removeItem(storageKey);
+          }
+          hasShownOnceRef.current = false;
+        }
+        
+        setShowModal(true);
+        hasShownOnceRef.current = true;
+      } else {
+        if (!hasShownOnceRef.current && !hasShownBefore) {
+          setShowModal(true);
+          hasShownOnceRef.current = true;
+        } else if (hasShownOnceRef.current && address) {
+          const modalStorageKey = getModalShownKey(address);
+          localStorage.setItem(modalStorageKey, 'true');
+        }
+      }
     }
-  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT]);
+  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT, address, deselectNFT]);
 
   const handleClose = () => {
     setShowModal(false);
     hasShownOnceRef.current = true;
-    localStorage.setItem('nftModalShownOnce', 'true');
+    if (address) {
+      const storageKey = getModalShownKey(address);
+      localStorage.setItem(storageKey, 'true');
+    }
     if (onClose) {
       onClose();
     }
   };
 
   const handleSelect = (nft) => {
+    if (address && nft) {
+      const storageKey = getModalShownKey(address);
+      localStorage.setItem(storageKey, 'true');
+      hasShownOnceRef.current = true;
+    }
     if (onSelect) {
       onSelect(nft);
     }
@@ -77,24 +171,39 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
     return null;
   }
 
-  return (
-    <div 
-      className="modal fade show" 
-      style={{ display: 'block', backgroundColor: 'rgba(10, 14, 39, 0.85)', zIndex: 1050 }}
-      tabIndex="-1"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          handleClose();
-        }
-      }}
-    >
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content" style={{
-              background: '#151a2e',
-              border: '1px solid #1e2541',
-              borderRadius: '8px',
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
-            }}>
+      return (
+        <div 
+          className="modal fade show" 
+          style={{ display: 'block', backgroundColor: 'rgba(10, 14, 39, 0.85)', zIndex: 1050, pointerEvents: 'auto' }}
+          tabIndex="-1"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleClose();
+            }
+          }}
+        >
+          <div 
+            className="modal-dialog modal-lg modal-dialog-centered" 
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1051 }}
+          >
+            <div 
+              className="modal-content" 
+              style={{
+                background: '#151a2e',
+                border: '1px solid #1e2541',
+                borderRadius: '8px',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                pointerEvents: 'auto',
+                position: 'relative',
+                zIndex: 1052
+              }} 
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
               <div className="modal-header" style={{ 
                 background: '#151a2e',
                 color: '#ffffff',

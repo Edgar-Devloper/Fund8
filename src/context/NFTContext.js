@@ -29,7 +29,15 @@ export const NFTProvider = ({ children }) => {
   const loadingRef = useRef(false);
 
   const loadNFTs = useCallback(async () => {
-    if (!provider || !address || !isConnected) {
+    if (!address) {
+      setNfts([]);
+      setSelectedNFT(null);
+      prevAddressRef.current = null;
+      loadingRef.current = false;
+      return;
+    }
+
+    if (!isConnected && !address) {
       setNfts([]);
       setSelectedNFT(null);
       prevAddressRef.current = null;
@@ -58,8 +66,10 @@ export const NFTProvider = ({ children }) => {
     setError(null);
 
     try {
-      const nftsData = await getAllMyNFT(provider, address);
-      setNfts(nftsData);
+      // getAllMyNFT usa su propio BSC provider, así que el provider pasado es opcional
+      // Para embedded wallets, podemos pasar null o el provider si está disponible
+          const nftsData = await getAllMyNFT(provider || null, address);
+          setNfts(nftsData);
       
       if (nftsData.length === 0) {
         setSelectedNFT(null);
@@ -71,22 +81,24 @@ export const NFTProvider = ({ children }) => {
         const storageKey = getStorageKey(address);
         const savedNFTId = storageKey ? localStorage.getItem(storageKey) : null;
         
+        // Verificar si el modal se mostró antes para esta wallet
+        const modalShownKey = `nftModalShownOnce_${address.toLowerCase()}`;
+        const modalShownBefore = localStorage.getItem(modalShownKey) === 'true';
+        
         let nftToSelect = null;
         
-        if (savedNFTId) {
+        if (savedNFTId && modalShownBefore) {
           const savedNFT = nftsData.find(nft => nft.id === Number(savedNFTId));
           if (savedNFT && savedNFT.ownerAddress.toLowerCase() === address.toLowerCase()) {
             nftToSelect = savedNFT;
-          }
-        }
-        
-        if (!nftToSelect) {
-          const firstNFT = nftsData[0];
-          if (firstNFT && firstNFT.ownerAddress.toLowerCase() === address.toLowerCase()) {
-            nftToSelect = firstNFT;
+          } else {
             if (storageKey) {
-              localStorage.setItem(storageKey, firstNFT.id.toString());
+              localStorage.removeItem(storageKey);
             }
+          }
+        } else if (savedNFTId && !modalShownBefore) {
+          if (storageKey) {
+            localStorage.removeItem(storageKey);
           }
         }
         
@@ -119,12 +131,10 @@ export const NFTProvider = ({ children }) => {
 
     const nftExists = nfts.find(n => n.id === nft.id);
     if (!nftExists) {
-      console.warn('[NFT Context] NFT no encontrado en la lista:', nft.id);
       return;
     }
 
     if (nftExists.ownerAddress.toLowerCase() !== address.toLowerCase()) {
-      console.warn('[NFT Context] NFT no pertenece a la wallet actual');
       setSelectedNFT(null);
       const storageKey = getStorageKey(address);
       if (storageKey) {
@@ -156,15 +166,20 @@ export const NFTProvider = ({ children }) => {
   const fund8NFTs = useMemo(() => getNFTsByType('fund8'), [getNFTsByType]);
 
   useEffect(() => {
-    if (isConnected && provider && address) {
-      loadNFTs();
+    // Para wallets de email (embedded wallets), solo necesitamos address
+    // Para MetaMask, necesitamos provider también
+    if (address) {
+        const isEmbeddedWallet = typeof window.ethereum === 'undefined';
+        if (isEmbeddedWallet || provider) {
+          loadNFTs();
+        }
     } else {
       setNfts([]);
       setSelectedNFT(null);
       prevAddressRef.current = null;
       loadingRef.current = false;
     }
-  }, [isConnected, provider, address]);
+  }, [isConnected, provider, address, loadNFTs]);
 
   useEffect(() => {
     if (selectedNFT && address && nfts.length > 0) {

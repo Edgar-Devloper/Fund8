@@ -26,12 +26,26 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     authService.setToken(null);
     
-    // Limpiar localStorage
+    // Limpiar localStorage de autenticación
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('jwt_wallet_address');
     
+    // Limpiar flags del modal de NFT para que aparezca de nuevo al volver a loguearse
+    if (address) {
+      const modalShownKey = `nftModalShownOnce_${address.toLowerCase()}`;
+      localStorage.removeItem(modalShownKey);
+      console.log('[Auth] Limpiado flag del modal de NFT para wallet:', address);
+    }
+    
+    // Limpiar todos los flags de modal (por si cambia de wallet)
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('nftModalShownOnce_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
     console.log('[Auth] Sesión cerrada');
-  }, []);
+  }, [address]);
 
   const authenticate = useCallback(async () => {
     if (!address || !signer) {

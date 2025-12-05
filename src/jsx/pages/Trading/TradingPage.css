@@ -206,10 +206,23 @@
   
   .trading-main-layout {
     gap: 20px;
+    max-width: 100%;
+  }
+  
+  .trading-left-section {
+    flex: 0 0 72%;
   }
   
   .trading-side-column {
+    flex: 0 0 28%;
+    max-width: 28%;
     gap: 20px;
+  }
+  
+  .trading-orderbook-column {
+    flex: 0 0 340px;
+    min-width: 300px;
+    max-width: 380px;
   }
   
   .order-form-panel {
@@ -220,6 +233,86 @@
   .orderbook-trades-panel {
     flex: 1;
     min-height: 600px;
+  }
+}
+
+/* Extra Large Desktop - 1600px and above */
+@media (min-width: 1600px) {
+  .trading-page-content {
+    padding: 24px 40px;
+  }
+  
+  .trading-main-layout {
+    gap: 24px;
+    max-width: 100%;
+  }
+  
+  .trading-left-section {
+    flex: 0 0 73%;
+  }
+  
+  .trading-side-column {
+    flex: 0 0 27%;
+    max-width: 27%;
+    gap: 24px;
+  }
+  
+  .trading-orderbook-column {
+    flex: 0 0 360px;
+    min-width: 320px;
+    max-width: 400px;
+  }
+  
+  .order-form-panel {
+    min-height: 500px;
+    max-height: 600px;
+  }
+}
+
+/* Ultra Wide Desktop - 1920px and above */
+@media (min-width: 1920px) {
+  .trading-page-content {
+    padding: 24px 48px;
+  }
+  
+  .trading-main-layout {
+    gap: 24px;
+    max-width: 100%;
+  }
+  
+  .trading-left-section {
+    flex: 0 0 74%;
+  }
+  
+  .trading-side-column {
+    flex: 0 0 26%;
+    max-width: 26%;
+    gap: 24px;
+  }
+  
+  .trading-orderbook-column {
+    flex: 0 0 380px;
+    min-width: 340px;
+    max-width: 420px;
+  }
+  
+  .order-form-panel {
+    min-height: 520px;
+    max-height: 620px;
+  }
+  
+  .trading-top-row {
+    height: calc(100vh - 200px);
+    min-height: 600px;
+  }
+  
+  .trading-positions-row {
+    min-height: 650px;
+    height: 650px;
+  }
+  
+  .trading-bottom-left-grid {
+    min-height: 650px;
   }
 }
 

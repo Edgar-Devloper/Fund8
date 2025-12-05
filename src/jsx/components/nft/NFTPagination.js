@@ -49,3 +49,4 @@ const NFTPagination = ({ currentPage, totalPages, onPageChange }) => {
 export default NFTPagination;
 
 
+
