@@ -135,6 +135,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .chart-wrapper-container .card-header {
@@ -243,7 +244,7 @@
   border-radius: 0;
   background: #0a0e27;
   box-shadow: inset 0 0 0 1px #1e2541;
-  overflow: hidden;
+  overflow: visible;
   min-height: 400px;
   width: 100%;
   display: flex;

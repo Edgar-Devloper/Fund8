@@ -1,5 +1,17 @@
 /* Trading Page Responsive Layout */
 
+/* Ensure full width on large screens */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+}
+
 .trading-page-content {
   padding: 0;
   padding-bottom: 50px; /* Space for market ticker (40px) + small gap (10px) */
@@ -8,10 +20,13 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  margin-top: 0;
   margin-bottom: 0;
   overflow-y: auto;
   overflow-x: hidden;
   gap: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .trading-page-content::-webkit-scrollbar {
@@ -37,12 +52,13 @@
   flex: 0 0 auto;
   min-height: auto;
   max-height: none;
-  align-items: flex-end;
-  margin-bottom: 12px;
+  align-items: flex-start;
+  margin-bottom: 0;
   margin-top: 0;
-  padding: 12px 16px;
+  padding: 0 8px;
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 
 /* Left Section: Chart + OrderBook + Active Positions */
@@ -55,7 +71,9 @@
   height: auto;
   max-height: none;
   overflow: visible;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  padding-top: 0;
+  margin-top: 0;
 }
 
 /* Top Row: Chart + OrderBook */
@@ -66,6 +84,9 @@
   min-height: 0;
   height: calc(100vh - 180px);
   min-height: 500px;
+  margin-bottom: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 /* Bottom Row: Active Positions Panel */
@@ -76,7 +97,8 @@
   overflow: visible;
   width: 100%;
   height: 600px;
-  align-items: flex-end;
+  align-items: flex-start;
+  margin-top: 0;
 }
 
 /* Grid for bottom left panels */
@@ -87,7 +109,7 @@
   width: 100%;
   height: 100%;
   min-height: 600px;
-  align-items: end;
+  align-items: start;
 }
 
 /* Chart Column - Left Side */
@@ -97,7 +119,7 @@
   display: flex;
   height: 100%;
   min-height: 500px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .chart-container {
@@ -109,6 +131,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* OrderBook Column - Next to Chart */
@@ -132,8 +155,8 @@
   max-width: 30%;
   background: transparent;
   padding-right: 4px;
-  align-self: flex-end;
-  justify-content: flex-end;
+  align-self: flex-start;
+  justify-content: flex-start;
 }
 
 /* Custom scrollbar for side column */
@@ -201,22 +224,28 @@
 /* Large Desktop - 1400px and above */
 @media (min-width: 1400px) {
   .trading-page-content {
-    padding: 20px 32px;
+    padding: 0 0 50px 0;
+    width: 100%;
+    max-width: 100%;
   }
   
   .trading-main-layout {
     gap: 20px;
     max-width: 100%;
+    width: 100%;
+    flex: 1 1 auto;
   }
   
   .trading-left-section {
-    flex: 0 0 72%;
+    flex: 1 1 72%;
+    min-width: 0;
   }
   
   .trading-side-column {
     flex: 0 0 28%;
     max-width: 28%;
     gap: 20px;
+    min-width: 340px;
   }
   
   .trading-orderbook-column {
@@ -227,34 +256,50 @@
   
   .order-form-panel {
     min-height: 480px;
-    max-height: 580px;
+    max-height: calc(100vh - 260px);
+    flex: 1 1 auto;
   }
   
   .orderbook-trades-panel {
     flex: 1;
     min-height: 600px;
   }
+  
+  .trading-top-row {
+    flex: 1 1 auto;
+  }
+  
+  .trading-positions-row {
+    flex: 1 1 auto;
+    min-height: 200px;
+  }
 }
 
 /* Extra Large Desktop - 1600px and above */
 @media (min-width: 1600px) {
   .trading-page-content {
-    padding: 24px 40px;
+    padding: 0 0 50px 0;
+    width: 100%;
+    max-width: 100%;
   }
   
   .trading-main-layout {
     gap: 24px;
     max-width: 100%;
+    width: 100%;
+    flex: 1 1 auto;
   }
   
   .trading-left-section {
-    flex: 0 0 73%;
+    flex: 1 1 73%;
+    min-width: 0;
   }
   
   .trading-side-column {
     flex: 0 0 27%;
     max-width: 27%;
     gap: 24px;
+    min-width: 360px;
   }
   
   .trading-orderbook-column {
@@ -265,29 +310,48 @@
   
   .order-form-panel {
     min-height: 500px;
-    max-height: 600px;
+    max-height: calc(100vh - 280px);
+    flex: 1 1 auto;
+  }
+  
+  .trading-top-row {
+    flex: 1 1 auto;
+    min-height: 600px;
+  }
+  
+  .trading-positions-row {
+    flex: 0 0 auto;
+    height: 400px;
+    max-height: 450px;
+    min-height: 400px;
   }
 }
 
 /* Ultra Wide Desktop - 1920px and above */
 @media (min-width: 1920px) {
   .trading-page-content {
-    padding: 24px 48px;
+    padding: 0 0 50px 0;
+    width: 100%;
+    max-width: 100%;
   }
   
   .trading-main-layout {
     gap: 24px;
     max-width: 100%;
+    width: 100%;
+    flex: 1 1 auto;
   }
   
   .trading-left-section {
-    flex: 0 0 74%;
+    flex: 1 1 74%;
+    min-width: 0;
   }
   
   .trading-side-column {
     flex: 0 0 26%;
     max-width: 26%;
     gap: 24px;
+    min-width: 380px;
   }
   
   .trading-orderbook-column {
@@ -298,21 +362,84 @@
   
   .order-form-panel {
     min-height: 520px;
-    max-height: 620px;
+    max-height: calc(100vh - 300px);
+    flex: 1 1 auto;
   }
   
   .trading-top-row {
     height: calc(100vh - 200px);
     min-height: 600px;
+    flex: 1 1 auto;
   }
   
   .trading-positions-row {
     min-height: 650px;
-    height: 650px;
+    height: calc(100vh - 850px);
+    max-height: 700px;
+    flex: 1 1 auto;
   }
   
   .trading-bottom-left-grid {
     min-height: 650px;
+    height: 100%;
+  }
+}
+
+/* Extra Ultra Wide Desktop - 2560px and above */
+@media (min-width: 2560px) {
+  .trading-page-content {
+    padding: 0 0 50px 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .trading-main-layout {
+    gap: 32px;
+    max-width: 100%;
+    width: 100%;
+    flex: 1 1 auto;
+  }
+  
+  .trading-left-section {
+    flex: 1 1 75%;
+    min-width: 0;
+  }
+  
+  .trading-side-column {
+    flex: 0 0 25%;
+    max-width: 25%;
+    gap: 32px;
+    min-width: 420px;
+  }
+  
+  .trading-orderbook-column {
+    flex: 0 0 420px;
+    min-width: 380px;
+    max-width: 480px;
+  }
+  
+  .order-form-panel {
+    min-height: 600px;
+    max-height: calc(100vh - 320px);
+    flex: 1 1 auto;
+  }
+  
+  .trading-top-row {
+    height: calc(100vh - 220px);
+    min-height: 700px;
+    flex: 1 1 auto;
+  }
+  
+  .trading-positions-row {
+    min-height: 750px;
+    height: calc(100vh - 950px);
+    max-height: 800px;
+    flex: 1 1 auto;
+  }
+  
+  .trading-bottom-left-grid {
+    min-height: 750px;
+    height: 100%;
   }
 }
 
@@ -415,7 +542,7 @@
 /* Mobile Landscape - 768px and below */
 @media (max-width: 768px) {
   .trading-page-content {
-    padding: 8px 12px;
+    padding: 0 0 50px 0;
   }
 
   .trading-main-layout {
@@ -534,7 +661,7 @@
 /* Extra Small Mobile - 400px and below */
 @media (max-width: 400px) {
   .trading-page-content {
-    padding: 4px;
+    padding: 0 0 50px 0;
   }
 
   .trading-main-layout {

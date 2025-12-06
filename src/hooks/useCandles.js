@@ -29,14 +29,17 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
       
       // calculate time range based on interval and limit
       // hyperliquid uses milliseconds for timestamps in candleSnapshot
+      // Normalize interval (handle both '1D' and '1d', '1W' and '1w')
+      const normalizedInterval = interval.toLowerCase();
       const intervalMilliseconds = {
         '1m': 60 * 1000,
         '5m': 300 * 1000,
         '15m': 900 * 1000,
         '1h': 3600 * 1000,
         '4h': 14400 * 1000,
-        '1d': 86400 * 1000
-      }[interval] || 3600 * 1000;
+        '1d': 86400 * 1000,
+        '1w': 604800 * 1000
+      }[normalizedInterval] || 3600 * 1000;
       
       const endTime = Date.now(); // milliseconds
       const startTime = endTime - (limit * intervalMilliseconds);
@@ -117,15 +120,18 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
 
   // Get interval in seconds
   const getIntervalSeconds = (interval) => {
+    // Normalize interval (handle both '1D' and '1d', '1W' and '1w')
+    const normalizedInterval = interval.toLowerCase();
     const intervalSeconds = {
       '1m': 60,
       '5m': 300,
       '15m': 900,
       '1h': 3600,
       '4h': 14400,
-      '1d': 86400
+      '1d': 86400,
+      '1w': 604800
     };
-    return intervalSeconds[interval] || 3600;
+    return intervalSeconds[normalizedInterval] || 3600;
   };
 
   // Update current candle with real-time price from WebSocket

@@ -1,4 +1,9 @@
-const DEFILY_URL = 'https://app.defily.ai';
+// Base URL for referral links
+// If REACT_APP_REFERRAL_DISPLAY_URL is set, use it for display (assumes proxy is configured)
+// Otherwise, use defily.ai directly for functionality
+const DEFILY_BACKEND_URL = 'https://app.defily.ai';
+const DEFILY_DISPLAY_URL = process.env.REACT_APP_REFERRAL_DISPLAY_URL || DEFILY_BACKEND_URL;
+const DEFILY_URL = DEFILY_DISPLAY_URL; // Use display URL (should have proxy configured)
 
 const extractReferralCode = (referralsLink) => {
   if (!referralsLink) {

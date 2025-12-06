@@ -113,7 +113,10 @@ const ChartWrapper = () => {
       }
       
       if (chartRef.current) {
-        chartRef.current.timeScale().fitContent();
+        // Only fit content if not daily/weekly timeframe to prevent month/year grouping
+        if (timeframe !== '1D' && timeframe !== '1d' && timeframe !== '1W' && timeframe !== '1w') {
+          chartRef.current.timeScale().fitContent();
+        }
         // Force time scale to be visible and update
         chartRef.current.timeScale().applyOptions({
           timeVisible: true,
@@ -128,7 +131,7 @@ const ChartWrapper = () => {
       console.error('[ChartWrapper] Error setting chart data:', error);
       // Don't throw, just log the error
     }
-  }, [realCandles, showVolume]);
+  }, [realCandles, showVolume, timeframe]);
 
   // Initialize chart (only once) - with comprehensive cleanup
   useEffect(() => {
@@ -387,6 +390,66 @@ const ChartWrapper = () => {
     if (baseTicker) rebuildData();
   }, [timeframe, length, showVolume, rebuildData, selectedSymbol, tickers]);
 
+  // Update date format based on timeframe
+  useEffect(() => {
+    if (!chartRef.current) return;
+    
+    // Determine date format based on timeframe
+    let dateFormat = 'dd MMM yyyy';
+    let timeFormat = 'HH:mm';
+    let secondsVisible = false;
+    let barSpacing = 3;
+    let minBarSpacing = 0.5;
+    
+    if (timeframe === '1D' || timeframe === '1d') {
+      // For daily: show day/month format
+      dateFormat = 'dd/MM';
+      timeFormat = '';
+      barSpacing = 5;
+      minBarSpacing = 1;
+    } else if (timeframe === '1W' || timeframe === '1w') {
+      // For weekly: show day/month format
+      dateFormat = 'dd/MM';
+      timeFormat = '';
+      barSpacing = 8;
+      minBarSpacing = 2;
+    } else if (timeframe === '1h') {
+      // For hourly: show date and time
+      dateFormat = 'dd MMM';
+      timeFormat = 'HH:mm';
+      barSpacing = 3;
+      minBarSpacing = 0.5;
+    } else {
+      // For minutes: show date and time
+      dateFormat = 'dd MMM';
+      timeFormat = 'HH:mm';
+      barSpacing = 3;
+      minBarSpacing = 0.5;
+      if (timeframe === '1m') {
+        secondsVisible = false;
+      }
+    }
+    
+    // Update chart localization and timeScale
+    chartRef.current.applyOptions({
+      localization: {
+        locale: 'es-ES',
+        dateFormat: dateFormat,
+        timeFormat: timeFormat,
+        priceFormatter: (price) => {
+          return price.toFixed(2);
+        }
+      },
+      timeScale: {
+        secondsVisible: secondsVisible,
+        barSpacing: barSpacing,
+        minBarSpacing: minBarSpacing
+      }
+    });
+    
+  }, [timeframe, realCandles]);
+
+
   // Este useEffect está duplicado - ya está manejado en el useEffect de inicialización
 
   const handleLengthChange = (e) => setLength(parseInt(e.target.value,10));
@@ -535,7 +598,6 @@ const ChartWrapper = () => {
   return (
       <div className="card h-100 chart-wrapper-container" style={{borderRadius:0, background: 'var(--hl-dark-card, #151a2e)', border: '1px solid var(--hl-dark-border, #1e2541)', height: '100%', display: 'flex', flexDirection: 'column'}}>
         <div className="card-header d-flex flex-wrap gap-2 align-items-center chart-header" style={{borderTopLeftRadius:0, borderTopRightRadius:0, background: 'var(--hl-dark-card, #151a2e)', borderBottom: '1px solid var(--hl-dark-border, #1e2541)', flexShrink: 0}}>
-          <h6 className="mb-0 fw-semibold" style={{letterSpacing:'.4px', color: 'var(--hl-text-primary, #ffffff)', flexShrink: 0}}>Chart</h6>
           
           {/* OHLC Display */}
           {currentOHLC.close > 0 && (
@@ -583,7 +645,7 @@ const ChartWrapper = () => {
           )}
           
           <div className="d-flex align-items-center gap-1 small flex-wrap" style={{flexShrink: 0}}>
-            {['1m','5m','15m','1h'].map(tf => (
+            {['1m','5m','15m','1h','1D','1W'].map(tf => (
               <button key={tf} onClick={() => setTimeframe(tf)} className={`btn btn-sm ${tf===timeframe?'btn-primary':'btn-outline-secondary'}`} style={{padding:'2px 8px', borderRadius:14, fontSize: '11px'}}>{tf}</button>
             ))}
           </div>

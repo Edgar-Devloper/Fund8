@@ -19,11 +19,23 @@ const getMetaAndAssetCtxs = async () => {
 };
 
 const getCandles = async (coin, interval, startTime, endTime) => {
+  // Normalize interval format for Hyperliquid API
+  // Hyperliquid expects lowercase: '1m', '5m', '15m', '1h', '4h', '1d'
+  // But we support '1D' and '1W' in UI, so normalize them
+  let normalizedInterval = interval;
+  if (interval === '1D') {
+    normalizedInterval = '1d';
+  } else if (interval === '1W') {
+    normalizedInterval = '1w'; // Note: Hyperliquid may not support '1w', but we'll try
+  } else {
+    normalizedInterval = interval.toLowerCase();
+  }
+  
   return await postData('/info', {
     type: 'candleSnapshot',
     req: {
       coin,
-      interval,
+      interval: normalizedInterval,
       startTime,
       endTime
     }

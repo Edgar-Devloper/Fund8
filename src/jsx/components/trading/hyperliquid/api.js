@@ -53,6 +53,8 @@ export function intervalToSec(interval) {
     case '5m': return 300;
     case '15m': return 900;
     case '1h': return 3600;
+    case '1D': return 86400; // 1 día = 24 horas
+    case '1W': return 604800; // 1 semana = 7 días
     case '1m':
     default: return 60;
   }

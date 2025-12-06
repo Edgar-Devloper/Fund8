@@ -200,7 +200,7 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                   border: `1px solid ${nft.type === 'defily' ? 'rgba(0, 229, 204, 0.2)' : 'rgba(0, 192, 135, 0.2)'}`,
                   borderRadius: '6px'
                 }}>
-                  {nft.type === 'defily' ? 'Defily' : 'Fund8'}
+                  {nft.type === 'defily' ? 'Trader' : 'Fund8'}
                 </span>
               </div>
             </div>
