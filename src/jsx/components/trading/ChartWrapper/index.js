@@ -115,7 +115,7 @@ const ChartWrapper = () => {
       if (chartRef.current) {
         // Only fit content if not daily/weekly timeframe to prevent month/year grouping
         if (timeframe !== '1D' && timeframe !== '1d' && timeframe !== '1W' && timeframe !== '1w') {
-          chartRef.current.timeScale().fitContent();
+        chartRef.current.timeScale().fitContent();
         }
         // Force time scale to be visible and update
         chartRef.current.timeScale().applyOptions({
