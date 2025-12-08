@@ -6,6 +6,7 @@ import { useRecentTrades } from '../../../../hooks/useRecentTrades.js';
 import { useCryptoPrice } from '../../../../hooks/useCryptoPrice.js';
 import { useOpenOrders } from '../../../../hooks/useOpenOrders.js';
 import { useHyperliquidWebSocket } from '../../../../hooks/useHyperliquidWebSocket.js';
+import { useTradingTickers } from '../../../../hooks/useTradingTickers.js';
 import hyperliquidTrading from '../../../../services/hyperliquidTrading.js';
 
 const TradingDataContext = createContext(null);
@@ -89,11 +90,17 @@ export const HyperliquidTradingProvider = ({ children }) => {
   // handle empty order book
   const safeOrderBook = orderBook || { bids: [], asks: [] };
   
-  // format tickers from available symbols
-  const [tickers, setTickers] = useState([]);
+  const { tickers, loading: tickersLoading, error: tickersError } = useTradingTickers(120000);
   
   useEffect(() => {
-    // fetch prices and 24h stats for all hyperliquid symbols
+    if (tickersError) {
+      console.error('[HyperliquidTradingProvider] Tickers error:', tickersError);
+    }
+  }, [tickersError]);
+  
+  const [legacyTickers, setLegacyTickers] = useState([]);
+  
+  useEffect(() => {
     const fetchAllTickers = async () => {
       try {
         // Obtener precios actuales y contexto de meta
@@ -105,8 +112,6 @@ export const HyperliquidTradingProvider = ({ children }) => {
         const allPrices = allMidsResponse.data || allMidsResponse;
         const metaData = metaResponse.data || metaResponse;
         
-        // Parse metaAndAssetCtxs correctly
-        // Format: [universe, assetCtxs] where both are arrays
         let universe = [];
         let assetCtxs = [];
         
@@ -121,54 +126,33 @@ export const HyperliquidTradingProvider = ({ children }) => {
             : (typeof metaData.assetCtxs === 'object' ? Object.values(metaData.assetCtxs) : []);
         }
         
-        // Create a map for quick lookup: symbol -> index -> ctx
-        // Since universe might be empty, we'll use allPrices keys to map
         const symbolToIndexMap = {};
         
-        // Try to map from universe first
         if (Array.isArray(universe) && universe.length > 0) {
           universe.forEach((coin, index) => {
             const coinName = coin?.name || coin;
             if (coinName) {
               symbolToIndexMap[coinName] = index;
+              symbolToIndexMap[coinName.toUpperCase()] = index;
             }
           });
         } else {
-          // If universe is empty, try to map from allPrices keys
-          // The keys in allPrices might correspond to indices in assetCtxs
-          const allPricesKeys = Object.keys(allPrices || {});
-          allPricesKeys.forEach((key, index) => {
-            if (index < assetCtxs.length) {
-              symbolToIndexMap[key] = index;
+          const allPricesKeys = Object.keys(allPrices || {})
+            .filter(key => !key.startsWith('@') && !/^\d+$/.test(key));
+          
+          allPricesKeys.forEach((key, idx) => {
+            // Mapear solo si el índice es válido
+            if (idx < assetCtxs.length) {
+              symbolToIndexMap[key] = idx;
+              symbolToIndexMap[key.toUpperCase()] = idx;
             }
           });
         }
         
-        // Check if allPrices has our symbols
-        const btcPrice = allPrices['BTC'] || allPrices['btc'] || null;
-        const ethPrice = allPrices['ETH'] || allPrices['eth'] || null;
-        
-        console.log('[HyperliquidTradingProvider] Debug:', {
-          metaDataType: Array.isArray(metaData) ? 'array' : typeof metaData,
-          universeType: Array.isArray(universe) ? 'array' : typeof universe,
-          universeLength: Array.isArray(universe) ? universe.length : 'N/A',
-          assetCtxsType: Array.isArray(assetCtxs) ? 'array' : typeof assetCtxs,
-          assetCtxsLength: Array.isArray(assetCtxs) ? assetCtxs.length : 'N/A',
-          symbolToIndexMap,
-          sampleCtx: Array.isArray(assetCtxs) ? assetCtxs[0] : (typeof assetCtxs === 'object' ? Object.values(assetCtxs)[0] : null),
-          allPricesKeys: Object.keys(allPrices || {}).slice(0, 10),
-          btcPrice,
-          ethPrice,
-          hasBTC: !!btcPrice,
-          hasETH: !!ethPrice,
-          firstFewAssetCtxs: Array.isArray(assetCtxs) ? assetCtxs.slice(0, 3) : null
-        });
-        
-        // Para high/low 24h, usamos candles de últimas 24h
         const getLast24hStats = async (symbol) => {
           try {
             const endTime = Date.now();
-            const startTime = endTime - (24 * 60 * 60 * 1000); // 24 horas atrás
+            const startTime = endTime - (24 * 60 * 60 * 1000);
             
             const candlesResponse = await apiService.getCandles(symbol, '1h', startTime, endTime);
             const candles = candlesResponse.data || candlesResponse || [];
@@ -196,12 +180,64 @@ export const HyperliquidTradingProvider = ({ children }) => {
           return { high24h: 0, low24h: 0 };
         };
         
-        // Formatear tickers - primero datos básicos rápidamente
-        const basicTickers = HYPERLIQUID_SYMBOLS.map((symbol) => {
-          const coinId = symbol.toLowerCase();
-          const pair = SYMBOL_TO_PAIR[symbol];
-          
-          const currentPrice = parseFloat(allPrices[symbol] || 0);
+        let availableSymbols = [];
+        
+        if (Array.isArray(universe) && universe.length > 0) {
+          availableSymbols = universe
+            .map(coin => {
+              return coin?.name || coin?.symbol || (typeof coin === 'string' ? coin : null);
+            })
+            .filter(Boolean)
+            .filter(name => {
+              const nameStr = String(name).toUpperCase();
+              return !nameStr.startsWith('@') && 
+                     !/^\d+$/.test(nameStr) &&
+                     nameStr.length >= 2 && 
+                     nameStr.length <= 10;
+            })
+            .map(s => s.toUpperCase());
+        } else {
+          availableSymbols = Object.keys(allPrices || {})
+            .filter(key => {
+              const upperKey = key.toUpperCase();
+              return !upperKey.startsWith('@') && 
+                     !/^\d+$/.test(upperKey) &&
+                     upperKey.length >= 2 && 
+                     upperKey.length <= 10 &&
+                     /^[A-Z0-9]+$/.test(upperKey);
+            })
+            .map(key => key.toUpperCase());
+        }
+        
+        if (availableSymbols.length === 0) {
+          console.warn('[HyperliquidTradingProvider] No symbols found from API, using hardcoded list');
+          availableSymbols = HYPERLIQUID_SYMBOLS;
+        }
+        
+        const basicTickers = availableSymbols
+          .filter(symbol => {
+            const upperSymbol = String(symbol).toUpperCase().trim();
+            const isValid = !upperSymbol.startsWith('@') && 
+                           !/^\d+$/.test(upperSymbol) &&
+                           upperSymbol.length >= 2 &&
+                           upperSymbol.length <= 10 &&
+                           /^[A-Z0-9]+$/.test(upperSymbol);
+            
+            if (!isValid) {
+              console.log('[HyperliquidTradingProvider] Filtered out symbol (index or invalid):', symbol);
+            }
+            return isValid;
+          })
+          .map((symbol) => {
+            const coinId = symbol.toLowerCase();
+            const pair = SYMBOL_TO_PAIR[symbol] || `${symbol}/USDC`;
+            
+            const currentPrice = parseFloat(
+              allPrices[symbol] || 
+              allPrices[coinId] || 
+              allPrices[symbol.toLowerCase()] || 
+              0
+            );
           
           // Try multiple ways to find the context
           let ctx = {};
@@ -219,9 +255,7 @@ export const HyperliquidTradingProvider = ({ children }) => {
             assetCtxs.forEach((c, idx) => {
               const prevPx = parseFloat(c.prevDayPx || c.markPx || 0);
               if (prevPx > 0) {
-                // Calculate percentage difference (should be very small for same coin)
                 const diff = Math.abs(prevPx - currentPrice) / Math.max(prevPx, currentPrice);
-                // Match if within 5% (prices should be very close for same coin)
                 if (diff < 0.05 && diff < closestDiff) {
                   closestDiff = diff;
                   closestIndex = idx;
@@ -242,12 +276,16 @@ export const HyperliquidTradingProvider = ({ children }) => {
           const change24h = prevDayPx > 0 ? currentPrice - prevDayPx : 0;
           const change24hPercent = prevDayPx > 0 ? ((change24h / prevDayPx) * 100) : 0;
           const volume24h = parseFloat(ctx.dayNtlVlm || 0);
+          // Funding rate viene en ctx.funding como decimal (ej: 0.0001 = 0.01%)
+          const fundingRate = parseFloat(ctx.funding || 0);
           
           console.log(`[Ticker ${symbol}]`, {
             currentPrice,
             prevDayPx,
             change24h: change24h.toFixed(2),
             change24hPercent: change24hPercent.toFixed(2) + '%',
+            volume24h,
+            fundingRate,
             ctxIndex,
             hasCtx: !!ctx.prevDayPx,
             allPricesHasSymbol: !!(allPrices[symbol]),
@@ -260,38 +298,20 @@ export const HyperliquidTradingProvider = ({ children }) => {
             change24h: change24h,
             change24hPercent: change24hPercent,
             volume24h: volume24h,
-            high24h: currentPrice, // temporal
-            low24h: currentPrice, // temporal
-            marketCap: currentPrice * 21000000 // Estimado para BTC, ajustar por coin
+            fundingRate: fundingRate,
+            high24h: currentPrice,
+            low24h: currentPrice,
+            marketCap: currentPrice * 21000000
           };
         });
         
-        // Actualizar inmediatamente con datos básicos
-        setTickers(basicTickers);
-        
-        // Luego obtener high/low de candles en background (solo para símbolo actual)
-        const currentSymbol = selectedSymbol.split('/')[0];
-        if (HYPERLIQUID_SYMBOLS.includes(currentSymbol)) {
-          const { high24h, low24h } = await getLast24hStats(currentSymbol);
-          
-          // Actualizar solo el símbolo actual con high/low
-          setTickers(prev => prev.map(ticker => 
-            ticker.symbol.startsWith(currentSymbol) 
-              ? { ...ticker, high24h: high24h || ticker.last, low24h: low24h || ticker.last }
-              : ticker
-          ));
-        }
+        setLegacyTickers(basicTickers);
       } catch (error) {
-        console.error('[HyperliquidTradingProvider] Error fetching tickers:', error);
+        console.error('[HyperliquidTradingProvider] Legacy ticker fetch error:', error);
       }
     };
-    
-    fetchAllTickers();
-    const interval = setInterval(fetchAllTickers, 120000); // update every 2 minutes
-    return () => clearInterval(interval);
-  }, [selectedSymbol]); // Re-fetch cuando cambia el símbolo seleccionado
+  }, []);
   
-  // format order book data
   const formattedOrderBook = useMemo(() => {
     if (!safeOrderBook || (!safeOrderBook.bids && !safeOrderBook.asks)) {
       return { bids: [], asks: [] };
@@ -323,7 +343,6 @@ export const HyperliquidTradingProvider = ({ children }) => {
     }));
   }, [recentTrades, selectedSymbol, coinId]);
   
-  // format portfolio (from user balance)
   const portfolio = useMemo(() => {
     if (!isConnected || !address) return [];
     
@@ -431,7 +450,7 @@ export const HyperliquidTradingProvider = ({ children }) => {
   ];
   
   const exchangeSymbols = {
-    hyperliquid: HYPERLIQUID_SYMBOLS.map(s => SYMBOL_TO_PAIR[s])
+    hyperliquid: tickers.map(t => t.symbol)
   };
   
   const value = useMemo(() => ({

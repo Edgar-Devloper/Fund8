@@ -95,6 +95,18 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('[Auth] Error en autenticación:', err);
       
+      // Si el backend no está disponible (404), no bloquear el flujo
+      // La autenticación JWT es opcional
+      if (err.response?.status === 404 || err.message?.includes('404')) {
+        console.warn('[Auth] Backend de autenticación no disponible (404). Continuando sin autenticación JWT.');
+        setAuthError(null); // No mostrar error si el backend no está disponible
+        setIsAuthenticated(false);
+        setAccessToken(null);
+        authService.setToken(null);
+        setIsAuthenticating(false);
+        return; // Salir sin bloquear
+      }
+      
       let errorMessage = 'Error al autenticar';
       
       if (err.message?.includes('reject') || err.message?.includes('denied') || err.message?.includes('User rejected')) {
@@ -178,7 +190,18 @@ export const AuthProvider = ({ children }) => {
   }, [address, isAuthenticated, accessToken]);
 
   // Autenticar automáticamente cuando se conecta la wallet (solo si NO hay token válido)
+  // DESHABILITADO TEMPORALMENTE: El backend de autenticación no está disponible
+  // La autenticación JWT es opcional y no bloquea el flujo de creación de NFT
   useEffect(() => {
+    // NO autenticar automáticamente si el backend no está disponible
+    // El usuario puede usar la app sin autenticación JWT
+    const authBackendEnabled = process.env.REACT_APP_ENABLE_AUTH_BACKEND === 'true';
+    
+    if (!authBackendEnabled) {
+      console.log('[Auth] Backend de autenticación deshabilitado, saltando autenticación automática');
+      return;
+    }
+    
     // NO autenticar si ya estamos autenticados
     if (isAuthenticated) {
       return;

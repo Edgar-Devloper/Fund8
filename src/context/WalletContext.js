@@ -6,7 +6,22 @@ const WalletContext = createContext(undefined);
 export const useWallet = () => {
   const context = useContext(WalletContext);
   if (!context) {
-    throw new Error('useWallet debe usarse dentro de WalletProvider');
+    console.warn('[useWallet] Contexto no disponible, usando valores por defecto');
+    // Retornar valores por defecto en lugar de lanzar error
+    return {
+      address: null,
+      provider: null,
+      signer: null,
+      isConnected: false,
+      isConnecting: false,
+      error: null,
+      connectWallet: () => {
+        console.warn('[useWallet] connectWallet no disponible');
+      },
+      disconnectWallet: () => {
+        console.warn('[useWallet] disconnectWallet no disponible');
+      }
+    };
   }
   return context;
 };

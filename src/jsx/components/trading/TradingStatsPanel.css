@@ -221,6 +221,10 @@
   border-left: 3px solid var(--hl-accent-orange, #f97316);
 }
 
+.drawdown-card {
+  border-left: 3px solid var(--hl-accent-pink, #ec4899);
+}
+
 .featured-card {
   grid-column: 1 / -1;
   background: linear-gradient(135deg, rgba(0, 229, 204, 0.1) 0%, rgba(0, 192, 135, 0.05) 100%);

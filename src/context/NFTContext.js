@@ -13,7 +13,29 @@ const getStorageKey = (address) => {
 export const useNFT = () => {
   const context = useContext(NFTContext);
   if (!context) {
-    throw new Error('useNFT debe usarse dentro de NFTProvider');
+    console.warn('[useNFT] Contexto no disponible, usando valores por defecto');
+    // Retornar valores por defecto en lugar de lanzar error
+    return {
+      nfts: [],
+      selectedNFT: null,
+      isLoading: false,
+      error: null,
+      hasNFTs: false,
+      defilyNFTs: [],
+      fund8NFTs: [],
+      hasDefilyNFTs: false,
+      hasFund8NFTs: false,
+      selectNFT: () => {
+        console.warn('[useNFT] selectNFT no disponible');
+      },
+      deselectNFT: () => {
+        console.warn('[useNFT] deselectNFT no disponible');
+      },
+      loadNFTs: () => {
+        console.warn('[useNFT] loadNFTs no disponible');
+      },
+      getNFTsByType: () => []
+    };
   }
   return context;
 };

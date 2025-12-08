@@ -175,6 +175,18 @@ const TradingStatsPanel = () => {
               <div className="stat-value">{formatCurrency(stats.totalVolume)}</div>
               <div className="stat-subtitle">24h trading volume</div>
             </div>
+
+            {/* Drawdown Limit */}
+            <div className="stat-card drawdown-card">
+              <div className="stat-label">Drawdown Limit</div>
+              <div className="stat-value" style={{ fontSize: '14px', marginBottom: '4px' }}>
+                7% or 14% or 21%
+              </div>
+              <div className="stat-value" style={{ fontSize: '18px', marginBottom: '4px' }}>
+                700 USDC
+              </div>
+              <div className="stat-subtitle">Maximum</div>
+            </div>
           </div>
         )}
       </div>

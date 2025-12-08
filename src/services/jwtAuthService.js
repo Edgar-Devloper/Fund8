@@ -114,6 +114,14 @@ export const authService = {
       console.log('[Auth Service] Respuesta del backend:', response.data);
       return response.data;
     } catch (error) {
+      // Si el backend no está disponible (404), lanzar error específico
+      if (error.response?.status === 404) {
+        console.warn('[Auth Service] Backend de autenticación no disponible (404). El servicio de autenticación JWT está deshabilitado.');
+        const backendUnavailableError = new Error('Backend de autenticación no disponible');
+        backendUnavailableError.response = { status: 404 };
+        throw backendUnavailableError;
+      }
+      
       console.error('[Auth Service] Error obteniendo nonce:', error);
       console.error('[Auth Service] Detalles del error:', {
         message: error.message,

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { getNftMetadata, getImageUrl, extractOwnerId } from '../../../utils/nftUtils';
 import { copyToClipboard } from '../../../utils/clipboard';
-import { generateReferralLink, openReferralLink } from '../../../utils/referralLinks';
+import { generateDefilyReferralLink, generateFund8ReferralLink } from '../../../utils/referralLinks';
+import { usePlatform } from '../../../context/PlatformContext';
 
 const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
+  const { isFund8, isDefily } = usePlatform();
   const [metadata, setMetadata] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [loadingImage, setLoadingImage] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(null);
+  const [copiedLink, setCopiedLink] = useState(null); // 'left' o 'right' (según plataforma actual)
   const processedRef = useRef(false);
 
   useEffect(() => {
@@ -48,32 +50,58 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
     }
   }, [nft.ipfsLink, nft.tokenId]);
 
-  const handleReferralClick = async (side) => {
-    const link = generateReferralLink(nft.referralsLink, side, nft.tokenId);
-    if (!link) {
-      alert(t('nft.error_copying_link'));
+  /**
+   * Maneja el clic en un enlace de referido
+   * Genera enlace según la plataforma actual (no muestra la otra plataforma)
+   * SOLO COPIA al portapapeles, NO navega
+   * @param {number|string} side - 0 (Left) o 1 (Right)
+   */
+  const handleReferralClick = async (e, side) => {
+    // Prevenir cualquier navegación o comportamiento por defecto
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (!nft.tokenId && nft.tokenId !== 0) {
+      alert(t('nft.error_copying_link') || 'Error: NFT ID no disponible');
       return;
     }
 
+    // Generar enlace según la plataforma actual
+    // Usar URL relativa para que funcione en localhost y producción
+    const link = isFund8
+      ? generateFund8ReferralLink(nft.tokenId, side, true) // useRelativeUrl = true
+      : generateDefilyReferralLink(nft.tokenId, side, true); // useRelativeUrl = true
+
+    if (!link) {
+      alert(t('nft.error_copying_link') || 'Error al generar enlace');
+      return;
+    }
+
+    // Construir URL completa para copiar (pero usar relativa para navegación local)
+    const currentOrigin = window.location.origin;
+    const fullLink = `${currentOrigin}${link}`;
+
+    const linkKey = side === 0 || side === 'left' || side === 'L' ? 'left' : 'right';
+
     try {
+      // Copiar la URL completa al portapapeles
       await copyToClipboard(
-        link,
+        fullLink,
         () => {
-          setCopiedLink(side);
+          setCopiedLink(linkKey);
           setTimeout(() => setCopiedLink(null), 2000);
+          console.log('[NFTCard] Enlace copiado:', fullLink);
         },
         (err) => {
           console.error('[NFTCard] Error copying link:', err);
-          alert(t('nft.error_copying_link'));
+          alert(t('nft.error_copying_link') || 'Error al copiar enlace');
         }
       );
-      
-      setTimeout(() => {
-        openReferralLink(nft.referralsLink, side, nft.tokenId);
-      }, 100);
     } catch (err) {
       console.error('[NFTCard] Error in handleReferralClick:', err);
-      alert(t('nft.error_copying_link'));
+      alert(t('nft.error_copying_link') || 'Error al copiar enlace');
     }
   };
 
@@ -277,7 +305,7 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
             </div>
           </div>
           
-          {nft.referralsLink && (
+          {nft.tokenId !== undefined && nft.tokenId !== null && (
             <div className="referral-links-section mt-3" style={{
               background: '#0a0e27',
               padding: '12px',
@@ -291,22 +319,25 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }}>
-                {t('nft.referral_links')}
+                {t('nft.referral_links') || 'Enlaces de Referido'}
               </div>
+              
+              {/* Solo mostrar enlaces de la plataforma actual (2 enlaces: Left y Right) */}
               <div className="d-flex flex-column gap-2">
                 <button
                   type="button"
                   className="btn btn-sm"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    handleReferralClick('left');
+                    handleReferralClick(e, 0);
                   }}
                   style={{
                     width: '100%',
                     minHeight: '32px',
                     background: copiedLink === 'left' ? '#00c087' : 'transparent',
-                    color: copiedLink === 'left' ? '#fff' : '#00e5cc',
-                    border: `1px solid ${copiedLink === 'left' ? '#00c087' : 'rgba(0, 229, 204, 0.3)'}`,
+                    color: copiedLink === 'left' ? '#fff' : (isFund8 ? '#00c087' : '#00e5cc'),
+                    border: `1px solid ${copiedLink === 'left' ? '#00c087' : (isFund8 ? 'rgba(0, 192, 135, 0.3)' : 'rgba(0, 229, 204, 0.3)')}`,
                     borderRadius: '6px',
                     padding: '6px 12px',
                     fontSize: '11px',
@@ -319,27 +350,33 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                   }}
                   onMouseEnter={(e) => {
                     if (copiedLink !== 'left') {
-                      e.currentTarget.style.background = 'rgba(0, 229, 204, 0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(0, 229, 204, 0.5)';
+                      e.currentTarget.style.background = isFund8 
+                        ? 'rgba(0, 192, 135, 0.1)' 
+                        : 'rgba(0, 229, 204, 0.1)';
+                      e.currentTarget.style.borderColor = isFund8 
+                        ? 'rgba(0, 192, 135, 0.5)' 
+                        : 'rgba(0, 229, 204, 0.5)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (copiedLink !== 'left') {
                       e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.borderColor = 'rgba(0, 229, 204, 0.3)';
+                      e.currentTarget.style.borderColor = isFund8 
+                        ? 'rgba(0, 192, 135, 0.3)' 
+                        : 'rgba(0, 229, 204, 0.3)';
                     }
                   }}
-                  title={t('nft.copy_left_referral_link')}
+                  title={t('nft.copy_left_referral_link') || 'Copiar enlace Izquierdo'}
                 >
                   {copiedLink === 'left' ? (
                     <>
                       <i className="fa fa-check"></i>
-                      <span>{t('nft.copied')}</span>
+                      <span>{t('nft.copied') || 'Copiado'}</span>
                     </>
                   ) : (
                     <>
                       <i className="fa fa-link"></i>
-                      <span>{t('nft.left')}</span>
+                      <span>{t('nft.left') || 'Izquierdo'}</span>
                     </>
                   )}
                 </button>
@@ -348,15 +385,16 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                   type="button"
                   className="btn btn-sm"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    handleReferralClick('right');
+                    handleReferralClick(e, 1);
                   }}
                   style={{
                     width: '100%',
                     minHeight: '32px',
                     background: copiedLink === 'right' ? '#00c087' : 'transparent',
-                    color: copiedLink === 'right' ? '#fff' : '#00c087',
-                    border: `1px solid ${copiedLink === 'right' ? '#00c087' : 'rgba(0, 192, 135, 0.3)'}`,
+                    color: copiedLink === 'right' ? '#fff' : (isFund8 ? '#00c087' : '#00e5cc'),
+                    border: `1px solid ${copiedLink === 'right' ? '#00c087' : (isFund8 ? 'rgba(0, 192, 135, 0.3)' : 'rgba(0, 229, 204, 0.3)')}`,
                     borderRadius: '6px',
                     padding: '6px 12px',
                     fontSize: '11px',
@@ -369,27 +407,33 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
                   }}
                   onMouseEnter={(e) => {
                     if (copiedLink !== 'right') {
-                      e.currentTarget.style.background = 'rgba(0, 192, 135, 0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(0, 192, 135, 0.5)';
+                      e.currentTarget.style.background = isFund8 
+                        ? 'rgba(0, 192, 135, 0.1)' 
+                        : 'rgba(0, 229, 204, 0.1)';
+                      e.currentTarget.style.borderColor = isFund8 
+                        ? 'rgba(0, 192, 135, 0.5)' 
+                        : 'rgba(0, 229, 204, 0.5)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (copiedLink !== 'right') {
                       e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.borderColor = 'rgba(0, 192, 135, 0.3)';
+                      e.currentTarget.style.borderColor = isFund8 
+                        ? 'rgba(0, 192, 135, 0.3)' 
+                        : 'rgba(0, 229, 204, 0.3)';
                     }
                   }}
-                  title={t('nft.copy_right_referral_link')}
+                  title={t('nft.copy_right_referral_link') || 'Copiar enlace Derecho'}
                 >
                   {copiedLink === 'right' ? (
                     <>
                       <i className="fa fa-check"></i>
-                      <span>{t('nft.copied')}</span>
+                      <span>{t('nft.copied') || 'Copiado'}</span>
                     </>
                   ) : (
                     <>
                       <i className="fa fa-link"></i>
-                      <span>{t('nft.right')}</span>
+                      <span>{t('nft.right') || 'Derecho'}</span>
                     </>
                   )}
                 </button>

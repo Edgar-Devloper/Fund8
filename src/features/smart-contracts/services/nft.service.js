@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { storageAdministratorAbi } from '../abis/storageAdministrator.abi';
+import { nftManagerAbi } from '../abis/nftManager.abi';
 
 const STORAGE_ADMINISTRATOR_BSC = 
   process.env.REACT_APP_STORAGE_ADMINISTRATOR_CONTRACT_ADDRESS || 
@@ -231,8 +232,210 @@ export const getNFTById = async (provider, tokenId) => {
   }
 };
 
+/**
+ * Obtiene el referralLink (hash) de un NFT por su tokenId
+ * Este hash es necesario para crear nuevos NFTs bajo este sponsor
+ * @param {number} tokenId - ID del NFT (tokenId)
+ * @returns {Promise<string|null>} referralLink (hash) o null si no se encuentra
+ */
+export const getReferralLinkFromTokenId = async (tokenId) => {
+  if (!tokenId && tokenId !== 0) {
+    return null;
+  }
+
+  try {
+    const nft = await getNFTById(null, tokenId);
+    if (!nft || !nft.referralsLink) {
+      console.warn(`[getReferralLinkFromTokenId] NFT ${tokenId} no encontrado o sin referralsLink`);
+      return null;
+    }
+
+    // El referralsLink ya viene como hash del contrato
+    // Solo necesitamos normalizarlo (quitar 0x si existe, asegurar lowercase)
+    let referralLink = nft.referralsLink;
+    if (referralLink.startsWith('0x')) {
+      referralLink = referralLink.slice(2);
+    }
+    referralLink = referralLink.toLowerCase();
+
+    console.log(`[getReferralLinkFromTokenId] ReferralLink obtenido para NFT ${tokenId}:`, referralLink);
+    return referralLink;
+  } catch (error) {
+    console.error(`[getReferralLinkFromTokenId] Error al obtener referralLink para NFT ${tokenId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Compra un NFT usando el contrato NFT Manager (mismo que DeFily)
+ * @param {Object} signer - Signer de ethers.js (wallet conectada)
+ * @param {Object} buyNftData - Datos para comprar el NFT
+ * @param {string} buyNftData.name - Nombre del NFT
+ * @param {number} buyNftData.nftImgId - ID de la imagen del NFT (uint96)
+ * @param {number} buyNftData.NFT_COLLECTION_ID - ID de la colección (0 = DeFily, 1 = Fund8)
+ * @param {string} buyNftData.referralLink - Hash del referral link (64 caracteres hex)
+ * @param {number} buyNftData.side - Lado del árbol (0 = Left, 1 = Right)
+ * @param {string} cid - CID de IPFS del NFT
+ * @param {boolean} royaltyToken - Si el NFT tiene royalty
+ * @returns {Promise<ethers.ContractTransaction>} Transacción de compra
+ */
+export const buyNft = async (signer, buyNftData, cid, royaltyToken = false) => {
+  if (!signer) {
+    throw new Error('Signer es requerido');
+  }
+
+  const NFT_CONTRACT_ADDRESS = 
+    process.env.REACT_APP_NFT_CONTRACT_ADDRESS || 
+    process.env.REACT_APP_DEFILY_NFT_CONTRACT_ADDRESS ||
+    process.env.REACT_APP_NFT_MANAGER_ADDRESS;
+
+  if (!NFT_CONTRACT_ADDRESS) {
+    throw new Error(
+      'No hay dirección de contrato NFT configurada.\n' +
+      'Configura REACT_APP_NFT_CONTRACT_ADDRESS o REACT_APP_NFT_MANAGER_ADDRESS en tu .env'
+    );
+  }
+
+  // Validar parámetros
+  if (!buyNftData.name || !buyNftData.referralLink) {
+    throw new Error('name y referralLink son requeridos');
+  }
+
+  if (buyNftData.nftImgId === undefined || buyNftData.nftImgId === null) {
+    throw new Error('nftImgId es requerido');
+  }
+
+  if (buyNftData.side === undefined || buyNftData.side === null) {
+    throw new Error('side es requerido');
+  }
+
+  // Normalizar referralLink (debe ser hex de 64 caracteres sin 0x)
+  let referralLink = buyNftData.referralLink;
+  if (referralLink.startsWith('0x')) {
+    referralLink = referralLink.slice(2);
+  }
+  if (referralLink.length !== 64) {
+    console.warn(`[buyNft] ReferralLink tiene longitud ${referralLink.length}, esperado 64`);
+  }
+
+  try {
+    const bscProvider = getBSCProvider();
+    const contract = new ethers.Contract(
+      NFT_CONTRACT_ADDRESS,
+      nftManagerAbi,
+      signer
+    );
+
+    // Verificar que el contrato no esté pausado
+    try {
+      const isPaused = await contract.paused();
+      if (isPaused) {
+        throw new Error('El contrato NFT está pausado. Por favor intenta más tarde.');
+      }
+    } catch (pauseError) {
+      console.warn('[buyNft] No se pudo verificar estado de pausa:', pauseError);
+      // Continuar de todos modos
+    }
+
+    // Verificar que el NFT no esté ya minteado
+    try {
+      const owner = await contract.ownerOf(buyNftData.nftImgId);
+      throw new Error(`NFT ${buyNftData.nftImgId} ya está minteado por ${owner}`);
+    } catch (ownerError) {
+      // Si ownerOf falla, significa que el NFT no existe (está disponible)
+      if (ownerError.message && ownerError.message.includes('ya está minteado')) {
+        throw ownerError;
+      }
+      // Si es otro error, continuar (el NFT está disponible)
+    }
+
+    // Preparar los datos del struct BuyNFT
+    const buyNftStruct = [
+      buyNftData.name,                    // name (string)
+      buyNftData.nftImgId,                // nftImgId (uint96)
+      buyNftData.NFT_COLLECTION_ID || 0,  // NFT_COLLECTION_ID (uint16) - 0 = DeFily
+      referralLink,                       // referralLink (string)
+      buyNftData.side                     // side (uint8)
+    ];
+
+    console.log('[buyNft] Comprando NFT con:', {
+      contractAddress: NFT_CONTRACT_ADDRESS,
+      name: buyNftData.name,
+      nftImgId: buyNftData.nftImgId,
+      NFT_COLLECTION_ID: buyNftData.NFT_COLLECTION_ID || 0,
+      referralLink: referralLink.substring(0, 10) + '...',
+      side: buyNftData.side,
+      cid,
+      royaltyToken
+    });
+
+    // Llamar al método buyNFT del contrato
+    const tx = await contract.buyNFT(buyNftStruct, cid, royaltyToken, {
+      gasLimit: 500000 // Límite de gas estimado
+    });
+
+    console.log('[buyNft] Transacción enviada:', tx.hash);
+    return tx;
+  } catch (error) {
+    console.error('[buyNft] Error al comprar NFT:', error);
+    
+    // Extraer mensaje de error más descriptivo
+    let errorMessage = error.message || 'Error desconocido al comprar NFT';
+    
+    // Si es un error de ethers.js con reason
+    if (error.reason) {
+      errorMessage = error.reason;
+    }
+    
+    // Si es un error del contrato con data
+    if (error.data) {
+      if (error.data.message) {
+        errorMessage = error.data.message;
+      } else if (error.data.data) {
+        // Intentar decodificar el error del contrato (ethers v5)
+        try {
+          if (ethers.utils && ethers.utils.AbiCoder) {
+            const abiCoder = new ethers.utils.AbiCoder();
+            const decoded = abiCoder.decode(['string'], error.data.data);
+            if (decoded && decoded[0]) {
+              errorMessage = decoded[0];
+            }
+          }
+        } catch (decodeError) {
+          console.warn('[buyNft] No se pudo decodificar el error:', decodeError);
+          // Continuar con el mensaje de error original
+        }
+      }
+    }
+    
+    // Decodificar errores comunes del contrato
+    if (errorMessage.includes('SIDE_OCCUPIED') || errorMessage.includes('0xb22dd2ca')) {
+      throw new Error('El lado seleccionado ya está ocupado. Por favor intenta con el otro lado.');
+    }
+    if (errorMessage.includes('V3') || errorMessage.includes('V2')) {
+      throw new Error('Error del contrato: El NFT ya existe o hay un problema con el referral link.');
+    }
+    if (errorMessage.includes('insufficient funds') || errorMessage.includes('insufficient balance')) {
+      throw new Error('Fondos insuficientes. Asegúrate de tener suficiente BNB para el gas y USDC si es Premium.');
+    }
+    if (errorMessage.includes('user rejected') || errorMessage.includes('User denied') || errorMessage.includes('rejected')) {
+      throw new Error('Transacción cancelada por el usuario');
+    }
+    if (errorMessage.includes('pausado') || errorMessage.includes('paused')) {
+      throw new Error('El contrato está pausado temporalmente. Por favor intenta más tarde.');
+    }
+    
+    // Si no se pudo decodificar, lanzar el error original con mensaje mejorado
+    const enhancedError = new Error(errorMessage);
+    enhancedError.originalError = error;
+    throw enhancedError;
+  }
+};
+
 export default {
   getAllMyNFT,
   getNFTById,
+  getReferralLinkFromTokenId,
+  buyNft,
 };
 

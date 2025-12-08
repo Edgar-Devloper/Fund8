@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useNFT } from '../../context/NFTContext';
 import { useWallet } from '../../context/WalletContext';
 import { useTranslation } from 'react-i18next';
@@ -6,12 +7,17 @@ import NFTSelector from './NFTSelector';
 
 const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
   const { t } = useTranslation();
+  const location = useLocation();
   const { isConnected, address } = useWallet();
   const { selectedNFT, hasNFTs, isLoading, error, loadNFTs, deselectNFT, selectNFT } = useNFT();
   const [showModal, setShowModal] = useState(false);
   const hasShownOnceRef = useRef(false);
   const wasConnectedRef = useRef(false);
   const prevAddressRef = useRef(null);
+
+  // Rutas donde NO debe mostrarse el modal (páginas de registro/creación de NFT)
+  const registrationRoutes = ['/register', '/nft/register', '/nft/select-nft-collection', '/nft/choose-character', '/nft/buy-pet', '/nft/pet-confirmation'];
+  const isRegistrationRoute = registrationRoutes.some(route => location.pathname.startsWith(route));
 
   // Get storage key for this specific wallet
   const getModalShownKey = (walletAddress) => {
@@ -138,7 +144,7 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
         }
       }
     }
-  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT, address, deselectNFT]);
+  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT, address, deselectNFT, isRegistrationRoute, location.pathname]);
 
   const handleClose = () => {
     setShowModal(false);
@@ -162,6 +168,11 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
       onSelect(nft);
     }
   };
+
+  // NO mostrar el modal en rutas de registro/creación de NFT
+  if (isRegistrationRoute) {
+    return null;
+  }
 
   if (!isConnected) {
     return null;

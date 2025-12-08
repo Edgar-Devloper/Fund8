@@ -9,6 +9,7 @@ import { WalletProvider } from './context/WalletContext.js';
 import ThirdwebSync from './context/ThirdwebSync';
 import { AuthProvider } from './context/AuthContext.js';
 import { NFTProvider } from './context/NFTContext.js';
+import { PlatformProvider } from './context/PlatformContext.js';
 import { NotificationProvider } from './context/NotificationContext.js';
 import { SettingsProvider } from './context/SettingsContext.js';
 import ThemeContext from './context/ThemeContext';
@@ -31,8 +32,26 @@ root.render(
           <ThirdwebProvider>
             <WalletProvider>
               <ThirdwebSync />
-              <ThemeContext>
-                <NotificationProvider>
+              <PlatformProvider>
+                <ThemeContext>
+                  <NotificationProvider>
+                    <AuthProvider>
+                    <NFTProvider>
+                    <SettingsProvider>
+                      <Markup />
+                    </SettingsProvider>
+                    </NFTProvider>
+                    </AuthProvider>
+                  </NotificationProvider>
+                </ThemeContext>
+              </PlatformProvider>
+            </WalletProvider>
+          </ThirdwebProvider>
+        ) : (
+          <ThemeContext>
+            <NotificationProvider>
+              <WalletProvider>
+                <PlatformProvider>
                   <AuthProvider>
                   <NFTProvider>
                   <SettingsProvider>
@@ -40,21 +59,7 @@ root.render(
                   </SettingsProvider>
                   </NFTProvider>
                   </AuthProvider>
-                </NotificationProvider>
-              </ThemeContext>
-            </WalletProvider>
-          </ThirdwebProvider>
-        ) : (
-          <ThemeContext>
-            <NotificationProvider>
-              <WalletProvider>
-                <AuthProvider>
-                <NFTProvider>
-                <SettingsProvider>
-                  <Markup />
-                </SettingsProvider>
-                </NFTProvider>
-                </AuthProvider>
+                </PlatformProvider>
               </WalletProvider>
             </NotificationProvider>
           </ThemeContext>
