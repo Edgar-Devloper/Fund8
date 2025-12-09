@@ -8,25 +8,8 @@ import { useTranslation } from 'react-i18next';
 import './OrderBook.css';
 import '../animations.css';
 
-// Import crypto icons
+import { getCoinIcon } from '../../../../utils/coinIcons';
 import btcIcon from '../../../../images/icons/btc.png';
-import ethIcon from '../../../../images/icons/eth.png';
-import solIcon from '../../../../images/icons/sol.png';
-import ltcIcon from '../../../../images/icons/ltc.png';
-import moneroIcon from '../../../../images/icons/monero.png';
-import adaIcon from '../../../../images/icons/ada.png';
-import dogeIcon from '../../../../images/icons/doge.png';
-
-// Icon mapping
-const iconMap = {
-  'BTC': btcIcon,
-  'ETH': ethIcon,
-  'SOL': solIcon,
-  'LTC': ltcIcon,
-  'XMR': moneroIcon,
-  'ADA': adaIcon,
-  'DOGE': dogeIcon,
-};
 
 const OrderBook = () => {
   const { orderBook, selectedSymbol, trades, tickers, setSelectedSymbol, setSelectedPrice } = useTradingData();
@@ -222,7 +205,7 @@ const OrderBook = () => {
               type="button"
             >
               <img 
-                src={iconMap[coinSymbol] || btcIcon} 
+                src={getCoinIcon(coinSymbol) || btcIcon} 
                 alt={coinSymbol}
                 className="symbol-icon"
               />
@@ -245,7 +228,7 @@ const OrderBook = () => {
                         }}
                       >
                         <img 
-                          src={iconMap[symbol] || btcIcon} 
+                          src={getCoinIcon(symbol) || btcIcon} 
                           alt={symbol}
                           className="symbol-icon"
                         />
@@ -257,7 +240,7 @@ const OrderBook = () => {
                 ) : (
                   <div className="symbol-dropdown-item">
                     <img 
-                      src={iconMap[coinSymbol] || btcIcon} 
+                      src={getCoinIcon(coinSymbol) || btcIcon} 
                       alt={coinSymbol}
                       className="symbol-icon"
                     />

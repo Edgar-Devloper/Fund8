@@ -45,7 +45,8 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
       const startTime = endTime - (limit * intervalMilliseconds);
       
       const symbol = coinId.toUpperCase();
-      const response = await apiService.fetchCandles(symbol, interval, startTime, endTime);
+      // Use normalizedInterval instead of interval to ensure lowercase format for API
+      const response = await apiService.fetchCandles(symbol, normalizedInterval, startTime, endTime);
       
       // format candles for lightweight-charts
       // hyperliquid returns array of [time, open, high, low, close, ...] arrays

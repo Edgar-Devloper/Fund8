@@ -222,11 +222,6 @@ const NFTRegistration = () => {
                   >
                     {t('nft.connect_wallet', 'Conectar Wallet')}
                   </button>
-                  {isFund8 && (
-                    <p style={{ color: '#718096', fontSize: '12px', marginTop: '16px', fontStyle: 'italic' }}>
-                      {t('nft.note_defily_tree', 'Nota: El NFT se creará en el árbol de DeFily, pero verás solo contenido de Fund8.')}
-                    </p>
-                  )}
                 </div>
               ) : (
                 <div>
@@ -246,9 +241,6 @@ const NFTRegistration = () => {
                       <h5 style={{ color: '#ffffff', marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>
                         {t('nft.choose_registration_option', 'Elige tu opción de registro')}:
                       </h5>
-                      <p style={{ color: '#718096', fontSize: '14px', marginBottom: '24px', fontStyle: 'italic' }}>
-                        {t('nft.both_options_same_tree', 'Ambas opciones crean el mismo NFT en el árbol de DeFily, pero con diferentes beneficios.')}
-                      </p>
                       
                       <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
                         {/* Opción 1: Registro Gratuito (NFT Básico) */}

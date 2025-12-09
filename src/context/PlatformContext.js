@@ -49,10 +49,12 @@ export const PlatformProvider = ({ children }) => {
     updateReferralParams();
     
     // Escuchar cambios en la URL (popstate para navegación del navegador)
-    window.addEventListener('popstate', () => {
+    // Guardar referencia de la función para poder removerla correctamente
+    const handlePopState = () => {
       updatePlatform();
       updateReferralParams();
-    });
+    };
+    window.addEventListener('popstate', handlePopState);
     
     // Escuchar cambios en hash/search (para cambios de parámetros sin recargar)
     const handleLocationChange = () => {
@@ -73,7 +75,8 @@ export const PlatformProvider = ({ children }) => {
     const intervalId = setInterval(checkUrl, 500);
     
     return () => {
-      window.removeEventListener('popstate', updatePlatform);
+      // Usar la misma referencia de función para remover el listener correctamente
+      window.removeEventListener('popstate', handlePopState);
       clearInterval(intervalId);
     };
   }, []);

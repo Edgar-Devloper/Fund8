@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTradingData } from './context/HyperliquidTradingProvider';
 import { getCoinIcon, localIconMap, hasLocalIcon } from '../../../utils/coinIcons';
+import { useNFT } from '../../../context/NFTContext';
+import { useTranslation } from 'react-i18next';
+import NFTSelectionModal from '../NFTSelectionModal';
+import { getNftMetadata, getImageUrl } from '../../../utils/nftUtils';
 import './TradingPairHeader.css';
 import './animations.css';
 
@@ -26,8 +30,12 @@ const CoinIcon = ({ symbol, className, alt }) => {
 
 const TradingPairHeader = () => {
   const { selectedSymbol, tickers, setSelectedSymbol } = useTradingData();
+  const { selectedNFT } = useNFT();
+  const { t } = useTranslation();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [leverage, setLeverage] = useState('20x');
+  const [showNFTModal, setShowNFTModal] = useState(false);
+  const [nftImageUrl, setNftImageUrl] = useState(null);
+  const [nftMetadata, setNftMetadata] = useState(null);
   const dropdownRef = useRef(null);
   const selectorRef = useRef(null);
   const prevPriceRef = useRef(0);
@@ -77,9 +85,50 @@ const TradingPairHeader = () => {
 
   // Market cap viene del ticker ahora
   const marketCap = currentTicker.marketCap || 0;
-  
+
   const coinSymbol = currentTicker.symbol ? currentTicker.symbol.split('/')[0] : 'BTC';
   const currentIcon = getCoinIcon(coinSymbol) || btcIcon;
+
+  // Load NFT image - optimized for faster switching
+  useEffect(() => {
+    // Clear previous image immediately when NFT changes
+    setNftImageUrl(null);
+    setNftMetadata(null);
+    
+    if (selectedNFT && selectedNFT.ipfsLink) {
+      const loadImage = async () => {
+        try {
+          // Try to get direct image URL first (faster)
+          const directUrl = getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId);
+          
+          // If it's a JSON metadata link, fetch metadata
+          if (selectedNFT.ipfsLink.includes('.json')) {
+            try {
+              const meta = await getNftMetadata(selectedNFT.ipfsLink);
+              if (meta && meta.image) {
+                setNftMetadata(meta);
+                // Use metadata image if available, otherwise use direct URL
+                setNftImageUrl(meta.image || directUrl);
+              } else {
+                setNftImageUrl(directUrl);
+              }
+            } catch (metaError) {
+              // If metadata fetch fails, use direct URL
+              setNftImageUrl(directUrl);
+            }
+          } else {
+            // Direct image URL
+            setNftImageUrl(directUrl);
+          }
+        } catch (error) {
+          console.error('[TradingPairHeader] Error loading NFT image:', error);
+          const url = getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId);
+          setNftImageUrl(url);
+        }
+      };
+      loadImage();
+    }
+  }, [selectedNFT?.tokenId, selectedNFT?.ipfsLink]); // Only depend on tokenId and ipfsLink, not the whole object
 
   const toggleDropdown = (e) => {
     if (e) {
@@ -458,31 +507,121 @@ const TradingPairHeader = () => {
         <div className="stat-value">{formatLargeNumber(marketCap)}</div>
       </div>
 
-      {/* Leverage Controls - Right side (Cross moved to OrderBook) */}
-      <div className="margin-controls">
-        <button
-          className="leverage-btn"
-          onClick={() => {
-            const leverages = ['1x', '2x', '5x', '10x', '20x', '50x', '100x'];
-            const currentIndex = leverages.indexOf(leverage);
-            const nextIndex = (currentIndex + 1) % leverages.length;
-            setLeverage(leverages[nextIndex]);
-          }}
-        >
-          {leverage}
-        </button>
-        <button className="margin-menu-btn" title="Margin Settings">
-          M
-        </button>
+      {/* Data Source Indicator and NFT Account */}
+      <div className="header-right-section">
+        {/* Data Source Indicator */}
+        <div className="data-source-indicator-header">
+          <div className="source-badge-header">
+            <span className="source-dot-header"></span>
+            <span className="source-text-header">Powered by HYPERLIQUID</span>
+          </div>
+        </div>
+
+        {/* NFT Account Display */}
+        {selectedNFT && (
+          <div
+            className="nft-account-display-header"
+            onClick={() => setShowNFTModal(true)}
+            style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              flexShrink: 0,
+              marginLeft: '12px',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              overflow: 'hidden',
+              background: 'rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            >
+              {nftImageUrl ? (
+                <img
+                  src={nftImageUrl}
+                  alt={selectedNFT.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                  onError={(e) => {
+                    console.error('[TradingPairHeader] Error loading NFT image:', nftImageUrl);
+                    e.target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <i className="fa fa-image" style={{ fontSize: '14px', color: '#718096' }}></i>
+              )}
+            </div>
+            {/* Tooltip que aparece al hacer hover */}
+            <div
+              className="nft-tooltip"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                marginTop: '8px',
+                padding: '8px 12px',
+                background: 'rgba(15, 23, 42, 0.95)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+                opacity: 0,
+                pointerEvents: 'none',
+                transition: 'opacity 0.2s ease, transform 0.2s ease',
+                transform: 'translateX(-50%) translateY(-4px)',
+                zIndex: 1000,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span style={{ 
+                  fontSize: '12px', 
+                  fontWeight: '500', 
+                  color: '#e2e8f0',
+                  letterSpacing: '0.01em'
+                }}>
+                  {selectedNFT.name}
+                </span>
+                <span style={{ 
+                  fontSize: '11px', 
+                  fontWeight: '400', 
+                  color: '#94a3b8',
+                  letterSpacing: '0.01em'
+                }}>
+                  #{selectedNFT.tokenId}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Data Source Indicator */}
-      <div className="data-source-indicator">
-        <div className="source-badge">
-          <span className="source-dot"></span>
-          <span className="source-text">Powered by HYPERLIQUID</span>
-        </div>
-      </div>
+      {/* NFT Selection Modal */}
+      <NFTSelectionModal 
+        forceShow={showNFTModal}
+        onClose={() => setShowNFTModal(false)}
+        onSelect={() => setShowNFTModal(false)}
+      />
     </div>
   );
 };

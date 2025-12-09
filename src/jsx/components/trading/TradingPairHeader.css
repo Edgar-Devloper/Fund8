@@ -9,16 +9,32 @@
   padding: 12px 8px;
   background: var(--hl-dark-card, #151a2e);
   border-bottom: 1px solid var(--hl-dark-border, #1e2541);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   position: sticky;
   top: 64px;
-  z-index: 98;
+  z-index: 97;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
   transition: top 0.3s ease-in-out;
   margin-bottom: 0;
   margin-top: 0;
   border-top: none;
   width: 100%;
+}
+
+.trading-pair-header-right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding-right: 8px;
+  min-width: fit-content;
+}
+
+.trading-pair-header-right-column .data-source-indicator,
+.trading-pair-header-right-column .nft-account-display-header {
+  flex-shrink: 0;
 }
 
 /* When nav is hidden, header should be at top */
@@ -135,11 +151,45 @@ body.nav-hidden .trading-pair-header {
   pointer-events: auto;
 }
 
-/* Override para enhanced dropdown */
 .enhanced-dropdown {
-  width: 700px !important;
-  min-width: 700px !important;
-  max-width: calc(100vw - 20px) !important;
+  width: 700px;
+  min-width: 320px;
+  max-width: calc(100vw - 20px);
+}
+
+@media (max-width: 768px) {
+  .enhanced-dropdown {
+    width: calc(100vw - 20px) !important;
+    min-width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    left: 10px !important;
+    right: 10px !important;
+  }
+  
+  .pair-selector-container {
+    width: 100%;
+  }
+  
+  .pair-selector {
+    width: 100%;
+    max-width: 100%;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+  
+  .pair-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .pair-symbol {
+    font-size: 16px;
+  }
+  
+  .pair-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
 }
 
 /* Asegurar que todas las columnas sean visibles */
@@ -889,11 +939,76 @@ body.nav-hidden .trading-pair-header {
   font-weight: 700;
 }
 
+/* Data Source Indicator and NFT Account - Header */
+.header-right-section {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-right: 20px;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+.nft-account-display-header {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.nft-account-display-header:hover .nft-tooltip {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
+  pointer-events: auto !important;
+}
+
+.data-source-indicator-header {
+  display: flex;
+  align-items: center;
+}
+
+.source-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(0, 229, 204, 0.08);
+  border: 1px solid rgba(0, 229, 204, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.source-badge-header:hover {
+  background: rgba(0, 229, 204, 0.12);
+  border-color: rgba(0, 229, 204, 0.3);
+}
+
+.source-dot-header {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hl-accent-teal, #00e5cc);
+  box-shadow: 0 0 8px rgba(0, 229, 204, 0.6);
+  flex-shrink: 0;
+}
+
+.source-text-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hl-accent-teal, #00e5cc);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
 /* Data Source Indicator */
 .data-source-indicator {
   display: flex;
   align-items: center;
-  padding-left: 20px;
+}
+
+.trading-pair-header-right .data-source-indicator {
+  padding-left: 0;
 }
 
 .source-badge {
@@ -1071,27 +1186,20 @@ body.nav-hidden .trading-pair-header {
     pointer-events: auto !important;
   }
 
-  /* Enhanced dropdown mobile adjustments */
-  .enhanced-dropdown {
-    width: calc(100vw - 20px) !important;
-    max-width: calc(100vw - 20px) !important;
-    max-height: 85vh !important;
-  }
-
   .enhanced-dropdown .dropdown-column-headers {
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr !important;
     gap: 8px;
     padding: 10px 12px;
   }
 
   .enhanced-dropdown .enhanced-item {
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr !important;
     gap: 8px;
     padding: 12px;
   }
 
   .enhanced-dropdown .funding-column {
-    display: none;
+    display: none !important;
   }
 
   .enhanced-dropdown .header-cell.funding-column {

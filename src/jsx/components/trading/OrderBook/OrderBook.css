@@ -3,7 +3,7 @@
 .orderbook-hl-container {
   background: var(--hl-dark-card, #151a2e) !important;
   border: 1px solid var(--hl-dark-border, #1e2541) !important;
-  border-radius: 8px;
+  border-radius: 0 !important;
   height: calc(100vh - 250px);
   min-height: calc(100vh - 250px);
   max-height: calc(100vh - 250px);
@@ -33,7 +33,7 @@
   padding: 6px 12px;
   background: var(--hl-dark-bg, #0a0e27);
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 6px;
+  border-radius: 0 !important;
   color: var(--hl-text-primary, #ffffff);
   font-size: 13px;
   font-weight: 600;
@@ -65,7 +65,7 @@
   left: 0;
   background: var(--hl-dark-card, #151a2e);
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 8px;
+  border-radius: 0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 1000;
   min-width: 120px;
@@ -102,6 +102,8 @@
   background: var(--hl-dark-card, #151a2e);
   flex-shrink: 0;
   gap: 12px;
+  min-width: 0;
+  overflow: visible;
 }
 
 .orderbook-tabs {
@@ -118,7 +120,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 0 !important;
   transition: all 0.2s ease;
   white-space: nowrap;
   position: relative;
@@ -134,17 +136,17 @@
 }
 
 .tab-btn:first-child {
-  border-radius: 6px 0 0 0;
+  border-radius: 0 !important;
 }
 
 .tab-btn:not(:last-child) {
   border-right: none;
-  border-radius: 6px 0 0 0;
+  border-radius: 0 !important;
 }
 
 .tab-btn:last-child {
   border-left: none;
-  border-radius: 0 6px 0 0;
+  border-radius: 0 !important;
   margin-left: -1px;
 }
 
@@ -180,13 +182,16 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 0;
+  overflow: visible;
+  flex-wrap: nowrap;
 }
 
 .control-select {
   padding: 6px 10px;
   background: var(--hl-dark-bg, #0a0e27);
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 6px;
+  border-radius: 0 !important;
   color: var(--hl-text-primary, #ffffff);
   font-size: 12px;
   font-weight: 500;
@@ -218,7 +223,7 @@
   padding: 4px 8px;
   background: transparent;
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 6px;
+  border-radius: 0;
   color: var(--hl-text-secondary, #a0aec0);
   font-size: 16px;
   cursor: pointer;
@@ -239,19 +244,21 @@
 .symbol-select {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
   background: var(--hl-dark-bg, #0a0e27);
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 6px;
+  border-radius: 0 !important;
   color: var(--hl-text-primary, #ffffff);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
-  min-width: 90px;
+  min-width: 120px;
+  width: auto;
   position: relative;
+  white-space: nowrap;
 }
 
 .symbol-select:hover {
@@ -262,9 +269,12 @@
 .symbol-icon {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 0;
   object-fit: cover;
   flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  display: block;
 }
 
 .dropdown-arrow {
@@ -285,7 +295,7 @@
   right: 0;
   background: var(--hl-dark-card, #151a2e);
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 8px;
+  border-radius: 0 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   z-index: 1000;
   min-width: 140px;
@@ -361,7 +371,7 @@
 
 .orderbook-hl-body::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  border-radius: 0;
 }
 
 .orderbook-hl-body::-webkit-scrollbar-thumb:hover {
@@ -433,7 +443,7 @@
   z-index: 1;
   transition: width 0.3s ease;
   pointer-events: none; /* Allow clicks to pass through to the row */
-  border-radius: 2px; /* Slight rounding for better appearance */
+  border-radius: 0;
 }
 
 .ask-bar {
@@ -560,7 +570,7 @@
   background: rgba(16, 185, 129, 0.15); /* Teal oscuro similar a la imagen */
   color: var(--hl-text-secondary, #a0aec0);
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -589,7 +599,7 @@
   background: transparent;
   color: var(--hl-text-secondary, #a0aec0);
   border: 1px solid var(--hl-dark-border, #1e2541);
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
