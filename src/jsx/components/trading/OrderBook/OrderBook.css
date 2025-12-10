@@ -97,18 +97,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--hl-dark-border, #1e2541);
   background: var(--hl-dark-card, #151a2e);
   flex-shrink: 0;
-  gap: 12px;
+  gap: 20px;
   min-width: 0;
   overflow: visible;
 }
 
 .orderbook-tabs {
   display: flex;
-  gap: 0;
+  gap: 4px;
   align-items: center;
 }
 
@@ -147,7 +147,7 @@
 .tab-btn:last-child {
   border-left: none;
   border-radius: 0 !important;
-  margin-left: -1px;
+  margin-left: 0;
 }
 
 .tab-btn:hover {
@@ -180,7 +180,7 @@
 .orderbook-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
   min-width: 0;
   overflow: visible;

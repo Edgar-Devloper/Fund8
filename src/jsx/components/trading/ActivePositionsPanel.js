@@ -22,7 +22,7 @@ const ActivePositionsPanel = () => {
     const fetchPositions = async () => {
       setLoading(true);
       try {
-        const userState = await hyperliquidTrading.getUserState();
+        const userState = await hyperliquidTrading.getUserState(address);
         if (userState && userState.assetPositions) {
           const activePositions = userState.assetPositions.filter(
             pos => parseFloat(pos.position.szi) !== 0
@@ -74,7 +74,7 @@ const ActivePositionsPanel = () => {
 
       if (result.success) {
         // Refresh positions
-        const userState = await hyperliquidTrading.getUserState();
+        const userState = await hyperliquidTrading.getUserState(address);
         if (userState && userState.assetPositions) {
           const activePositions = userState.assetPositions.filter(
             pos => parseFloat(pos.position.szi) !== 0

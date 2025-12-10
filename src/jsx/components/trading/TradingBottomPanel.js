@@ -28,7 +28,7 @@ const TradingBottomPanel = () => {
       setLoading(true);
       try {
         // Fetch open orders
-        const orders = await hyperliquidTrading.getOpenOrders();
+        const orders = await hyperliquidTrading.getOpenOrders(address);
         const newOrders = orders || [];
         
         // Check for changes to trigger animations
@@ -38,7 +38,7 @@ const TradingBottomPanel = () => {
         setOpenOrders(newOrders);
 
         // Fetch positions from user state
-        const userState = await hyperliquidTrading.getUserState();
+        const userState = await hyperliquidTrading.getUserState(address);
         if (userState && userState.assetPositions) {
           const activePositions = userState.assetPositions.filter(
             pos => parseFloat(pos.position.szi) !== 0
@@ -117,7 +117,7 @@ const TradingBottomPanel = () => {
       if (result.success) {
         alert(`Position closed successfully!`);
         // Refresh positions
-        const userState = await hyperliquidTrading.getUserState();
+        const userState = await hyperliquidTrading.getUserState(address);
         if (userState && userState.assetPositions) {
           const activePositions = userState.assetPositions.filter(
             pos => parseFloat(pos.position.szi) !== 0

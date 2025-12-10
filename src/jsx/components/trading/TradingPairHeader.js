@@ -527,7 +527,7 @@ const TradingPairHeader = () => {
               display: 'flex',
               alignItems: 'center',
               flexShrink: 0,
-              marginLeft: '12px',
+              marginLeft: '20px',
               cursor: 'pointer'
             }}
           >

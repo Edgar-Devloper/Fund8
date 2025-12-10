@@ -85,7 +85,7 @@ html, body {
   height: calc(100vh - 180px);
   min-height: 500px;
   margin-bottom: 0;
-  margin-top: 0;
+  margin-top: 16px;
   padding-top: 0;
 }
 
@@ -157,6 +157,7 @@ html, body {
   padding-right: 4px;
   align-self: flex-start;
   justify-content: flex-start;
+  margin-top: 16px;
 }
 
 /* Custom scrollbar for side column */

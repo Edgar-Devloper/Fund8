@@ -379,8 +379,9 @@ class HyperliquidTradingService {
     }
   }
 
-  async getOpenOrders() {
-    if (!this.address) {
+  async getOpenOrders(userAddress = null) {
+    const address = userAddress || this.address;
+    if (!address) {
       throw new Error('Wallet not connected');
     }
 
@@ -389,7 +390,7 @@ class HyperliquidTradingService {
         transport: new hl.HttpTransport({ isTestnet: IS_TESTNET })
       });
       
-      const result = await infoClient.openOrders({ user: this.address });
+      const result = await infoClient.openOrders({ user: address });
       return result || [];
     } catch (error) {
       console.error('[HL Trading] Error getting open orders:', error);
@@ -397,8 +398,9 @@ class HyperliquidTradingService {
     }
   }
 
-  async getUserState() {
-    if (!this.address) {
+  async getUserState(userAddress = null) {
+    const address = userAddress || this.address;
+    if (!address) {
       throw new Error('Wallet not connected');
     }
 
@@ -407,7 +409,7 @@ class HyperliquidTradingService {
         transport: new hl.HttpTransport({ isTestnet: IS_TESTNET })
       });
       
-      const result = await infoClient.clearinghouseState({ user: this.address });
+      const result = await infoClient.clearinghouseState({ user: address });
       return result;
     } catch (error) {
       console.error('[HL Trading] Error getting user state:', error);

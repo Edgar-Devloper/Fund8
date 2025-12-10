@@ -5,8 +5,8 @@
 .trading-pair-header {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 12px 8px;
+  gap: 28px;
+  padding: 12px 16px;
   background: var(--hl-dark-card, #151a2e);
   border-bottom: 1px solid var(--hl-dark-border, #1e2541);
   flex-wrap: nowrap;
@@ -945,7 +945,7 @@ body.nav-hidden .trading-pair-header {
   align-items: center;
   margin-left: auto;
   padding-right: 20px;
-  gap: 12px;
+  gap: 20px;
   flex-shrink: 0;
   min-width: fit-content;
 }

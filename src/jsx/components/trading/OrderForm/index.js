@@ -6,70 +6,7 @@ import { useNotifications } from '../../../../context/NotificationContext.js';
 import { useTranslation } from 'react-i18next';
 import NFTSelectionModal from '../../../components/NFTSelectionModal';
 import { registerPendingOperation, registerSuccessfulOperation, registerFailedOperation } from '../../../../services/operationsService';
-
-const getNftMetadata = async (ipfsLink) => {
-  if (!ipfsLink || !ipfsLink.includes('.json')) {
-    return null;
-  }
-
-  try {
-    const ipfsCid = ipfsLink.split('//')[1];
-    const metadataUrl = `https://ipfs.io/ipfs/${ipfsCid}`;
-    
-    const response = await fetch(metadataUrl);
-    if (!response.ok) {
-      throw new Error('Failed to fetch NFT metadata');
-    }
-    
-    const metadata = await response.json();
-    
-    if (metadata.image) {
-      metadata.image = metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/');
-    }
-    
-    return metadata;
-  } catch (error) {
-    console.error('[NFT Metadata] Error fetching metadata:', error);
-    return null;
-  }
-};
-
-const getImageUrl = (ipfsLink, tokenId = null, metadata = null) => {
-  if (!ipfsLink || ipfsLink.trim() === '') {
-    return null;
-  }
-  
-  if (metadata && metadata.image) {
-    return metadata.image;
-  }
-  
-  let cleanLink = ipfsLink.trim();
-  
-  if (cleanLink.startsWith('http://') || cleanLink.startsWith('https://')) {
-    return cleanLink;
-  }
-  
-  if (cleanLink.startsWith('ipfs://')) {
-    let cid = cleanLink.replace('ipfs://', '').trim();
-    
-    if (cleanLink.includes('.json')) {
-      const parts = cid.split('/');
-      cid = parts[0];
-      if (tokenId) {
-        return `https://ipfs.io/ipfs/${cid}/${tokenId}.png`;
-      }
-      return `https://ipfs.io/ipfs/${cid}`;
-    }
-    
-    return `https://ipfs.io/ipfs/${cid}`;
-  }
-  
-  if (cleanLink.match(/^[a-zA-Z0-9]{46,59}$/) || cleanLink.startsWith('Qm') || cleanLink.startsWith('bafy')) {
-    return `https://ipfs.io/ipfs/${cleanLink}${tokenId ? `/${tokenId}.png` : ''}`;
-  }
-  
-  return `https://ipfs.io/ipfs/${cleanLink}`;
-};
+import { getNftMetadata, getImageUrl } from '../../../../utils/nftUtils';
 
 const OrderForm = ({ orderConfig, setOrderConfig }) => {
   const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized, selectedPrice, setSelectedPrice } = useTradingData();
@@ -149,27 +86,46 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
     }
   }, [amount, price, midPrice, orderType]);
 
+  // Load NFT image - optimized for faster switching (synchronized with TradingPairHeader)
   useEffect(() => {
+    // Clear previous image immediately when NFT changes
+    setNftImageUrl(null);
+    setNftMetadata(null);
+    
     if (selectedNFT && selectedNFT.ipfsLink) {
-      if (selectedNFT.ipfsLink.includes('.json') && !nftMetadata) {
-        getNftMetadata(selectedNFT.ipfsLink).then(meta => {
-          if (meta && meta.image) {
-            setNftMetadata(meta);
-            setNftImageUrl(meta.image);
+      const loadImage = async () => {
+        try {
+          // Try to get direct image URL first (faster)
+          const directUrl = getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId);
+          
+          // If it's a JSON metadata link, fetch metadata
+          if (selectedNFT.ipfsLink.includes('.json')) {
+            try {
+              const meta = await getNftMetadata(selectedNFT.ipfsLink);
+              if (meta && meta.image) {
+                setNftMetadata(meta);
+                // Use metadata image if available, otherwise use direct URL
+                setNftImageUrl(meta.image || directUrl);
+              } else {
+                setNftImageUrl(directUrl);
+              }
+            } catch (metaError) {
+              // If metadata fetch fails, use direct URL
+              setNftImageUrl(directUrl);
+            }
           } else {
-            setNftImageUrl(getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId));
+            // Direct image URL
+            setNftImageUrl(directUrl);
           }
-        }).catch(() => {
-          setNftImageUrl(getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId));
-        });
-      } else {
-        setNftImageUrl(getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId, nftMetadata));
-      }
-    } else {
-      setNftImageUrl(null);
-      setNftMetadata(null);
+        } catch (error) {
+          console.error('[OrderForm] Error loading NFT image:', error);
+          const url = getImageUrl(selectedNFT.ipfsLink, selectedNFT.tokenId);
+          setNftImageUrl(url);
+        }
+      };
+      loadImage();
     }
-  }, [selectedNFT, nftMetadata]);
+  }, [selectedNFT?.tokenId, selectedNFT?.ipfsLink]); // Only depend on tokenId and ipfsLink, not the whole object
   
   const handlePriceClick = (priceValue) => {
     if (orderType === 'limit' && setOrderConfig) {

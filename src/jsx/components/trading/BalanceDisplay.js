@@ -20,7 +20,7 @@ const BalanceDisplay = () => {
     const fetchBalance = async () => {
       setLoading(true);
       try {
-        const userState = await hyperliquidTrading.getUserState();
+        const userState = await hyperliquidTrading.getUserState(address);
         
         if (userState) {
           // Extract balance info from clearinghouse state

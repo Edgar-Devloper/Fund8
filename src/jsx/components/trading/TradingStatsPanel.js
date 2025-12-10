@@ -36,7 +36,7 @@ const TradingStatsPanel = () => {
       setLoading(true);
       try {
         // Fetch user state
-        const userState = await hyperliquidTrading.getUserState();
+        const userState = await hyperliquidTrading.getUserState(address);
         
         if (userState) {
           // Calculate total PnL from positions
@@ -55,7 +55,7 @@ const TradingStatsPanel = () => {
             : 0;
 
           // Get open orders count
-          const orders = await hyperliquidTrading.getOpenOrders();
+          const orders = await hyperliquidTrading.getOpenOrders(address);
           const totalTrades = orders?.length || 0;
 
           setStats({
