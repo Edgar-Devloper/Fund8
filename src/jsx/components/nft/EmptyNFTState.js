@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getFund8DefaultReferralUrl } from '../../../utils/referralLinks';
+import { useNavigate } from 'react-router-dom';
 
 const EmptyNFTState = () => {
   const { t } = useTranslation();
-  const defilyBuyUrl = getFund8DefaultReferralUrl();
+  const navigate = useNavigate();
   
   return (
     <div className="nft-selector-empty" style={{
@@ -37,10 +37,8 @@ const EmptyNFTState = () => {
       }}>
         {t('nft.no_nfts_found_description')}
       </p>
-      <a
-        href={defilyBuyUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        onClick={() => navigate('/nft/register')}
         className="btn"
         style={{
           background: '#00c087',
@@ -50,7 +48,6 @@ const EmptyNFTState = () => {
           padding: '12px 24px',
           fontSize: '14px',
           fontWeight: '600',
-          textDecoration: 'none',
           display: 'inline-block',
           transition: 'all 0.2s ease',
           cursor: 'pointer'
@@ -64,9 +61,9 @@ const EmptyNFTState = () => {
           e.currentTarget.style.transform = 'translateY(0)';
         }}
       >
-        <i className="fa fa-external-link-alt" style={{ marginRight: '8px' }}></i>
-        {t('nft.buy_nft_defily')}
-      </a>
+        <i className="fa fa-plus" style={{ marginRight: '8px' }}></i>
+        Create NFT
+      </button>
     </div>
   );
 };
