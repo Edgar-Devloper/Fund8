@@ -51,6 +51,47 @@ const bscProd = {
   },
 };
 
+// Configuración de Hyperliquid
+const hyperliquidTestnet = {
+  id: 998,
+  name: "Hyperliquid EVM Testnet",
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+  blockExplorers: {
+    default: {
+      name: "Hyperliquid Explorer",
+      url: "https://explorer.hyperliquid-testnet.xyz",
+    },
+  },
+  testnet: true,
+  rpcUrls: {
+    default: {
+      http: ["https://api.hyperliquid-testnet.xyz/evm"],
+    },
+  },
+};
+
+const hyperliquidMainnet = {
+  id: 998, // Hyperliquid usa el mismo chainId para testnet y mainnet, pero diferente RPC
+  name: "Hyperliquid EVM",
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+  blockExplorers: {
+    default: {
+      name: "Hyperliquid Explorer",
+      url: "https://explorer.hyperliquid.xyz",
+    },
+  },
+  testnet: false,
+  rpcUrls: {
+    default: {
+      http: ["https://api.hyperliquid.xyz/evm"],
+    },
+  },
+};
+
 const selectedChainConfig = isTestnet ? bscTestnet : isProd ? bscProd : bscTestnet;
 
 export const thirdwebSelectedChain = defineChain(selectedChainConfig);
+
+// Exportar también las cadenas de Hyperliquid para usar en el ConnectButton
+export const hyperliquidTestnetChain = defineChain(hyperliquidTestnet);
+export const hyperliquidMainnetChain = defineChain(hyperliquidMainnet);

@@ -60,3 +60,4 @@ export const isFund8 = () => {
 export const isDefily = () => {
   return detectPlatform() === 'defily';
 };
+

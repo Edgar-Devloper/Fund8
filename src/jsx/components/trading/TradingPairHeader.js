@@ -63,6 +63,23 @@ const TradingPairHeader = () => {
   const changePercent = (currentTicker.change24hPercent || 0).toFixed(2);
   const isPositive = parseFloat(currentTicker.change24h) >= 0;
   
+  // Actualizar título de la pestaña del navegador con el trading pair y precio (como Asterdex)
+  useEffect(() => {
+    if (currentTicker.symbol && currentTicker.last) {
+      const price = currentTicker.last >= 1000 
+        ? currentTicker.last.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : currentTicker.last.toFixed(4);
+      document.title = `${price} ${currentTicker.symbol} | Fund8`;
+    } else {
+      document.title = 'Fund8: Trading Portal';
+    }
+    
+    // Cleanup: restaurar título original al desmontar
+    return () => {
+      document.title = 'Fund8: Trading Portal';
+    };
+  }, [currentTicker.symbol, currentTicker.last]);
+
   // Animate price changes
   useEffect(() => {
     const currentPrice = currentTicker.last || 0;

@@ -125,3 +125,4 @@ export const getAvailableLocalSymbols = () => {
     !['MONERO', 'AVALANCHE', 'POLYGON', 'CHAINLINK', 'APTOS', 'ARBITRUM', 'UNISWAP', 'OPTIMISM', 'INJECTIVE', 'CELESTIA', 'BITTENSOR', 'MAKER', 'FILECOIN', 'DOGWIFHAT', 'ETHENA'].includes(key)
   );
 };
+

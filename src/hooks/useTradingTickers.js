@@ -224,3 +224,4 @@ export const useTradingTickers = (refreshInterval = 30000) => {
     refetch: fetchAllTickers
   };
 };
+

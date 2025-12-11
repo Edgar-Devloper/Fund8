@@ -1,6 +1,6 @@
 import { createWallet, ecosystemWallet } from "thirdweb/wallets";
 import { darkTheme } from "thirdweb/react";
-import { thirdwebSelectedChain } from "../chains/thirdweb.chain";
+import { thirdwebSelectedChain, hyperliquidTestnetChain, hyperliquidMainnetChain } from "../chains/thirdweb.chain";
 import { polygon } from "thirdweb/chains";
 
 // Función para limpiar comillas de las variables de entorno
@@ -30,7 +30,6 @@ export const wallets = configuredWallets;
 export const getConnectButtonOptions = (t) => {
   return {
     wallets,
-    chain: thirdwebSelectedChain,
     connectModal: {
       size: "wide",
       title: t("Connect to Fund8"),
@@ -98,6 +97,9 @@ export const getConnectButtonOptions = (t) => {
         secondaryIconHoverBg: "#ffffff1a",
       },
     }),
-    chains: [thirdwebSelectedChain, polygon],
+    chains: [thirdwebSelectedChain, hyperliquidTestnetChain, hyperliquidMainnetChain, polygon],
+    switchNetworkButton: {
+      allowSwitch: true,
+    },
   };
 };

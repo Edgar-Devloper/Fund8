@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useWallet } from '../../context/WalletContext';
 import { usePlatform } from '../../context/PlatformContext';
 import { convertNftIdToReferralLink, normalizeReferralLink } from '../../utils/nftReferralHelper';
 import { getReferralParamsWithFallback } from '../../utils/urlParams';
 import { buyNft } from '../../features/smart-contracts/services/nft.service';
+import { isOnBSC, ensureBSCNetwork, getCurrentChainId } from '../../utils/networkHelper';
 
 /**
  * Hook para manejar la compra de NFT
@@ -13,6 +15,7 @@ import { buyNft } from '../../features/smart-contracts/services/nft.service';
  */
 export const useConfirmNftPurchase = () => {
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const { address, provider, signer } = useWallet();
   const { isFund8, referralParams } = usePlatform();
   
@@ -72,6 +75,37 @@ export const useConfirmNftPurchase = () => {
 
     if (!referralLink) {
       throw new Error('Referral link no disponible');
+    }
+
+    // Validar que esté en BSC (requerido para crear NFTs)
+    const onBSC = await isOnBSC();
+    if (!onBSC) {
+      const currentChainId = await getCurrentChainId();
+      let networkName = '';
+      if (currentChainId === 998) {
+        networkName = t('network.hyperliquid', 'Hyperliquid');
+      } else if (currentChainId === 42161) {
+        networkName = t('network.arbitrum', 'Arbitrum');
+      } else {
+        networkName = t('network.unknown_network', 'Red {{chainId}}', { chainId: currentChainId });
+      }
+      
+      const errorMessage = t('nft.switch_to_bsc_message', 'Para crear NFTs, necesitas estar en Binance Smart Chain (BSC). Actualmente estás en {{network}}.', { network: networkName });
+      
+      // Intentar cambiar automáticamente a BSC
+      const switchResult = await ensureBSCNetwork(true);
+      if (!switchResult.success) {
+        throw new Error(`${errorMessage}\n\n${t('nft.switch_network_error', 'Error: {{message}}', { message: switchResult.message })}`);
+      }
+      
+      // Esperar un momento para que MetaMask procese el cambio
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Verificar nuevamente después del cambio
+      const stillOnBSC = await isOnBSC();
+      if (!stillOnBSC) {
+        throw new Error(`${errorMessage}\n\n${t('nft.switch_to_bsc_manual', 'Por favor, cambia manualmente a BSC en MetaMask y vuelve a intentar.')}`);
+      }
     }
 
     if (nftType === 'premium') {
@@ -207,3 +241,4 @@ export const useConfirmNftPurchase = () => {
     handlePurchase
   };
 };
+

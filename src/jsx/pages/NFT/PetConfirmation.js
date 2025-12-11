@@ -70,7 +70,9 @@ const PetConfirmation = () => {
       if (err.message) {
         errorMessage = err.message;
         
-        if (err.message.includes('No hay dirección de contrato NFT')) {
+        if (err.message.includes('BSC') || err.message.includes('Binance Smart Chain') || err.message.includes('cambia a BSC')) {
+          // Ya tiene el mensaje de red, mantenerlo
+        } else if (err.message.includes('No hay dirección de contrato NFT')) {
           errorMessage = t('nft.contract_error', 'Error de configuración: No se encontró la dirección del contrato NFT.');
         } else if (err.message.includes('insufficient funds')) {
           errorMessage = t('nft.insufficient_funds', 'Fondos insuficientes.');

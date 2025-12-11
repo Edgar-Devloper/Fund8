@@ -39,3 +39,4 @@ export const normalizeReferralLink = (raw) => {
   // Si no, intentar hashearlo (aunque normalmente debería venir como hash del contrato)
   return without0x.toLowerCase();
 };
+

@@ -61,3 +61,4 @@ export const nftManagerAbi = [
     type: "function",
   },
 ];
+

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { usePlatform } from '../../context/PlatformContext';
 import { useWallet } from '../../context/WalletContext';
 import { useNFT } from '../../context/NFTContext';
+import { isOnBSC, getCurrentChainId, ensureBSCNetwork } from '../../utils/networkHelper';
 import logo from "../../images/logo-full.png";
 
 /**
@@ -44,6 +45,9 @@ const NFTRegistration = () => {
   
   const hasNFTs = nftContext?.hasNFTs ?? false;
   const selectedNFT = nftContext?.selectedNFT ?? null;
+  const [isOnBSCNetwork, setIsOnBSCNetwork] = useState(false);
+  const [isCheckingNetwork, setIsCheckingNetwork] = useState(false);
+  const [networkMessage, setNetworkMessage] = useState(null);
 
   useEffect(() => {
     // Si es DeFily y no tiene enlace de referido, mostrar error
@@ -51,6 +55,38 @@ const NFTRegistration = () => {
       setShowError(true);
     }
   }, [isDefily, referralParams]);
+
+  // Verificar red cuando se conecta la wallet
+  useEffect(() => {
+    const checkNetwork = async () => {
+      if (isConnected) {
+        setIsCheckingNetwork(true);
+        const onBSC = await isOnBSC();
+        setIsOnBSCNetwork(onBSC);
+        
+        if (!onBSC) {
+          const currentChainId = await getCurrentChainId();
+          let networkName = '';
+          if (currentChainId === 998) {
+            networkName = t('network.hyperliquid', 'Hyperliquid');
+          } else if (currentChainId === 42161) {
+            networkName = t('network.arbitrum', 'Arbitrum');
+          } else {
+            networkName = t('network.unknown_network', 'Red {{chainId}}', { chainId: currentChainId });
+          }
+          setNetworkMessage(t('nft.switch_to_bsc_message', 'Para crear NFTs, necesitas estar en Binance Smart Chain (BSC). Actualmente estás en {{network}}.', { network: networkName }));
+        } else {
+          setNetworkMessage(null);
+        }
+        setIsCheckingNetwork(false);
+      } else {
+        setIsOnBSCNetwork(false);
+        setNetworkMessage(null);
+      }
+    };
+
+    checkNetwork();
+  }, [isConnected, t]);
 
   // NO redirigir automáticamente - permitir crear nuevos NFTs incluso si ya tiene uno
   // El usuario puede querer crear múltiples NFTs
@@ -231,10 +267,65 @@ const NFTRegistration = () => {
                     color: '#00c087',
                     borderRadius: '8px',
                     padding: '12px 16px',
-                    marginBottom: '24px'
+                    marginBottom: '16px'
                   }}>
                     <strong>{t('nft.wallet_connected', 'Wallet Conectada')}:</strong> {address?.slice(0, 6)}...{address?.slice(-4)}
                   </div>
+
+                  {/* Mensaje de red si no está en BSC */}
+                  {networkMessage && (
+                    <div style={{
+                      background: 'rgba(255, 193, 7, 0.1)',
+                      border: '1px solid #ffc107',
+                      color: '#ffc107',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      marginBottom: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '12px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <strong>{networkMessage}</strong>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          setIsCheckingNetwork(true);
+                          try {
+                            const result = await ensureBSCNetwork(true);
+                            if (result.success) {
+                              const onBSC = await isOnBSC();
+                              setIsOnBSCNetwork(onBSC);
+                              if (onBSC) {
+                                setNetworkMessage(null);
+                              }
+                            } else {
+                              alert(t('nft.switch_network_error', 'Error: {{message}}', { message: result.message }));
+                            }
+                          } catch (error) {
+                            alert(t('nft.switch_network_error', 'Error: {{message}}', { message: error.message }));
+                          } finally {
+                            setIsCheckingNetwork(false);
+                          }
+                        }}
+                        disabled={isCheckingNetwork}
+                        style={{
+                          background: '#ffc107',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '8px 20px',
+                          color: '#000',
+                          fontWeight: '600',
+                          cursor: isCheckingNetwork ? 'not-allowed' : 'pointer',
+                          opacity: isCheckingNetwork ? 0.6 : 1
+                        }}
+                      >
+                        {isCheckingNetwork ? t('nft.switching_network', 'Cambiando...') : t('nft.switch_to_bsc', 'Cambiar a BSC')}
+                      </button>
+                    </div>
+                  )}
 
                   {isFund8 ? (
                     <div>

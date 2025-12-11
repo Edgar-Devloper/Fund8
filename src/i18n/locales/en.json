@@ -295,6 +295,11 @@
     "premium_benefits_title": "Premium Benefits:",
     "dismiss": "Dismiss",
     "upgrade_now": "Upgrade Now",
+    "switch_to_bsc_message": "To create NFTs, you need to be on Binance Smart Chain (BSC). You are currently on {{network}}.",
+    "switch_to_bsc": "Switch to BSC",
+    "switching_network": "Switching...",
+    "switch_network_error": "Error: {{message}}",
+    "switch_to_bsc_manual": "Please manually switch to BSC in MetaMask and try again.",
     "select_nft_collection": "Select an NFT Collection",
     "create_your_nft": "Create Your NFT",
     "choose_creation_mode": "Choose how you want to create your unique and personalized NFT",
@@ -337,6 +342,11 @@
     "processing": "Processing...",
     "confirm_purchase": "Confirm Purchase",
     "register_free": "Register Free"
+  },
+  "network": {
+    "hyperliquid": "Hyperliquid",
+    "arbitrum": "Arbitrum",
+    "unknown_network": "Network {{chainId}}"
   }
 }
 

@@ -35,8 +35,95 @@ class HyperliquidTradingService {
       this.signer = signer;
       this.address = await signer.getAddress();
       
+      // Crear un wrapper del signer que implemente la interfaz completa que Hyperliquid espera
+      // Hyperliquid SDK requiere un objeto wallet con getAddress() y _signTypedData()
+      const hyperliquidWallet = {
+        // Método requerido: obtener la dirección de la wallet
+        getAddress: async () => {
+          try {
+            // Asegurar que devolvemos la dirección en el formato correcto
+            const addr = await this.signer.getAddress();
+            console.log('[HL Trading] getAddress called, returning:', addr);
+            return addr;
+          } catch (error) {
+            console.error('[HL Trading] Error in getAddress:', error);
+            // Fallback a la dirección guardada
+            return this.address;
+          }
+        },
+        
+        // Método para firmar mensajes simples (por si se necesita)
+        signMessage: async (message) => {
+          return await this.signer.signMessage(message);
+        },
+        
+        // Método crítico: firmar typed data (requerido por Hyperliquid)
+        _signTypedData: async (domain, types, value) => {
+          console.log('[HL Trading] _signTypedData called');
+          
+          // Usar window.ethereum directamente para firmar typed data
+          if (typeof window.ethereum !== 'undefined') {
+            try {
+              // Obtener el chainId actual de MetaMask
+              const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+              const currentChainId = parseInt(chainIdHex, 16);
+              
+              console.log('[HL Trading] Current MetaMask chainId:', currentChainId);
+              console.log('[HL Trading] Original domain:', domain);
+              
+              // Crear un nuevo dominio con el chainId actual de MetaMask
+              // MetaMask requiere que el chainId coincida con la red activa
+              // También necesitamos asegurarnos de que el chainId sea un número, no string
+              const adjustedDomain = {
+                ...domain,
+                chainId: currentChainId
+              };
+              
+              // Hyperliquid SDK pasa los parámetros en un formato específico
+              // Necesitamos adaptarlo al formato que MetaMask espera (EIP-712)
+              // El primaryType debe ser el tipo principal del mensaje (no EIP712Domain)
+              const primaryType = Object.keys(types).find(key => key !== 'EIP712Domain') || Object.keys(types)[0];
+              
+              const data = {
+                domain: adjustedDomain,
+                types: types,
+                primaryType: primaryType,
+                message: value
+              };
+              
+              console.log('[HL Trading] Signing typed data with MetaMask:', { 
+                originalChainId: domain.chainId, 
+                adjustedChainId: currentChainId,
+                domain: adjustedDomain, 
+                types: Object.keys(types), 
+                primaryType: primaryType,
+                message: value
+              });
+              
+              const signature = await window.ethereum.request({
+                method: 'eth_signTypedData_v4',
+                params: [this.address, JSON.stringify(data)]
+              });
+              
+              console.log('[HL Trading] Typed data signed successfully');
+              return signature;
+            } catch (error) {
+              console.error('[HL Trading] Error signing typed data with MetaMask:', error);
+              console.error('[HL Trading] Error details:', {
+                code: error.code,
+                message: error.message,
+                data: error.data
+              });
+              throw error;
+            }
+          }
+          
+          throw new Error('No se puede firmar typed data: window.ethereum no está disponible');
+        }
+      };
+      
       this.exchangeClient = new hl.ExchangeClient({
-        wallet: this.signer, // ethers signer is compatible
+        wallet: hyperliquidWallet, // Usar el wrapper que expone _signTypedData
         transport: new hl.HttpTransport({
           isTestnet: IS_TESTNET
         })
