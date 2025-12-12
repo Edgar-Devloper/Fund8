@@ -211,24 +211,30 @@ const PremiumUpgradeNotification = () => {
         padding: '12px',
         marginBottom: '16px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <span style={{ color: '#00c087', fontSize: '16px' }}>✓</span>
-          <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: '600' }}>
-            {t('nft.premium_benefits_title', 'Beneficios Premium:')}
-          </span>
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '8px' }}>
+            <span style={{ color: '#00c087', fontSize: '16px', marginTop: '2px' }}>•</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
+                {t('nft.premium_benefit_1_title', 'Full access to all products and services')}
+              </div>
+              <div style={{ color: '#a0aec0', fontSize: '12px', lineHeight: '1.6' }}>
+                {t('nft.premium_benefit_1_description', 'Enjoy unrestricted entry to every feature, tool, event, webinar and announcement.')}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <span style={{ color: '#00c087', fontSize: '16px', marginTop: '2px' }}>•</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
+                {t('nft.premium_benefit_2_title', 'Build a real career and earn from your entire organisation')}
+              </div>
+              <div style={{ color: '#a0aec0', fontSize: '12px', lineHeight: '1.6' }}>
+                {t('nft.premium_benefit_2_description', 'Grow your network, expand your community, rank up and benefit from production across your entire team.')}
+              </div>
+            </div>
+          </div>
         </div>
-        <ul style={{ 
-          margin: 0, 
-          paddingLeft: '24px', 
-          color: '#a0aec0',
-          fontSize: '12px',
-          lineHeight: '1.8'
-        }}>
-          <li>{t('nft.full_access_all_products', 'Acceso completo a todos los productos')}</li>
-          <li>{t('nft.earn_all_commissions', 'Ganas todas las comisiones (CV/RV)')}</li>
-          <li>{t('nft.binary_matching_bonuses', 'Binary y Matching bonuses')}</li>
-          <li>{t('nft.can_buy_lp_subscriptions', 'Puedes comprar LP Subscriptions')}</li>
-        </ul>
       </div>
 
       <div style={{ display: 'flex', gap: '10px' }}>
@@ -280,7 +286,7 @@ const PremiumUpgradeNotification = () => {
             e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
-          {t('nft.upgrade_now', 'Actualizar Ahora')} - $30 USDC
+          {t('nft.upgrade_now', 'Actualizar Ahora')} - 30 USDC
         </button>
       </div>
     </div>
@@ -288,4 +294,5 @@ const PremiumUpgradeNotification = () => {
 };
 
 export default PremiumUpgradeNotification;
+
 

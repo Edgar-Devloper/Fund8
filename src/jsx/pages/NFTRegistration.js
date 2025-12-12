@@ -463,11 +463,10 @@ const NFTRegistration = () => {
                                 fontSize: '14px',
                                 marginBottom: '20px'
                               }}>
-                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.full_access_all_products', 'Acceso completo a todos los productos')}</li>
-                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.earn_all_commissions', 'Ganas todas las comisiones (CV/RV)')}</li>
-                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.binary_matching_bonuses', 'Binary y Matching bonuses')}</li>
-                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.direct_bonus_all_purchases', 'Direct Bonus en todas las compras')}</li>
-                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.can_buy_lp_subscriptions', 'Puedes comprar LP Subscriptions')}</li>
+                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.full_access_all_products', 'Full access to all products and services')}</li>
+                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.earn_all_commissions', 'Build a real career and earn commissions from your entire organisation')}</li>
+                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.binary_matching_bonuses', 'Exclusive ranking & leadership programs')}</li>
+                                <li style={{ marginBottom: '8px' }}>✓ {t('nft.direct_bonus_all_purchases', 'Trade your NFT whenever you choose')}</li>
                               </ul>
                               <button 
                                 style={{

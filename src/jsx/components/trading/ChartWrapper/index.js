@@ -12,7 +12,7 @@ const ChartWrapper = () => {
   const volumeSeriesRef = useRef(null);
 
   // Filtros personalizados
-  const [timeframe, setTimeframe] = useState('1h'); // '1m' | '5m' | '15m' | '1h'
+  const [timeframe, setTimeframe] = useState('1h'); // '1m' | '5m' | '15m' | '1h' | '1D' | '1W' | '1M'
   const [length, setLength] = useState(200);       // número de velas
   const [showVolume, setShowVolume] = useState(true);
   const [autoFitActive, setAutoFitActive] = useState(false);
@@ -31,7 +31,9 @@ const ChartWrapper = () => {
     : (selectedSymbol || 'btc').toLowerCase();
   
   // fetch real candles from hyperliquid
-  const { candles: realCandles, loading: candlesLoading } = useCandles(coinId, timeframe, length);
+  // For monthly timeframe, increase limit to ensure we get all available months
+  const effectiveLength = timeframe === '1M' ? Math.max(length, 60) : length;
+  const { candles: realCandles, loading: candlesLoading } = useCandles(coinId, timeframe, effectiveLength);
 
   // Store volume data by time for hover tooltip
   const volumeMapRef = useRef(new Map());
@@ -85,6 +87,20 @@ const ChartWrapper = () => {
         return;
       }
       
+      // Log for debugging monthly timeframe
+      if (timeframe === '1M' && validCandles.length > 0) {
+        const lastCandle = validCandles[validCandles.length - 1];
+        console.log('[ChartWrapper] Last valid candle for 1M:', {
+          time: lastCandle.time,
+          date: new Date(lastCandle.time * 1000).toISOString(),
+          open: lastCandle.open,
+          high: lastCandle.high,
+          low: lastCandle.low,
+          close: lastCandle.close,
+          totalCandles: validCandles.length
+        });
+      }
+      
       // use real candles from hyperliquid
       seriesRef.current.setData(validCandles);
       
@@ -113,9 +129,52 @@ const ChartWrapper = () => {
       }
       
       if (chartRef.current) {
-        // Only fit content if not daily/weekly timeframe to prevent month/year grouping
-        if (timeframe !== '1D' && timeframe !== '1d' && timeframe !== '1W' && timeframe !== '1w') {
-        chartRef.current.timeScale().fitContent();
+        // Only fit content if not daily/weekly/monthly timeframe to prevent month/year grouping
+        // Note: '1m' is minute (should fit), '1M' is month (should not fit)
+        if (timeframe !== '1D' && timeframe !== '1d' && timeframe !== '1W' && timeframe !== '1w' && timeframe !== '1M') {
+          chartRef.current.timeScale().fitContent();
+        } else if (timeframe === '1M' && validCandles.length > 0) {
+          // For monthly, ensure we show the last month by setting visible range
+          const lastCandleTime = validCandles[validCandles.length - 1].time;
+          const firstCandleTime = validCandles[0].time;
+          // Calculate end time: last candle time + 1 month (to show the full last month)
+          const endTime = lastCandleTime + (31 * 24 * 60 * 60); // Add 31 days to show full last month
+          
+          console.log('[ChartWrapper] Attempting to set visible range for 1M:', {
+            from: new Date(firstCandleTime * 1000).toISOString(),
+            to: new Date(endTime * 1000).toISOString(),
+            lastCandleTime: new Date(lastCandleTime * 1000).toISOString(),
+            totalCandles: validCandles.length
+          });
+          
+          // Use setTimeout to ensure chart is ready
+          setTimeout(() => {
+            if (chartRef.current) {
+              try {
+                // Try setVisibleRange first
+                chartRef.current.timeScale().setVisibleRange({
+                  from: firstCandleTime,
+                  to: endTime
+                });
+                console.log('[ChartWrapper] Successfully set visible range');
+              } catch (e) {
+                console.warn('[ChartWrapper] Error setting visible range, trying scrollToRealTime:', e);
+                // Fallback: try scrollToRealTime
+                try {
+                  if (typeof chartRef.current.timeScale().scrollToRealTime === 'function') {
+                    chartRef.current.timeScale().scrollToRealTime();
+                    console.log('[ChartWrapper] Used scrollToRealTime');
+                  } else {
+                    // Last resort: scroll to last position
+                    chartRef.current.timeScale().scrollToPosition(lastCandleTime, true);
+                    console.log('[ChartWrapper] Used scrollToPosition');
+                  }
+                } catch (e2) {
+                  console.warn('[ChartWrapper] Error with fallback scroll methods:', e2);
+                }
+              }
+            }
+          }, 100);
         }
         // Force time scale to be visible and update
         chartRef.current.timeScale().applyOptions({
@@ -124,7 +183,8 @@ const ChartWrapper = () => {
           secondsVisible: false,
           fixLeftEdge: false,
           fixRightEdge: false,
-          allowBoldLabels: true
+          allowBoldLabels: true,
+          rightOffset: 20 // Add right offset to ensure last candle is visible
         });
       }
     } catch (error) {
@@ -160,20 +220,20 @@ const ChartWrapper = () => {
             visible: true,
             borderColor: '#1e2541'
           },
-          timeScale: { 
-            timeVisible: true, 
-            secondsVisible: false,
-            borderColor: '#1e2541',
-            visible: true,
-            rightOffset: 12,
-            barSpacing: 3,
-            rightBarStaysOnScroll: true,
-            lockVisibleTimeRangeOnResize: true,
-            fixLeftEdge: false,
-            fixRightEdge: false,
-            allowBoldLabels: true,
-            minBarSpacing: 0.5
-          },
+      timeScale: { 
+        timeVisible: true, 
+        secondsVisible: false,
+        borderColor: '#1e2541',
+        visible: true,
+        rightOffset: 12,
+        barSpacing: 3,
+        rightBarStaysOnScroll: true,
+        lockVisibleTimeRangeOnResize: true,
+        fixLeftEdge: false,
+        fixRightEdge: false,
+        allowBoldLabels: true,
+        minBarSpacing: 0.5
+      },
           localization: {
             locale: 'es-ES',
             dateFormat: 'dd MMM yyyy',
@@ -413,6 +473,13 @@ const ChartWrapper = () => {
       timeFormat = '';
       barSpacing = 8;
       minBarSpacing = 2;
+    } else if (timeframe === '1M') {
+      // For monthly: show month/year format
+      // lightweight-charts format: use 'MMM yyyy' for month/year display
+      dateFormat = 'MMM yyyy';
+      timeFormat = '';
+      barSpacing = 20;
+      minBarSpacing = 8;
     } else if (timeframe === '1h') {
       // For hourly: show date and time
       dateFormat = 'dd MMM';
@@ -431,6 +498,23 @@ const ChartWrapper = () => {
     }
     
     // Update chart localization and timeScale
+    const timeScaleOptions = {
+      secondsVisible: secondsVisible,
+      barSpacing: barSpacing,
+      minBarSpacing: minBarSpacing
+    };
+    
+    // For monthly timeframe, add custom tick mark formatter
+    if (timeframe === '1M') {
+      timeScaleOptions.tickMarkFormatter = (time, tickMarkType, locale) => {
+        const date = new Date(time * 1000);
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const month = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+        return `${month} ${year}`;
+      };
+    }
+    
     chartRef.current.applyOptions({
       localization: {
         locale: 'es-ES',
@@ -440,13 +524,54 @@ const ChartWrapper = () => {
           return price.toFixed(2);
         }
       },
-      timeScale: {
-        secondsVisible: secondsVisible,
-        barSpacing: barSpacing,
-        minBarSpacing: minBarSpacing
-      }
+      timeScale: timeScaleOptions
     });
     
+  }, [timeframe, realCandles]);
+
+  // Separate effect to ensure last month is visible for monthly timeframe
+  useEffect(() => {
+    if (timeframe === '1M' && chartRef.current && realCandles && realCandles.length > 0) {
+      // Wait a bit for chart to render
+      const timer = setTimeout(() => {
+        if (chartRef.current && realCandles.length > 0) {
+          const lastCandleTime = realCandles[realCandles.length - 1].time;
+          try {
+            // Try to scroll to the last candle position
+            const timeScale = chartRef.current.timeScale();
+            // Get current visible range
+            const visibleRange = timeScale.getVisibleRange();
+            if (visibleRange) {
+              // If last candle is not in visible range, scroll to it
+              if (visibleRange.to < lastCandleTime) {
+                const endTime = lastCandleTime + (31 * 24 * 60 * 60); // Add 31 days buffer
+                timeScale.setVisibleRange({
+                  from: visibleRange.from,
+                  to: endTime
+                });
+                console.log('[ChartWrapper] Scrolled to show last month:', {
+                  lastCandleTime: new Date(lastCandleTime * 1000).toISOString(),
+                  endTime: new Date(endTime * 1000).toISOString()
+                });
+              }
+            } else {
+              // If no visible range, set it to show last month
+              const firstCandleTime = realCandles[0].time;
+              const endTime = lastCandleTime + (31 * 24 * 60 * 60);
+              timeScale.setVisibleRange({
+                from: firstCandleTime,
+                to: endTime
+              });
+              console.log('[ChartWrapper] Set initial visible range for last month');
+            }
+          } catch (e) {
+            console.warn('[ChartWrapper] Error in monthly scroll effect:', e);
+          }
+        }
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
   }, [timeframe, realCandles]);
 
 
@@ -645,7 +770,7 @@ const ChartWrapper = () => {
           )}
           
           <div className="d-flex align-items-center gap-1 small flex-wrap" style={{flexShrink: 0}}>
-            {['1m','5m','15m','1h','1D','1W'].map(tf => (
+            {['1m','5m','15m','1h','1D','1W','1M'].map(tf => (
               <button key={tf} onClick={() => setTimeframe(tf)} className={`btn btn-sm ${tf===timeframe?'btn-primary':'btn-outline-secondary'}`} style={{padding:'2px 8px', borderRadius:14, fontSize: '11px'}}>{tf}</button>
             ))}
           </div>

@@ -2,6 +2,71 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiService } from '../api/apiService.js';
 import { useHyperliquidWebSocket } from './useHyperliquidWebSocket.js';
 
+// Helper function to aggregate daily candles into monthly candles
+const aggregateToMonthly = (dailyCandles) => {
+  if (!dailyCandles || dailyCandles.length === 0) return [];
+  
+  // Group candles by month/year
+  const monthlyMap = new Map();
+  
+  // Sort candles by time to ensure proper aggregation
+  const sortedCandles = [...dailyCandles].sort((a, b) => a.time - b.time);
+  
+  sortedCandles.forEach(candle => {
+    const date = new Date(candle.time * 1000); // Convert from seconds to milliseconds
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+    
+    // Calculate timestamp for first day of the month at midnight UTC
+    const firstDayOfMonth = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+    const firstDayTimestamp = Math.floor(firstDayOfMonth.getTime() / 1000); // Convert to seconds
+    
+    if (!monthlyMap.has(monthKey)) {
+      monthlyMap.set(monthKey, {
+        time: firstDayTimestamp, // Use first day of month timestamp
+        open: candle.open,
+        high: candle.high,
+        low: candle.low,
+        close: candle.close,
+        candles: [candle]
+      });
+    } else {
+      const monthly = monthlyMap.get(monthKey);
+      monthly.high = Math.max(monthly.high, candle.high);
+      monthly.low = Math.min(monthly.low, candle.low);
+      monthly.close = candle.close; // Update close with latest day in month (most recent)
+      monthly.candles.push(candle);
+    }
+  });
+  
+  // Convert map to array and sort by time
+  const monthlyCandles = Array.from(monthlyMap.values())
+    .map(monthly => ({
+      time: monthly.time,
+      open: monthly.open,
+      high: monthly.high,
+      low: monthly.low,
+      close: monthly.close
+    }))
+    .sort((a, b) => a.time - b.time);
+  
+  // Log for debugging
+  if (monthlyCandles.length > 0) {
+    const lastCandle = monthlyCandles[monthlyCandles.length - 1];
+    const lastDate = new Date(lastCandle.time * 1000);
+    console.log('[aggregateToMonthly] Last monthly candle:', {
+      time: lastCandle.time,
+      date: lastDate.toISOString(),
+      month: lastDate.getMonth() + 1,
+      year: lastDate.getFullYear(),
+      totalMonths: monthlyCandles.length
+    });
+  }
+  
+  return monthlyCandles;
+};
+
 export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = true) => {
   const [candles, setCandles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,8 +94,15 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
       
       // calculate time range based on interval and limit
       // hyperliquid uses milliseconds for timestamps in candleSnapshot
-      // Normalize interval (handle both '1D' and '1d', '1W' and '1w')
-      const normalizedInterval = interval.toLowerCase();
+      // Normalize interval (handle both '1D' and '1d', '1W' and '1w', '1M' and '1m' - note: '1M' is month, '1m' is minute)
+      let normalizedInterval = interval;
+      const isMonthly = interval === '1M';
+      if (isMonthly) {
+        normalizedInterval = '1d'; // Fetch daily data, will aggregate to monthly
+      } else {
+        normalizedInterval = interval.toLowerCase();
+      }
+      
       const intervalMilliseconds = {
         '1m': 60 * 1000,
         '5m': 300 * 1000,
@@ -38,11 +110,19 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
         '1h': 3600 * 1000,
         '4h': 14400 * 1000,
         '1d': 86400 * 1000,
-        '1w': 604800 * 1000
+        '1w': 604800 * 1000,
+        '1mo': 2592000000 // 30 days in milliseconds
       }[normalizedInterval] || 3600 * 1000;
       
-      const endTime = Date.now(); // milliseconds
-      const startTime = endTime - (limit * intervalMilliseconds);
+      // For monthly, we need more daily candles to aggregate
+      // Request enough days to cover the limit of months plus some buffer for current month
+      // Calculate how many days we need: limit months * 31 days per month + buffer
+      const fetchLimit = isMonthly ? Math.max(limit * 35, 800) : limit;
+      const endTime = Date.now(); // milliseconds - use current time to ensure we get latest data
+      // For monthly, ensure we get at least 2 years of daily data to have enough months
+      const minDaysForMonthly = isMonthly ? 730 : 0; // 2 years = ~730 days
+      const calculatedDays = isMonthly ? Math.max(fetchLimit, minDaysForMonthly) : fetchLimit;
+      const startTime = endTime - (calculatedDays * intervalMilliseconds);
       
       const symbol = coinId.toUpperCase();
       // Use normalizedInterval instead of interval to ensure lowercase format for API
@@ -88,6 +168,22 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
         }).filter(c => c.time && c.open > 0 && c.high > 0 && c.low > 0 && c.close > 0);
       }
       
+      // If monthly interval, aggregate daily candles into monthly candles
+      if (isMonthly && formattedCandles.length > 0) {
+        console.log('[useCandles] Before aggregation:', {
+          dailyCandles: formattedCandles.length,
+          firstDate: new Date(formattedCandles[0].time * 1000).toISOString(),
+          lastDate: new Date(formattedCandles[formattedCandles.length - 1].time * 1000).toISOString(),
+          endTime: new Date(endTime).toISOString()
+        });
+        formattedCandles = aggregateToMonthly(formattedCandles);
+        console.log('[useCandles] After aggregation:', {
+          monthlyCandles: formattedCandles.length,
+          firstDate: formattedCandles.length > 0 ? new Date(formattedCandles[0].time * 1000).toISOString() : 'N/A',
+          lastDate: formattedCandles.length > 0 ? new Date(formattedCandles[formattedCandles.length - 1].time * 1000).toISOString() : 'N/A'
+        });
+      }
+      
       setCandles(formattedCandles);
     } catch (err) {
       setError(err.message || 'Error al obtener velas');
@@ -121,8 +217,7 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
 
   // Get interval in seconds
   const getIntervalSeconds = (interval) => {
-    // Normalize interval (handle both '1D' and '1d', '1W' and '1w')
-    const normalizedInterval = interval.toLowerCase();
+    // Normalize interval (handle both '1D' and '1d', '1W' and '1w', '1M' and '1m' - note: '1M' is month, '1m' is minute)
     const intervalSeconds = {
       '1m': 60,
       '5m': 300,
@@ -130,14 +225,18 @@ export const useCandles = (coinId, interval = '1h', limit = 200, useWebSocket = 
       '1h': 3600,
       '4h': 14400,
       '1d': 86400,
-      '1w': 604800
+      '1D': 86400,
+      '1w': 604800,
+      '1W': 604800,
+      '1M': 2592000 // 30 days in seconds (for monthly aggregation)
     };
-    return intervalSeconds[normalizedInterval] || 3600;
+    return intervalSeconds[interval] || intervalSeconds[interval.toLowerCase()] || 3600;
   };
 
   // Update current candle with real-time price from WebSocket
+  // Skip real-time updates for monthly intervals (not practical)
   useEffect(() => {
-    if (!useWebSocket || !coinId || !ws.isConnected || candles.length === 0) {
+    if (!useWebSocket || !coinId || !ws.isConnected || candles.length === 0 || interval === '1M') {
       setIsRealTime(false);
       return;
     }
