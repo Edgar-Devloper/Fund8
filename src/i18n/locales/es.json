@@ -89,7 +89,8 @@
     "use_best_bid": "Usar mejor bid",
     "use_best_ask": "Usar mejor ask",
     "market_price": "Precio de mercado",
-    "processing": "Procesando..."
+    "processing": "Procesando...",
+    "coming_soon": "Próximamente"
   },
   "wallet": {
     "balance": "Balance",
@@ -98,6 +99,13 @@
     "total_balance": "Balance Total",
     "available_balance": "Balance Disponible",
     "locked_balance": "Balance Bloqueado",
+    "balance_in_hyperliquid": "Balance en Hyperliquid",
+    "balance_in_hyperliquid_tooltip": "Balance en Hyperliquid. Necesitas depositar USDC para empezar a tradear.",
+    "balance_in_hyperliquid_description": "Este es tu balance en la plataforma de trading Hyperliquid.",
+    "deposit_usdc_to_start": "Para empezar a tradear, necesitas depositar USDC desde tu wallet.",
+    "available": "Disponible",
+    "in_orders": "En Órdenes",
+    "total": "Total",
     "estimated_value": "Valor Estimado",
     "connect_wallet": "Conectar Billetera",
     "disconnect_wallet": "Desconectar Billetera",
@@ -240,6 +248,7 @@
     "all": "Todos",
     "defily": "Trader",
     "fund8": "Fund8",
+    "basic": "Básico",
     "loading_nfts": "Cargando NFTs...",
     "no_nfts_found": "No NFT Found in your wallet",
     "no_nfts_found_description": "Make sure you are connected on Binance Smart Chain",
@@ -351,6 +360,20 @@
     "hyperliquid": "Hyperliquid",
     "arbitrum": "Arbitrum",
     "unknown_network": "Red {{chainId}}"
+  },
+  "topbar": {
+    "coming_soon": "Próximamente",
+    "trade": "Trade",
+    "portfolio": "Portfolio",
+    "staking": "Staking",
+    "referrals": "Referrals",
+    "rewards": "Rewards",
+    "leaderboard": "Leaderboard",
+    "more": "More",
+    "docs": "Docs",
+    "stats": "Stats",
+    "offers": "Offers",
+    "announcements": "Announcements"
   }
 }
 

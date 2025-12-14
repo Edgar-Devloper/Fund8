@@ -132,7 +132,7 @@ const ChartWrapper = () => {
         // Only fit content if not daily/weekly/monthly timeframe to prevent month/year grouping
         // Note: '1m' is minute (should fit), '1M' is month (should not fit)
         if (timeframe !== '1D' && timeframe !== '1d' && timeframe !== '1W' && timeframe !== '1w' && timeframe !== '1M') {
-          chartRef.current.timeScale().fitContent();
+        chartRef.current.timeScale().fitContent();
         } else if (timeframe === '1M' && validCandles.length > 0) {
           // For monthly, ensure we show the last month by setting visible range
           const lastCandleTime = validCandles[validCandles.length - 1].time;
@@ -220,20 +220,20 @@ const ChartWrapper = () => {
             visible: true,
             borderColor: '#1e2541'
           },
-      timeScale: { 
-        timeVisible: true, 
-        secondsVisible: false,
-        borderColor: '#1e2541',
-        visible: true,
-        rightOffset: 12,
-        barSpacing: 3,
-        rightBarStaysOnScroll: true,
-        lockVisibleTimeRangeOnResize: true,
-        fixLeftEdge: false,
-        fixRightEdge: false,
-        allowBoldLabels: true,
-        minBarSpacing: 0.5
-      },
+          timeScale: { 
+            timeVisible: true, 
+            secondsVisible: false,
+            borderColor: '#1e2541',
+            visible: true,
+            rightOffset: 12,
+            barSpacing: 3,
+            rightBarStaysOnScroll: true,
+            lockVisibleTimeRangeOnResize: true,
+            fixLeftEdge: false,
+            fixRightEdge: false,
+            allowBoldLabels: true,
+            minBarSpacing: 0.5
+          },
           localization: {
             locale: 'es-ES',
             dateFormat: 'dd MMM yyyy',
@@ -563,7 +563,7 @@ const ChartWrapper = () => {
                 to: endTime
               });
               console.log('[ChartWrapper] Set initial visible range for last month');
-            }
+      }
           } catch (e) {
             console.warn('[ChartWrapper] Error in monthly scroll effect:', e);
           }

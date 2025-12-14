@@ -21,6 +21,11 @@ import './scss/main.scss';
 import './i18n/config';
 // Hyperliquid Theme Global (necesario para Trading)
 import './jsx/global-hyperliquid-theme.css';
+// Inicializar sistema de versionado de caché
+import { initCacheVersion } from './utils/cacheVersion';
+
+// Inicializar sistema de caché al cargar la aplicación
+initCacheVersion();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

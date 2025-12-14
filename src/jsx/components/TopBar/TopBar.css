@@ -1,0 +1,173 @@
+/* ============================================
+   TOP BAR - Menú Estilo Trader
+   ============================================ */
+
+.top-bar {
+  width: 100%;
+  background: var(--hl-dark-card, #151a2e);
+  border-bottom: 1px solid var(--hl-dark-border, #1e2541);
+  z-index: 999;
+  position: relative;
+}
+
+.top-bar-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.top-bar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 48px;
+  padding: 0 16px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+}
+
+.top-bar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.top-bar-nav-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.top-bar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.top-bar-nav-item:hover {
+  color: var(--hl-accent-green, #00c087);
+  background: rgba(0, 192, 135, 0.05);
+}
+
+.top-bar-nav-item.active {
+  color: var(--hl-accent-green, #00c087);
+  background: rgba(0, 192, 135, 0.1);
+}
+
+.top-bar-nav-item.active:not(.disabled)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--hl-accent-green, #00c087);
+  z-index: 1;
+}
+
+.top-bar-nav-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.top-bar-nav-item.disabled:hover {
+  color: var(--hl-text-secondary, #a0aec0);
+  background: rgba(0, 192, 135, 0.05);
+}
+
+/* Tooltip para elementos deshabilitados */
+.top-bar-nav-item.disabled {
+  position: relative;
+}
+
+.top-bar-nav-item.disabled[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: fixed;
+  bottom: auto;
+  top: auto;
+  left: auto;
+  right: auto;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.95);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 6px;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 1;
+  animation: tooltipFadeIn 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  /* Calcular posición desde el elemento */
+}
+
+.top-bar-nav-item.disabled[data-tooltip]:hover::before {
+  content: '';
+  position: fixed;
+  bottom: auto;
+  top: auto;
+  left: auto;
+  right: auto;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.95);
+  z-index: 10001;
+  pointer-events: none;
+  opacity: 1;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+/* Usar JavaScript para posicionar tooltip correctamente */
+.top-bar-nav-item.disabled[data-tooltip] {
+  position: relative;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .top-bar-nav {
+    min-height: 44px;
+    padding: 0 12px;
+    justify-content: flex-start;
+  }
+
+  .top-bar-nav-item {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-bar-nav-item {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+

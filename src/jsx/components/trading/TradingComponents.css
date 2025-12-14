@@ -4,6 +4,55 @@
  */
 
 /* ============================================
+   TOOLTIP PARA BOTONES DESHABILITADOS
+   ============================================ */
+.tooltip-wrapper-disabled {
+  position: relative;
+  display: flex;
+  flex: 1;
+  overflow: visible;
+}
+
+.tooltip-wrapper-disabled:hover::after {
+  content: attr(data-tooltip);
+  position: fixed; /* Cambiado de absolute a fixed para que no se corte */
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 4px;
+  z-index: 99999; /* Z-index muy alto para estar sobre todo */
+  pointer-events: none;
+  opacity: 1;
+  animation: tooltipFadeIn 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-wrapper-disabled:hover::before {
+  content: '';
+  position: fixed; /* Cambiado de absolute a fixed */
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  z-index: 100000; /* Z-index muy alto */
+  pointer-events: none;
+  opacity: 1;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================
    ORDER BOOK STYLES
    ============================================ */
 .orderbook-container,
@@ -172,9 +221,10 @@
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible; /* Cambiado de hidden a visible para permitir tooltips */
   min-height: 400px;
   width: 100%;
+  position: relative; /* Para que los tooltips se posicionen correctamente */
 }
 
 /* Margin Controls - Cross, 20x, M (like Asterdex) */
@@ -287,6 +337,8 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1; /* Menor que el tooltip */
 }
 
 /* Wallet Status Badge (when connected) */
@@ -463,8 +515,9 @@
   padding: 16px;
   flex: 1 1 auto;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible; /* Cambiado de hidden a visible para permitir tooltips */
   min-height: 0;
+  position: relative; /* Para que los tooltips se posicionen correctamente */
 }
 
 .order-form-body::-webkit-scrollbar {
@@ -817,6 +870,11 @@
   .btn {
     padding: 8px 12px !important;
     font-size: 12px !important;
+  }
+  
+  .btn-group {
+    position: relative;
+    overflow: visible !important; /* Permitir que los tooltips se muestren */
   }
   
   .btn-group .btn {

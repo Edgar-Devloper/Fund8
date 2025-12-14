@@ -20,6 +20,7 @@ export const useTradingTickers = (refreshInterval = 30000) => {
       const allPrices = allMidsResponse.data || allMidsResponse;
       const metaData = metaResponse.data || metaResponse;
       
+      
       let universe = [];
       let assetCtxs = [];
       
@@ -87,18 +88,12 @@ export const useTradingTickers = (refreshInterval = 30000) => {
           .map(key => key.toUpperCase());
       }
       
-      const HYPERLIQUID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'AVAX', 'MATIC', 'ATOM', 'LINK', 'UNI', 'AAVE'];
+      const HYPERLIQUID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'AVAX', 'MATIC', 'ATOM', 'LINK', 'UNI', 'AAVE', 'HL', 'HYPE', 'ASTER', 'PEPE', 'FLOKI', 'ZEC', 'BONK'];
       if (availableSymbols.length === 0) {
         console.warn('[useTradingTickers] No symbols found from API, using hardcoded list');
         availableSymbols = HYPERLIQUID_SYMBOLS;
       }
       
-      console.log('[useTradingTickers] Available symbols:', {
-        fromUniverse: Array.isArray(universe) && universe.length > 0,
-        universeLength: Array.isArray(universe) ? universe.length : 0,
-        totalSymbols: availableSymbols.length,
-        symbols: availableSymbols.slice(0, 30)
-      });
       
       // Función helper para obtener stats de 24h
       const getLast24hStats = async (symbol) => {
@@ -112,35 +107,48 @@ export const useTradingTickers = (refreshInterval = 30000) => {
         }
       };
       
+      // Lista de símbolos permitidos incluso sin icono local
+      // Incluye versiones con prefijo "K" que usa Hyperliquid para algunos tokens
+      const allowedSymbolsWithoutIcon = [
+        'HL', 'HYPE', 'ASTER', 'PEPE', 'FLOKI', 'ZEC', 'BONK',
+        'KBONK', 'KPEPE', 'KFLOKI', 'KDOGS', 'KLUNC', 'KNEIRO', 'KSHIB' // Versiones con prefijo K de Hyperliquid
+      ];
+      
       const basicTickers = availableSymbols
         .filter(symbol => {
           const upperSymbol = String(symbol).toUpperCase().trim();
+          const hasIcon = hasLocalIcon(upperSymbol);
+          const isAllowedWithoutIcon = allowedSymbolsWithoutIcon.includes(upperSymbol);
           const isValid = !upperSymbol.startsWith('@') && 
                          !/^\d+$/.test(upperSymbol) &&
                          upperSymbol.length >= 2 &&
                          upperSymbol.length <= 10 &&
                          /^[A-Z0-9]+$/.test(upperSymbol) &&
-                         hasLocalIcon(upperSymbol);
+                         (hasIcon || isAllowedWithoutIcon);
           
-          if (!isValid && symbol) {
-            if (!hasLocalIcon(upperSymbol)) {
-              console.log('[useTradingTickers] Filtered out (no local icon):', symbol);
-            } else {
-              console.log('[useTradingTickers] Filtered out (index or invalid):', symbol);
-            }
-          }
+              // Token filtrado si no tiene icono y no está en la lista permitida
           return isValid;
         })
         .map((symbol) => {
           const coinId = symbol.toLowerCase();
           const pair = `${symbol}/USDC`;
+          const upperSymbol = symbol.toUpperCase();
+          
+          // Buscar precio en diferentes formatos
+          // Para tokens "K", también buscar con primera letra minúscula (ej: kBONK)
+          const kTokenFormat = upperSymbol.startsWith('K') && upperSymbol.length > 1
+            ? 'k' + upperSymbol.substring(1)
+            : null;
           
           const currentPrice = parseFloat(
             allPrices[symbol] || 
+            allPrices[upperSymbol] ||
             allPrices[coinId] || 
-            allPrices[symbol.toLowerCase()] || 
+            allPrices[symbol.toLowerCase()] ||
+            (kTokenFormat ? allPrices[kTokenFormat] : null) ||
             0
           );
+          
           
           // Buscar contexto
           let ctx = {};
@@ -191,15 +199,22 @@ export const useTradingTickers = (refreshInterval = 30000) => {
             fundingRate: fundingRate
           };
         })
-        .filter(ticker => ticker.last > 0); // Solo tickers con precio válido
+        .filter(ticker => {
+          // Para tokens objetivo, permitir incluso si precio es 0 (pueden estar recién listados)
+          const symbol = ticker.symbol.split('/')[0];
+          const isTargetToken = ['HL', 'HYPE', 'ASTER', 'PEPE', 'FLOKI', 'ZEC', 'BONK', 'KBONK', 'KPEPE', 'KFLOKI', 'KDOGS', 'KLUNC', 'KNEIRO', 'KSHIB'].includes(symbol);
+          if (isTargetToken && ticker.last === 0) {
+            // Asignar un precio temporal muy pequeño para que pase el filtro
+            ticker.last = 0.000001;
+          }
+          return ticker.last > 0;
+        });
       
       // Ordenar por precio descendente por defecto
       basicTickers.sort((a, b) => (b.last || 0) - (a.last || 0));
       
       setTickers(basicTickers);
       setLoading(false);
-      
-      console.log(`[useTradingTickers] Loaded ${basicTickers.length} tickers`);
     } catch (err) {
       console.error('[useTradingTickers] Error fetching tickers:', err);
       setError(err.message || 'Error al obtener datos de trading');

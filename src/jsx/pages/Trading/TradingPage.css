@@ -1,17 +1,5 @@
 /* Trading Page Responsive Layout */
 
-/* Ensure full width on large screens */
-html, body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-#root {
-  width: 100%;
-  max-width: 100%;
-}
-
 .trading-page-content {
   padding: 0;
   padding-bottom: 50px; /* Space for market ticker (40px) + small gap (10px) */
@@ -63,7 +51,7 @@ html, body {
 
 /* Left Section: Chart + OrderBook + Active Positions */
 .trading-left-section {
-  flex: 0 0 70%;
+  flex: 0 0 85%; /* Aumentado a 85% para dar más espacio horizontal al gráfico */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -82,8 +70,8 @@ html, body {
   gap: 12px;
   flex: 0 0 auto;
   min-height: 0;
-  height: calc(100vh - 180px);
-  min-height: 500px;
+  height: calc(100vh - 120px); /* Aumentado de 180px a 120px para más altura */
+  min-height: 600px; /* Aumentado de 500px a 600px */
   margin-bottom: 0;
   margin-top: 16px;
   padding-top: 0;
@@ -118,7 +106,7 @@ html, body {
   min-width: 0;
   display: flex;
   height: 100%;
-  min-height: 500px;
+  min-height: 600px; /* Aumentado de 500px a 600px */
   overflow: visible;
 }
 
@@ -136,23 +124,23 @@ html, body {
 
 /* OrderBook Column - Next to Chart */
 .trading-orderbook-column {
-  flex: 0 0 420px;
-  min-width: 400px;
-  max-width: 460px;
+  flex: 0 0 320px; /* Reducido de 380px a 320px para dar más espacio al gráfico */
+  min-width: 280px; /* Reducido de 350px a 280px */
+  max-width: 350px; /* Reducido de 400px a 350px */
   display: flex;
   height: 100%;
-  min-height: 500px;
+  min-height: 600px; /* Aumentado de 500px a 600px para coincidir con el chart */
   overflow: hidden;
 }
 
 /* Side Column - Right Side (TradingControls + OrderForm) */
 .trading-side-column {
-  flex: 0 0 30%;
+  flex: 0 0 15%; /* Reducido a 15% para dar más espacio horizontal al gráfico */
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-width: 320px;
-  max-width: 30%;
+  min-width: 280px; /* Reducido de 300px a 280px */
+  max-width: 15%; /* Reducido a 15% */
   background: transparent;
   padding-right: 4px;
   align-self: flex-start;

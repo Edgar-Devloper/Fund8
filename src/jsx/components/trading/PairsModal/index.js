@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import PairSelector from '../PairSelector';
 import PriceTicker from '../PriceTicker';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
+import { hasLocalIcon } from '../../../../utils/coinIcons';
 
 /**
  * PairsModal
@@ -89,13 +90,7 @@ export default function PairsModal({ onClose }) {
             </div>
           )}
           {active === 'futures' && (
-            <div>
-              <SectionTitle title="Mercados Futuros" hint="Datos placeholder" />
-              <p className="text-muted small mb-3">Aún no integrado feed de Hyperliquid Perps. Se reutiliza estructura Spot mientras definimos API.</p>
-              <GlassPanel maxHeight="55vh">
-                <div className="small text-muted">(Placeholder) Listado de contratos perpetuos se cargará aquí.</div>
-              </GlassPanel>
-            </div>
+            <FuturesMarketList />
           )}
           {active === 'favorites' && (
             <div>
@@ -147,6 +142,142 @@ function GlassPanel({ children, maxHeight='60vh' }) {
       <div className="p-2" style={{maxHeight, overflowY:'auto'}}>
         {children}
       </div>
+    </div>
+  );
+}
+
+// Componente para la lista de futuros
+function FuturesMarketList() {
+  const { tickers, selectedSymbol, setSelectedSymbol } = useTradingData();
+  const [filter, setFilter] = useState('all');
+  const isDark = document.body.getAttribute('data-theme-version') === 'dark';
+  const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+
+  // Filtrar tickers que tienen iconos locales (incluyendo los nuevos tokens)
+  // Lista de tokens permitidos sin icono local
+  const allowedTokensWithoutIcon = [
+    'HL', 'HYPE', 'ASTER', 'PEPE', 'FLOKI', 'ZEC', 'BONK',
+    'KBONK', 'KPEPE', 'KFLOKI', 'KDOGS', 'KLUNC', 'KNEIRO', 'KSHIB'
+  ];
+  
+  const availableTickers = tickers.filter(t => {
+    const symbol = t.symbol.split('/')[0];
+    return hasLocalIcon(symbol) || allowedTokensWithoutIcon.includes(symbol);
+  });
+
+  const formatVolume = (vol) => {
+    if (vol >= 1000000) return `${(vol / 1000000).toFixed(2)}M`;
+    if (vol >= 1000) return `${(vol / 1000).toFixed(2)}K`;
+    return vol.toFixed(2);
+  };
+
+  const formatFundingRate = (rate) => {
+    if (!rate) return '0.0000%';
+    return `${rate >= 0 ? '+' : ''}${(rate * 100).toFixed(4)}%`;
+  };
+
+  return (
+    <div>
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <SectionTitle title="Mercados Futuros" />
+        <div className="d-flex gap-2">
+          {['all', 'new', 'pre-launch'].map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-outline-secondary'}`}
+              style={{ borderRadius: '20px', fontSize: '12px', padding: '4px 12px' }}
+            >
+              {f === 'all' ? 'All markets' : f === 'new' ? 'New' : 'Pre-launch'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <GlassPanel maxHeight="55vh">
+        <div className="table-responsive">
+          <table className="table table-hover mb-0" style={{ fontSize: '13px' }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${borderColor}` }}>
+                <th style={{ padding: '12px', fontWeight: 600, color: isDark ? '#a0aec0' : '#333' }}>SYMBOLS / VOLUME</th>
+                <th style={{ padding: '12px', fontWeight: 600, color: isDark ? '#a0aec0' : '#333', textAlign: 'right' }}>LAST PRICE</th>
+                <th style={{ padding: '12px', fontWeight: 600, color: isDark ? '#a0aec0' : '#333', textAlign: 'right' }}>24H CHANGE</th>
+                <th style={{ padding: '12px', fontWeight: 600, color: isDark ? '#a0aec0' : '#333', textAlign: 'right' }}>FUNDING RATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {availableTickers.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center py-4 text-muted">
+                    No hay datos disponibles
+                  </td>
+                </tr>
+              ) : (
+                availableTickers.map((ticker) => {
+                  const symbol = ticker.symbol.split('/')[0];
+                  const isSelected = ticker.symbol === selectedSymbol;
+                  const changeColor = ticker.change24hPercent >= 0 ? '#00c087' : '#ff5c5c';
+                  const fundingColor = (ticker.fundingRate || 0) >= 0 ? '#00c087' : '#ff5c5c';
+                  
+                  return (
+                    <tr
+                      key={ticker.symbol}
+                      onClick={() => setSelectedSymbol(ticker.symbol)}
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: isSelected ? (isDark ? 'rgba(0, 192, 135, 0.1)' : 'rgba(0, 192, 135, 0.05)') : 'transparent',
+                        borderBottom: `1px solid ${borderColor}`,
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <td style={{ padding: '12px' }}>
+                        <div className="d-flex align-items-center gap-2">
+                          <div
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: isDark ? '#fff' : '#333'
+                            }}
+                          >
+                            {symbol.substring(0, 1)}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: isDark ? '#fff' : '#333' }}>{symbol}</div>
+                            <div style={{ fontSize: '11px', color: isDark ? '#718096' : '#666' }}>
+                              {formatVolume(ticker.volume24h || 0)} USDT • 20x
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', fontWeight: 500, color: isDark ? '#fff' : '#333' }}>
+                        ${ticker.last?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', color: changeColor, fontWeight: 500 }}>
+                        {ticker.change24hPercent >= 0 ? '+' : ''}{ticker.change24hPercent?.toFixed(2) || '0.00'}%
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', color: fundingColor, fontWeight: 500 }}>
+                        {formatFundingRate(ticker.fundingRate)}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </GlassPanel>
     </div>
   );
 }

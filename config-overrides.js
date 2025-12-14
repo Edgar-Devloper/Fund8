@@ -1,7 +1,14 @@
 const webpack = require('webpack');
 const path = require('path');
+const packageJson = require('./package.json');
 
 module.exports = function override(config, env) {
+  // Inyectar versión del package.json como variable de entorno
+  config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.REACT_APP_VERSION': JSON.stringify(packageJson.version),
+    })
+  );
   // Deshabilitar warnings para compilacion mas rapida
   config.ignoreWarnings = [
     /Failed to parse source map/,

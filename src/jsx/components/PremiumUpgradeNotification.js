@@ -84,6 +84,23 @@ const PremiumUpgradeNotification = () => {
       return;
     }
 
+    // Si el usuario tiene NFTs, verificar si alguno es Premium o DeFily
+    if (hasNFTs && nfts.length > 0) {
+      const hasPremiumOrDefilyNFT = nfts.some(nft => {
+        // NFT Premium: planId !== 0
+        const isPremium = nft.planId !== undefined && nft.planId !== 0;
+        // NFT DeFily: type === 'defily'
+        const isDefily = nft.type === 'defily';
+        return isPremium || isDefily;
+      });
+
+      // Si tiene NFT Premium o DeFily, no mostrar la notificación
+      if (hasPremiumOrDefilyNFT) {
+        setShowNotification(false);
+        return;
+      }
+    }
+
     // Caso 1: Usuario sin NFT
     if (!hasNFTs || nfts.length === 0) {
       setShowNotification(true);

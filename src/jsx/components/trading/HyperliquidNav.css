@@ -99,6 +99,124 @@
   opacity: 0.8;
 }
 
+/* ============================================
+   NAVIGATION MENU - Al lado del logo
+   ============================================ */
+.hyperliquid-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  margin-left: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hyperliquid-nav-menu::-webkit-scrollbar {
+  display: none;
+}
+
+.hyperliquid-nav-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  color: var(--hl-text-secondary, #a0aec0);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.hyperliquid-nav-menu-item:hover {
+  color: var(--hl-accent-green, #00c087);
+  background: rgba(0, 192, 135, 0.05);
+}
+
+.hyperliquid-nav-menu-item.active {
+  color: var(--hl-accent-green, #00c087);
+  background: rgba(0, 192, 135, 0.1);
+}
+
+.hyperliquid-nav-menu-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--hl-accent-green, #00c087);
+  z-index: 1;
+}
+
+.hyperliquid-nav-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hyperliquid-nav-menu-item.disabled:hover {
+  color: var(--hl-text-secondary, #a0aec0);
+  background: rgba(0, 192, 135, 0.05);
+}
+
+/* More menu submenu */
+.more-menu-wrapper {
+  position: relative;
+}
+
+.more-submenu {
+  position: fixed;
+  background: rgba(21, 26, 46, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 160px;
+  z-index: 10001;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.more-submenu-item {
+  display: block;
+  padding: 10px 20px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.more-submenu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--hl-accent-green, #00c087);
+}
+
+/* Responsive para el menú */
+@media (max-width: 992px) {
+  .hyperliquid-nav-menu {
+    margin-left: 16px;
+  }
+
+  .hyperliquid-nav-menu-item {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hyperliquid-nav-menu {
+    display: none; /* Ocultar en móvil, usar menú hamburguesa */
+  }
+}
+
 .hyperliquid-nav-brand .fund8-logo {
   height: 40px;
   width: auto;

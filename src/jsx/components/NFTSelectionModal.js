@@ -35,22 +35,13 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
       const hasShownBefore = localStorage.getItem(storageKey);
       
       if (hasShownBefore === 'true') {
-        if (selectedNFT && selectedNFT.id === 0) {
-          hasShownOnceRef.current = false;
-          localStorage.removeItem(storageKey);
-          deselectNFT();
-          const nftStorageKey = `selectedNFTId_${address.toLowerCase()}`;
-          localStorage.removeItem(nftStorageKey);
-        } else {
-          hasShownOnceRef.current = true;
-        }
+        // No deseleccionar NFT con id === 0, es un NFT válido
+        hasShownOnceRef.current = true;
       } else {
         hasShownOnceRef.current = false;
-        if (selectedNFT && !showModal) {
-          deselectNFT();
-          const nftStorageKey = `selectedNFTId_${address.toLowerCase()}`;
-          localStorage.removeItem(nftStorageKey);
-        } else if (selectedNFT && showModal) {
+        // No deseleccionar NFT automáticamente cuando no se muestra el modal
+        // El usuario puede tener un NFT seleccionado válidamente
+        if (selectedNFT && showModal) {
           if (storageKey) {
             localStorage.setItem(storageKey, 'true');
             hasShownOnceRef.current = true;
@@ -112,17 +103,8 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
     }
 
     if (hasNFTs && !isLoading) {
-      if (selectedNFT && selectedNFT.id === 0) {
-        deselectNFT();
-        const nftStorageKey = `selectedNFTId_${address.toLowerCase()}`;
-        localStorage.removeItem(nftStorageKey);
-        if (storageKey) {
-          localStorage.removeItem(storageKey);
-        }
-        setShowModal(true);
-        hasShownOnceRef.current = true;
-        return;
-      }
+      // No deseleccionar NFT con id === 0, es un NFT válido (Genesis)
+      // Remover esta lógica que estaba deseleccionando el primer NFT
       
       if (!selectedNFT) {
         if (hasShownBefore) {

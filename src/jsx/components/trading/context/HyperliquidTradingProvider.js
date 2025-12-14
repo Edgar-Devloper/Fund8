@@ -12,7 +12,7 @@ import hyperliquidTrading from '../../../../services/hyperliquidTrading.js';
 const TradingDataContext = createContext(null);
 
 // hyperliquid symbols mapping
-const HYPERLIQUID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LTC', 'XMR', 'ADA', 'DOGE'];
+const HYPERLIQUID_SYMBOLS = ['BTC', 'ETH', 'SOL', 'LTC', 'XMR', 'ADA', 'DOGE', 'HL', 'HYPE', 'ASTER', 'PEPE', 'FLOKI', 'ZEC', 'BONK'];
 const SYMBOL_TO_PAIR = {
   'BTC': 'BTC/USDC',
   'ETH': 'ETH/USDC',
@@ -20,7 +20,14 @@ const SYMBOL_TO_PAIR = {
   'LTC': 'LTC/USDC',
   'XMR': 'XMR/USDC',
   'ADA': 'ADA/USDC',
-  'DOGE': 'DOGE/USDC'
+  'DOGE': 'DOGE/USDC',
+  'HL': 'HL/USDC',
+  'HYPE': 'HYPE/USDC',
+  'ASTER': 'ASTER/USDC',
+  'PEPE': 'PEPE/USDC',
+  'FLOKI': 'FLOKI/USDC',
+  'ZEC': 'ZEC/USDC',
+  'BONK': 'BONK/USDC'
 };
 
 const pairToCoinId = (pair) => {

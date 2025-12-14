@@ -95,7 +95,7 @@ const NFTSelector = memo(({ onSelect, showOnlyFund8 = false, showOnlyDefily = fa
   return (
     <div className="nft-selector">
       <div className="nft-list">
-        <div className="row">
+        <div className="row" style={{ overflow: 'visible', position: 'relative' }}>
           {currentNFTs.map((nft) => (
             <NFTCard 
               key={nft.id} 

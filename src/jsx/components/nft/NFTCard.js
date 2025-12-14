@@ -107,15 +107,40 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
 
   const ownerId = extractOwnerId(nft.referralsLink);
 
+  // Función para verificar si el NFT es Básico (planId === 0)
+  const isBasicNFT = (nft) => {
+    return nft && nft.planId !== undefined && nft.planId === 0;
+  };
+
   const handleCardClick = (e) => {
+    // El ribbon tiene pointer-events: none, así que no debería interferir
+    // Pero por si acaso, verificar que no sea el ribbon
+    if (e.target && e.target.classList && e.target.classList.contains('ribbon')) {
+      return; // Ignorar clics directos en el ribbon (aunque no debería pasar)
+    }
+    
     e.stopPropagation();
+    
     if (onSelect) {
       onSelect();
     }
   };
 
   return (
-    <div className="col-md-6 col-lg-4 mb-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
+    <div className="col-md-6 col-lg-4 mb-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10, overflow: 'visible' }}>
+      {/* Ribbon para NFT Básico - Fuera del card para no bloquear clics */}
+      {isBasicNFT(nft) && (
+        <div 
+          className="ribbon ribbon__one"
+          style={{ 
+            pointerEvents: 'none',
+            zIndex: 11,
+            userSelect: 'none'
+          }}
+        >
+          {t('nft.basic', 'Básico')}
+        </div>
+      )}
       <div
         className={`card nft-card ${isSelected ? 'border-success shadow-lg' : 'border-secondary'}`}
         style={{ 
@@ -133,7 +158,7 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
         }}
         onClick={handleCardClick}
         onMouseDown={(e) => {
-          e.stopPropagation();
+          // No detener propagación para permitir que el clic funcione correctamente
         }}
         onMouseEnter={(e) => {
           if (!isSelected) {

@@ -156,7 +156,7 @@ export const NFTProvider = ({ children }) => {
       return;
     }
 
-    if (nftExists.ownerAddress.toLowerCase() !== address.toLowerCase()) {
+    if (nftExists.ownerAddress && nftExists.ownerAddress.toLowerCase() !== address.toLowerCase()) {
       setSelectedNFT(null);
       const storageKey = getStorageKey(address);
       if (storageKey) {
@@ -206,7 +206,7 @@ export const NFTProvider = ({ children }) => {
   useEffect(() => {
     if (selectedNFT && address && nfts.length > 0) {
       const nftInList = nfts.find(nft => nft.id === selectedNFT.id);
-      if (!nftInList || nftInList.ownerAddress.toLowerCase() !== address.toLowerCase()) {
+      if (!nftInList || (nftInList.ownerAddress && nftInList.ownerAddress.toLowerCase() !== address.toLowerCase())) {
         setSelectedNFT(null);
         const storageKey = getStorageKey(address);
         if (storageKey) {

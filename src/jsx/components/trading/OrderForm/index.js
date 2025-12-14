@@ -25,6 +25,22 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
   const [totalAnimating, setTotalAnimating] = useState(false);
   const prevAmountRef = useRef('');
   const prevTotalRef = useRef(0);
+  const [showTooltip, setShowTooltip] = useState({ buy: false, sell: false });
+  const [tooltipPosition, setTooltipPosition] = useState({ buy: { top: 0, left: 0 }, sell: { top: 0, left: 0 } });
+  const tooltipRefs = { buy: useRef(null), sell: useRef(null) };
+  
+  const updateTooltipPosition = (type, element) => {
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      setTooltipPosition(prev => ({
+        ...prev,
+        [type]: {
+          top: rect.top - 40,
+          left: rect.left + (rect.width / 2)
+        }
+      }));
+    }
+  };
   
   // Use shared config from props, with fallback defaults
   const {
@@ -412,33 +428,63 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
       <div className="order-form-body" style={{padding:'14px 16px 18px'}}>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <div className="btn-group w-100" role="group">
-              <button
-                type="button"
-                className={`btn ${side === 'buy' ? 'btn-success' : 'btn-outline-success'}`}
-                onClick={() => setSide('buy')}
-                style={{ 
-                  fontWeight: 600, 
-                  fontSize: '15px',
-                  color: side === 'buy' ? '#ffffff' : 'var(--hl-accent-green, #00c087)',
-                  padding: '10px 20px'
+            <div className="btn-group w-100" role="group" style={{ position: 'relative' }}>
+              <div 
+                ref={tooltipRefs.buy}
+                className="tooltip-wrapper-disabled"
+                style={{ position: 'relative', flex: 1 }}
+                onMouseEnter={(e) => {
+                  updateTooltipPosition('buy', e.currentTarget);
+                  setShowTooltip(prev => ({ ...prev, buy: true }));
                 }}
+                onMouseLeave={() => setShowTooltip(prev => ({ ...prev, buy: false }))}
               >
-                BUY
-              </button>
-              <button
-                type="button"
-                className={`btn ${side === 'sell' ? 'btn-danger' : 'btn-outline-danger'}`}
-                onClick={() => setSide('sell')}
-                style={{ 
-                  fontWeight: 600, 
-                  fontSize: '15px',
-                  color: side === 'sell' ? '#ffffff' : 'var(--hl-accent-red, #ff5c5c)',
-                  padding: '10px 20px'
+                <button
+                  type="button"
+                  className={`btn ${side === 'buy' ? 'btn-success' : 'btn-outline-success'}`}
+                  onClick={() => setSide('buy')}
+                  disabled={true}
+                  style={{ 
+                    fontWeight: 600, 
+                    fontSize: '15px',
+                    color: side === 'buy' ? '#ffffff' : 'var(--hl-accent-green, #00c087)',
+                    padding: '10px 20px',
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
+                    width: '100%'
+                  }}
+                >
+                  BUY
+                </button>
+              </div>
+              <div 
+                ref={tooltipRefs.sell}
+                className="tooltip-wrapper-disabled"
+                style={{ position: 'relative', flex: 1 }}
+                onMouseEnter={(e) => {
+                  updateTooltipPosition('sell', e.currentTarget);
+                  setShowTooltip(prev => ({ ...prev, sell: true }));
                 }}
+                onMouseLeave={() => setShowTooltip(prev => ({ ...prev, sell: false }))}
               >
-                SELL
-              </button>
+                <button
+                  type="button"
+                  className={`btn ${side === 'sell' ? 'btn-danger' : 'btn-outline-danger'}`}
+                  onClick={() => setSide('sell')}
+                  disabled={true}
+                  style={{ 
+                    fontWeight: 600, 
+                    fontSize: '15px',
+                    color: side === 'sell' ? '#ffffff' : 'var(--hl-accent-red, #ff5c5c)',
+                    padding: '10px 20px',
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
+                    width: '100%'
+                  }}
+                >
+                  SELL
+                </button>
+              </div>
             </div>
           </div>
           
@@ -712,6 +758,71 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
             )}
           </button>
         </form>
+        {/* Tooltips renderizados fuera del contenedor */}
+        {showTooltip.buy && (
+          <div
+            style={{
+              position: 'fixed',
+              top: `${tooltipPosition.buy.top}px`,
+              left: `${tooltipPosition.buy.left}px`,
+              transform: 'translateX(-50%)',
+              padding: '6px 12px',
+              background: 'rgba(0, 0, 0, 0.9)',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              borderRadius: '4px',
+              zIndex: 99999,
+              pointerEvents: 'none',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            {t('trading.coming_soon', 'Próximamente')}
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                border: '5px solid transparent',
+                borderTopColor: 'rgba(0, 0, 0, 0.9)'
+              }}
+            />
+          </div>
+        )}
+        {showTooltip.sell && (
+          <div
+            style={{
+              position: 'fixed',
+              top: `${tooltipPosition.sell.top}px`,
+              left: `${tooltipPosition.sell.left}px`,
+              transform: 'translateX(-50%)',
+              padding: '6px 12px',
+              background: 'rgba(0, 0, 0, 0.9)',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              borderRadius: '4px',
+              zIndex: 99999,
+              pointerEvents: 'none',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            {t('trading.coming_soon', 'Próximamente')}
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                border: '5px solid transparent',
+                borderTopColor: 'rgba(0, 0, 0, 0.9)'
+              }}
+            />
+          </div>
+        )}
       </div>
       {/* Modal de selección de NFT */}
       <NFTSelectionModal 
