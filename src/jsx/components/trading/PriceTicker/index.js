@@ -14,7 +14,8 @@ import { useTradingData } from '../context/HyperliquidTradingProvider';
 const PriceTicker = () => {
   const { selectedSymbol, tickers } = useTradingData();
   const t = tickers.find(x => x.symbol === selectedSymbol) || tickers[0];
-  const pct = t ? t.change24h : 0;
+  // Usar siempre el porcentaje correcto de 24h proveniente de Hyperliquid
+  const pct = t ? (t.change24hPercent ?? 0) : 0;
   const pctClass = pct > 0 ? 'text-success' : pct < 0 ? 'text-danger' : 'text-muted';
   return (
     <div className="card">

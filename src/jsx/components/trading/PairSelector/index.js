@@ -31,9 +31,15 @@ const PairSelector = () => {
                 onClick={() => onSelect(t.symbol)}
               >
                 <span className="me-2">{t.symbol}</span>
-                <span className={t.change24h > 0 ? 'text-success' : t.change24h < 0 ? 'text-danger' : 'text-muted'}>
-                  {t.change24h > 0 ? '+' : ''}{t.change24h.toFixed(2)}%
-                </span>
+                {(() => {
+                  const pct = t.change24hPercent ?? 0;
+                  const pctClass = pct > 0 ? 'text-success' : pct < 0 ? 'text-danger' : 'text-muted';
+                  return (
+                    <span className={pctClass}>
+                      {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
+                    </span>
+                  );
+                })()}
               </li>
             );
           })}

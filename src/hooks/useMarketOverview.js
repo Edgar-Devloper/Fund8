@@ -31,8 +31,18 @@ export const useMarketOverview = (refreshInterval = 30000) => {
           if (!ctx) return null;
 
           const name = coin.name || `Coin-${index}`;
-          const lastPrice = parseFloat(ctx.prevDayPx || ctx.markPx || '0');
-          const change24h = ctx.funding ? parseFloat(ctx.funding) * 100 : 0;
+          // En Hyperliquid:
+          // - markPx = precio actual
+          // - prevDayPx = precio de hace 24h
+          const markPx = parseFloat(ctx.markPx || '0');
+          const prevDayPx = parseFloat(ctx.prevDayPx || '0');
+
+          const lastPrice = markPx > 0 ? markPx : prevDayPx;
+
+          // Cambio 24h en porcentaje basado en precios de Hyperliquid
+          const change24h = prevDayPx > 0 && markPx > 0
+            ? ((markPx - prevDayPx) / prevDayPx) * 100
+            : 0;
           const volume24h = parseFloat(ctx.dayNtlVlm || '0');
           const openInterest = parseFloat(ctx.openInterest || '0');
           const fundingRate = ctx.funding ? parseFloat(ctx.funding) : 0;

@@ -6,18 +6,30 @@ import StatCard from '../../components/shared/StatCard';
 const MarketContent = () => {
   const { tickers } = useTradingData();
   const columns = [
-    { key: 'symbol', label: 'Par' },
-    { key: 'last', label: 'Último', render: r => r.last.toLocaleString() },
-    { key: 'change24h', label: 'Cambio %', render: r => <span className={r.change24h>0?'text-success':r.change24h<0?'text-danger':'text-muted'}>{r.change24h>0?'+':''}{r.change24h.toFixed(2)}%</span> },
-    { key: 'volume24h', label: 'Vol 24h', render: r => r.volume24h.toLocaleString() }
+  { key: 'symbol', label: 'Par' },
+  { key: 'last', label: 'Último', render: r => r.last.toLocaleString() },
+  {
+    key: 'change24hPercent',
+    label: 'Cambio %',
+    render: r => {
+      const pct = r.change24hPercent ?? 0;
+      const cls = pct > 0 ? 'text-success' : pct < 0 ? 'text-danger' : 'text-muted';
+      return (
+        <span className={cls}>
+          {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
+        </span>
+      );
+    }
+  },
+  { key: 'volume24h', label: 'Vol 24h', render: r => r.volume24h.toLocaleString() }
   ];
-  const topGainer = [...tickers].sort((a,b)=>b.change24h-a.change24h)[0];
-  const topLoser = [...tickers].sort((a,b)=>a.change24h-b.change24h)[0];
+  const topGainer = [...tickers].sort((a,b)=>(b.change24hPercent ?? 0)-(a.change24hPercent ?? 0))[0];
+  const topLoser = [...tickers].sort((a,b)=>(a.change24hPercent ?? 0)-(b.change24hPercent ?? 0))[0];
   return (
     <>
       <div className="row g-3 mb-3">
-        <div className="col-sm-6 col-lg-3"><StatCard title="Top Gainer" value={topGainer.symbol} delta={topGainer.change24h.toFixed(2)} deltaDirection={topGainer.change24h>=0?'up':'down'} /></div>
-        <div className="col-sm-6 col-lg-3"><StatCard title="Top Loser" value={topLoser.symbol} delta={topLoser.change24h.toFixed(2)} deltaDirection={topLoser.change24h>=0?'up':'down'} color="danger" /></div>
+        <div className="col-sm-6 col-lg-3"><StatCard title="Top Gainer" value={topGainer.symbol} delta={(topGainer.change24hPercent ?? 0).toFixed(2)} deltaDirection={(topGainer.change24hPercent ?? 0)>=0?'up':'down'} /></div>
+        <div className="col-sm-6 col-lg-3"><StatCard title="Top Loser" value={topLoser.symbol} delta={(topLoser.change24hPercent ?? 0).toFixed(2)} deltaDirection={(topLoser.change24hPercent ?? 0)>=0?'up':'down'} color="danger" /></div>
         <div className="col-sm-6 col-lg-3"><StatCard title="Pairs" value={tickers.length} subtitle="Activos" /></div>
       </div>
       <DataTable columns={columns} data={tickers} />

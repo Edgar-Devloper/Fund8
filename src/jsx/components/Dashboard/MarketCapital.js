@@ -232,7 +232,7 @@ const MarketCapital = () => {
 											<td className="font-w600">{formatCurrency(coin.lastPrice)}</td>
 											<td>
 												<span className={coin.change24h >= 0 ? 'text-success' : 'text-danger'}>
-													{coin.change24h >= 0 ? '+' : ''}{coin.change24h}%
+													{coin.change24h >= 0 ? '+' : ''}{coin.change24h.toFixed(2)}%
 												</span>
 											</td>
 											<td>{formatVolume(coin.volume24h)}</td>
