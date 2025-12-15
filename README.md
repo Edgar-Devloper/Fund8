@@ -5,7 +5,7 @@ template-Boltz - https://template-boltz-dev.vercel.app/login
 
 Plataforma de trading de criptomonedas integrada con HyperLiquid.
 
-## 🚀 Inicio Rápido
+## 🚀 Inicio Rápido 
 
 ### Requisitos
 - Node.js >= 18.17.0 y < 23
