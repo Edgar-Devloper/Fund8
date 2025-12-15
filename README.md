@@ -13,7 +13,7 @@ Plataforma de trading de criptomonedas integrada con HyperLiquid.
 
 ### Instalación
 
-```bash
+```bash 
 # Instalar dependencias
 npm install
 
