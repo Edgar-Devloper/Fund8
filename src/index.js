@@ -14,6 +14,7 @@ import { NotificationProvider } from './context/NotificationContext.js';
 import { SettingsProvider } from './context/SettingsContext.js';
 import ThemeContext from './context/ThemeContext';
 import Markup from './jsx/index';
+import TestnetAccessGate from './jsx/components/TestnetAccessGate';
 // CSS esencial para Trading
 import './css/style.css';
 import './scss/main.scss';
@@ -41,11 +42,13 @@ root.render(
                 <ThemeContext>
                   <NotificationProvider>
                     <AuthProvider>
-                    <NFTProvider>
-                    <SettingsProvider>
-                      <Markup />
-                    </SettingsProvider>
-                    </NFTProvider>
+                      <NFTProvider>
+                        <SettingsProvider>
+                          <TestnetAccessGate>
+                            <Markup />
+                          </TestnetAccessGate>
+                        </SettingsProvider>
+                      </NFTProvider>
                     </AuthProvider>
                   </NotificationProvider>
                 </ThemeContext>
@@ -58,11 +61,13 @@ root.render(
               <WalletProvider>
                 <PlatformProvider>
                   <AuthProvider>
-                  <NFTProvider>
-                  <SettingsProvider>
-                    <Markup />
-                  </SettingsProvider>
-                  </NFTProvider>
+                    <NFTProvider>
+                      <SettingsProvider>
+                        <TestnetAccessGate>
+                          <Markup />
+                        </TestnetAccessGate>
+                      </SettingsProvider>
+                    </NFTProvider>
                   </AuthProvider>
                 </PlatformProvider>
               </WalletProvider>
