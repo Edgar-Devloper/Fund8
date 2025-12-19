@@ -12,6 +12,9 @@ export const LOGIN_CONFIRMED_ACTION = '[login action] confirmed login';
 export const LOGIN_FAILED_ACTION = '[login action] failed login';
 export const LOADING_TOGGLE_ACTION = '[Loading action] toggle loading';
 export const LOGOUT_ACTION = '[Logout action] logout action';
+export const TRADING_PORTAL_CREATED_ACTION = '[trading portal] created';
+export const TRADING_PORTAL_VERIFIED_ACTION = '[trading portal] verified';
+export const TRADING_PORTAL_LOADED_ACTION = '[trading portal] loaded';
 
 export function signupAction(email, password, navigate) {
   return (dispatch) => {
@@ -85,6 +88,26 @@ export function loadingToggleAction(status) {
   return {
     type: LOADING_TOGGLE_ACTION,
     payload: status,
+  };
+}
+
+export function tradingPortalCreatedAction(portalData) {
+  return {
+    type: TRADING_PORTAL_CREATED_ACTION,
+    payload: portalData,
+  };
+}
+
+export function tradingPortalVerifiedAction() {
+  return {
+    type: TRADING_PORTAL_VERIFIED_ACTION,
+  };
+}
+
+export function tradingPortalLoadedAction(portalData) {
+  return {
+    type: TRADING_PORTAL_LOADED_ACTION,
+    payload: portalData,
   };
 }
 

@@ -1,0 +1,22 @@
+/* Trading Portal Modal - Z-index muy alto para estar por encima de todo */
+.trading-portal-modal-overlay {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.trading-portal-modal-overlay .modal-dialog {
+  z-index: 1000000 !important;
+  position: relative !important;
+}
+
+.trading-portal-modal-overlay .modal-content {
+  z-index: 1000001 !important;
+  position: relative !important;
+}
+
+/* Asegurar que el modal esté por encima de todo */
+.trading-portal-modal-overlay,
+.trading-portal-modal-overlay * {
+  isolation: isolate;
+}
+

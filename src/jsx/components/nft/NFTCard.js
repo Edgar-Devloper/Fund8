@@ -112,6 +112,16 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
     return nft && nft.planId !== undefined && nft.planId === 0;
   };
 
+  // Función para verificar si el NFT es Premium (tiene NFT y no es básico explícitamente)
+  // Por defecto, si tiene NFT y no es básico (planId !== 0 o planId undefined), es Premium
+  const isPremiumNFT = (nft) => {
+    if (!nft) return false;
+    // Si planId está definido y es 0, es básico (no premium)
+    if (nft.planId !== undefined && nft.planId === 0) return false;
+    // Si tiene NFT (tokenId existe), es Premium por defecto
+    return nft.tokenId !== undefined && nft.tokenId !== null;
+  };
+
   const handleCardClick = (e) => {
     // El ribbon tiene pointer-events: none, así que no debería interferir
     // Pero por si acaso, verificar que no sea el ribbon
@@ -128,17 +138,19 @@ const NFTCard = memo(({ nft, isSelected, onSelect, onDeselect, t }) => {
 
   return (
     <div className="col-md-6 col-lg-4 mb-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10, overflow: 'visible' }}>
-      {/* Ribbon para NFT Básico - Fuera del card para no bloquear clics */}
-      {isBasicNFT(nft) && (
+      {/* Ribbon para NFT Premium - Color púrpura (temporalmente todos muestran Premium) */}
+      {nft && (
         <div 
-          className="ribbon ribbon__one"
+          className="ribbon ribbon__one ribbon__premium"
           style={{ 
             pointerEvents: 'none',
             zIndex: 11,
-            userSelect: 'none'
+            userSelect: 'none',
+            background: '#9333ea', // Púrpura
+            color: '#fff'
           }}
         >
-          {t('nft.basic', 'Básico')}
+          {t('nft.premium', 'Premium')}
         </div>
       )}
       <div

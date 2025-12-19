@@ -26,6 +26,16 @@
         }
     }
 
+    // Ribbon Premium - Color púrpura
+    &__premium {
+        background: #9333ea !important; // Púrpura
+        color: #fff !important;
+
+        &::after {
+            border-top-color: #7c3aed !important; // Púrpura más oscuro para el triángulo
+        }
+    }
+
     &__two {
         width: 50px;
         height: 50px;

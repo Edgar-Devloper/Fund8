@@ -4,9 +4,12 @@ import { useWallet } from '../../../../context/WalletContext.js';
 import { useNFT } from '../../../../context/NFTContext.js';
 import { useNotifications } from '../../../../context/NotificationContext.js';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import NFTSelectionModal from '../../../components/NFTSelectionModal';
 import { registerPendingOperation, registerSuccessfulOperation, registerFailedOperation } from '../../../../services/operationsService';
 import { getNftMetadata, getImageUrl } from '../../../../utils/nftUtils';
+import { useTradingPermissions } from '../../../../hooks/useTradingPermissions';
+import swal from 'sweetalert';
 
 const OrderForm = ({ orderConfig, setOrderConfig }) => {
   const { selectedSymbol, placeOrder, orderBook, tickers, tradingInitialized, selectedPrice, setSelectedPrice } = useTradingData();
@@ -14,6 +17,7 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
   const { selectedNFT } = useNFT();
   const { addNotification } = useNotifications();
   const { t } = useTranslation();
+  const { canTrade, getRestrictionMessage } = useTradingPermissions();
   
   const [side, setSide] = useState('buy');
   const [loading, setLoading] = useState(false);
@@ -151,6 +155,17 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Verificar permisos de trading
+    if (!canTrade) {
+      const message = getRestrictionMessage();
+      swal(
+        t('trading_portal.trading_restricted', 'Trading Restricted'),
+        message || t('trading_portal.connect_to_trade', 'Connect your wallet and create a Trading Portal account to access trading features'),
+        'warning'
+      );
+      return;
+    }
     
     if (!isConnected) {
       addNotification({
@@ -739,13 +754,15 @@ const OrderForm = ({ orderConfig, setOrderConfig }) => {
           <button
             type="submit"
             className={`btn w-100 ${side === 'buy' ? 'btn-success' : 'btn-danger'}`}
-            disabled={loading || !isConnected}
+            disabled={loading || !isConnected || !canTrade}
             style={{ 
               fontSize: '16px', 
               fontWeight: 600, 
               padding: '12px',
               textTransform: 'uppercase',
-              color: '#ffffff'
+              color: '#ffffff',
+              opacity: (!isConnected || !canTrade) ? 0.5 : 1,
+              cursor: (!isConnected || !canTrade) ? 'not-allowed' : 'pointer'
             }}
           >
             {loading ? (

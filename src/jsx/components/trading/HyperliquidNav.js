@@ -1,12 +1,173 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import ConnectWalletButton from '../Web3/ConnectWalletButton';
 import LanguageSelector from '../LanguageSelector';
 import SettingsModal from '../Settings/SettingsModal';
 import BalanceDisplay from './BalanceDisplay';
+import { useWallet } from '../../../context/WalletContext';
 import fund8Logo from '../../../images/brand/fund8-logo-black-bg.png';
 import './HyperliquidNav.css';
+
+// Componente para los botones Register/Login (definido antes de HyperliquidNav)
+const TradingPortalButtons = () => {
+  const { t } = useTranslation();
+  const { isConnected, address } = useWallet();
+  const { tradingPortal, auth } = useSelector(state => state.auth);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Verificar si tiene cuenta de Trading Portal pero no está logueado
+  const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
+  const isLoggedIn = !!auth?.idToken; // Verificar si está logueado en el portal
+  const isVerified = tradingPortal?.isVerified || false;
+
+  // Mostrar Register si tiene wallet pero no tiene cuenta
+  const showRegister = isConnected && address && !hasPortalAccount;
+
+  // Mostrar Login si tiene cuenta pero no está logueado o verificado
+  const showLogin = isConnected && address && hasPortalAccount && (!isLoggedIn || !isVerified);
+
+  // Debug: Log para verificar estado
+  console.log('[TradingPortalButtons] Estado:', {
+    isConnected,
+    address: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'none',
+    hasPortalAccount,
+    isLoggedIn,
+    isVerified,
+    showRegister,
+    showLogin
+  });
+
+  // No mostrar nada si no hay wallet conectada o si ya está todo completo
+  if (!isConnected || !address) {
+    return null;
+  }
+
+  // Si ya tiene cuenta y está logueado y verificado, no mostrar botones
+  if (hasPortalAccount && isLoggedIn && isVerified) {
+    return null;
+  }
+
+  return (
+    <>
+      {showRegister && (
+        <button
+          className="register-btn"
+          onClick={() => {
+            console.log('[TradingPortalButtons] Register button clicked');
+            setShowRegisterModal(true);
+          }}
+          style={{
+            padding: '8px 16px',
+            background: 'transparent',
+            border: '1px solid #00c087',
+            borderRadius: '8px',
+            color: '#00c087',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            marginRight: '8px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(0, 192, 135, 0.1)';
+            e.currentTarget.style.borderColor = '#00c087';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = '#00c087';
+          }}
+        >
+          {t('trading_portal.register', 'Register')}
+        </button>
+      )}
+
+      {showLogin && (
+        <button
+          className="login-btn"
+          onClick={() => {
+            console.log('[TradingPortalButtons] Login button clicked');
+            setShowLoginModal(true);
+          }}
+          style={{
+            padding: '8px 16px',
+            background: '#00c087',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#00b079';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#00c087';
+          }}
+        >
+          {t('trading_portal.login', 'Login')}
+        </button>
+      )}
+      
+      {/* Modales - Renderizar siempre para que estén en el DOM */}
+      <TradingPortalRegistrationModalWrapper 
+        show={showRegisterModal} 
+        onClose={() => {
+          setShowRegisterModal(false);
+          console.log('[TradingPortalButtons] Register modal closed');
+        }} 
+      />
+      
+      <TradingPortalLoginModalWrapper 
+        show={showLoginModal} 
+        onClose={() => {
+          setShowLoginModal(false);
+          console.log('[TradingPortalButtons] Login modal closed');
+        }} 
+      />
+    </>
+  );
+};
+
+// Wrapper para el modal de registro (para evitar importación circular)
+const TradingPortalRegistrationModalWrapper = ({ show, onClose }) => {
+  const TradingPortalRegistrationModal = React.lazy(() => 
+    import('../TradingPortal/TradingPortalRegistrationModal')
+  );
+  
+  if (!show) {
+    return null;
+  }
+  
+  return (
+    <React.Suspense fallback={null}>
+      <TradingPortalRegistrationModal show={show} onClose={onClose} forceShow={show} />
+    </React.Suspense>
+  );
+};
+
+// Wrapper para el modal de login
+const TradingPortalLoginModalWrapper = ({ show, onClose }) => {
+  const TradingPortalLoginModal = React.lazy(() => 
+    import('../TradingPortal/TradingPortalLoginModal')
+  );
+  
+  if (!show) {
+    return null;
+  }
+  
+  return (
+    <React.Suspense fallback={null}>
+      <TradingPortalLoginModal show={show} onClose={onClose} />
+    </React.Suspense>
+  );
+};
 
 const HyperliquidNav = () => {
   const location = useLocation();
@@ -163,6 +324,9 @@ const HyperliquidNav = () => {
           <ConnectWalletButton />
           
           <LanguageSelector variant="icon" />
+          
+          {/* Register/Login Buttons - Trading Portal */}
+          <TradingPortalButtons />
           
           {/* Settings button hidden */}
           {false && (
@@ -347,6 +511,7 @@ const MoreMenuSubmenu = ({ items }) => {
     </div>
   );
 };
+
 
 export default HyperliquidNav;
 

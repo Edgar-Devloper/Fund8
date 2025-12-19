@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTradingData } from '../context/HyperliquidTradingProvider';
 import { useTranslation } from 'react-i18next';
 // import DepositModal from '../DepositModal';
@@ -28,11 +29,25 @@ const OrderBook = () => {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const dropdownRef = useRef(null);
+  const dropdownMenuRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+  
+  // Calculate dropdown position when it opens
+  useEffect(() => {
+    if (showSymbolDropdown && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, [showSymbolDropdown]);
   
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          dropdownMenuRef.current && !dropdownMenuRef.current.contains(event.target)) {
         setShowSymbolDropdown(false);
       }
     };
@@ -210,11 +225,20 @@ const OrderBook = () => {
                 className="symbol-icon"
               />
               <span>{coinSymbol}</span>
-              <span className="dropdown-arrow">▾</span>
+              <span className="dropdown-arrow">▼</span>
             </button>
             
-            {showSymbolDropdown && (
-              <div className="symbol-dropdown-menu">
+            {showSymbolDropdown && createPortal(
+              <div 
+                ref={dropdownMenuRef}
+                className="symbol-dropdown-menu"
+                style={{
+                  position: 'fixed',
+                  top: `${dropdownPosition.top}px`,
+                  right: `${dropdownPosition.right}px`,
+                  zIndex: 100000
+                }}
+              >
                 {tickers && tickers.length > 0 ? (
                   tickers.map(ticker => {
                     const symbol = ticker.symbol.split('/')[0];
@@ -247,7 +271,8 @@ const OrderBook = () => {
                     <span>{coinSymbol}</span>
                   </div>
                 )}
-              </div>
+              </div>,
+              document.body
             )}
           </div>
           
