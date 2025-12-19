@@ -15,6 +15,9 @@ import { HyperliquidTradingProvider } from "../../components/trading/context/Hyp
 import WelcomeMessageModal from "../../components/TradingPortal/WelcomeMessageModal";
 import TradingPortalRegistrationModal from "../../components/TradingPortal/TradingPortalRegistrationModal";
 import { useWallet } from "../../../context/WalletContext";
+import { useDispatch } from "react-redux";
+import { tradingPortalLoadedAction } from "../../../store/actions/AuthActions";
+import { getTradingPortalStatus } from "../../../services/TradingPortalService";
 import "../../components/trading/hyperliquid-theme.css";
 import "../../components/trading/TradingComponents.css";
 import "../../components/trading/responsive-adjustments.css";
@@ -25,7 +28,9 @@ const TradingPage = () => {
   const [showPairs, setShowPairs] = useState(false);
   const togglePairs = useCallback(() => setShowPairs((s) => !s), []);
   const { isConnected, address } = useWallet();
-  const { tradingPortal } = useSelector(state => state.auth);
+  const { tradingPortal, auth } = useSelector(state => state.auth);
+  const dispatch = useDispatch();
+  const [portalStatusLoaded, setPortalStatusLoaded] = useState(false);
   
   // Modales de Trading Portal
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -47,15 +52,21 @@ const TradingPage = () => {
   });
 
   // Lógica para mostrar modal de bienvenida al inicio
-  // Debe aparecer siempre al cargar la página (como en la imagen)
+  // Esperar a que se cargue el estado del Trading Portal antes de mostrar el modal
   useEffect(() => {
-    // Mostrar modal siempre al inicio (sin verificar sessionStorage)
+    // Esperar a que el estado del portal se haya cargado
+    if (isConnected && address && !portalStatusLoaded) {
+      return; // No mostrar el modal hasta que se cargue el estado
+    }
+    
+    // Dar tiempo para que se cargue el estado desde localStorage/backend
+    const delay = isConnected && address ? 500 : 1500;
     const timer = setTimeout(() => {
       setShowWelcomeModal(true);
-    }, 800); // Delay para que la página cargue completamente
+    }, delay);
     
     return () => clearTimeout(timer);
-  }, []); // Solo ejecutar una vez al montar
+  }, [isConnected, address, portalStatusLoaded]); // Depender de portalStatusLoaded
 
   // Mostrar modal de bienvenida nuevamente cuando se conecta la wallet
   // (si no tiene cuenta de Trading Portal)
@@ -70,6 +81,41 @@ const TradingPage = () => {
     }
   }, [isConnected, address, tradingPortal?.hasPortalAccount]);
 
+  // Cerrar modal de bienvenida automáticamente después de login exitoso
+  useEffect(() => {
+    const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token');
+    if (isLoggedIn && showWelcomeModal) {
+      // Si el usuario se logueó, cerrar el modal de bienvenida
+      console.log('[TradingPage] Usuario logueado, cerrando modal de bienvenida');
+      setShowWelcomeModal(false);
+    }
+  }, [auth?.idToken, showWelcomeModal]);
+  
+  // También escuchar cambios en localStorage para detectar login
+  useEffect(() => {
+    const checkLogin = () => {
+      const jwtToken = localStorage.getItem('jwt_token');
+      if (jwtToken && showWelcomeModal) {
+        console.log('[TradingPage] JWT token detectado, cerrando modal de bienvenida');
+        setShowWelcomeModal(false);
+      }
+    };
+    
+    // Verificar inmediatamente
+    checkLogin();
+    
+    // Escuchar cambios en localStorage
+    window.addEventListener('storage', checkLogin);
+    
+    // También verificar periódicamente (por si el cambio es en la misma pestaña)
+    const interval = setInterval(checkLogin, 500);
+    
+    return () => {
+      window.removeEventListener('storage', checkLogin);
+      clearInterval(interval);
+    };
+  }, [showWelcomeModal]);
+
   // NO mostrar modal de registro automáticamente - solo cuando hagan clic en el botón Register
 
   // Resetear flags cuando cambia la wallet
@@ -79,6 +125,79 @@ const TradingPage = () => {
       portalModalShownRef.current = false;
     }
   }, [address]);
+
+  // Cargar estado del Trading Portal desde localStorage cuando hay wallet conectada
+  // Este efecto debe ejecutarse ANTES de mostrar el modal
+  useEffect(() => {
+    const loadTradingPortalStatus = async () => {
+      if (!isConnected || !address) {
+        setPortalStatusLoaded(true);
+        return;
+      }
+
+      // Si ya tenemos el estado cargado, marcar como cargado
+      if (tradingPortal?.hasPortalAccount) {
+        console.log('[TradingPage] Estado ya cargado:', tradingPortal);
+        setPortalStatusLoaded(true);
+        return;
+      }
+
+      // Primero intentar cargar desde localStorage (más rápido, síncrono)
+      try {
+        const savedData = localStorage.getItem(`trading_portal_${address.toLowerCase()}`);
+        if (savedData) {
+          const portalData = JSON.parse(savedData);
+          if (portalData.hasPortalAccount) {
+            dispatch(tradingPortalLoadedAction({
+              fullName: portalData.fullName || '',
+              email: portalData.email || '',
+              isVerified: portalData.isVerified || false,
+            }));
+            console.log('[TradingPage] Estado del Trading Portal cargado desde localStorage:', portalData);
+            setPortalStatusLoaded(true);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('[TradingPage] Error cargando desde localStorage:', error);
+      }
+
+      // Si no hay en localStorage, intentar cargar desde el backend
+      try {
+        console.log('[TradingPage] Cargando estado del Trading Portal desde backend para:', address);
+        const result = await getTradingPortalStatus(address);
+        
+        if (result.success && result.data) {
+          // Si hay cuenta, cargar el estado
+          const portalData = {
+            fullName: result.data.fullName || '',
+            email: result.data.email || '',
+            isVerified: result.data.isVerified || false,
+          };
+          dispatch(tradingPortalLoadedAction(portalData));
+          
+          // Guardar en localStorage para futuras cargas
+          localStorage.setItem(`trading_portal_${address.toLowerCase()}`, JSON.stringify({
+            hasPortalAccount: true,
+            ...portalData,
+          }));
+          
+          console.log('[TradingPage] Estado del Trading Portal cargado desde backend:', result.data);
+        } else {
+          // No hay cuenta, el estado ya está en false por defecto
+          console.log('[TradingPage] No se encontró cuenta de Trading Portal');
+        }
+      } catch (error) {
+        console.error('[TradingPage] Error cargando estado del Trading Portal:', error);
+        // Si hay error (404), significa que no hay cuenta, no hacer nada
+      } finally {
+        setPortalStatusLoaded(true);
+      }
+    };
+
+    // Ejecutar inmediatamente cuando hay wallet conectada
+    loadTradingPortalStatus();
+  }, [isConnected, address, dispatch]); // Removí tradingPortal?.hasPortalAccount de las dependencias para que siempre intente cargar
 
   // Cerrar con ESC
   useEffect(() => {

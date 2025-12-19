@@ -744,3 +744,112 @@
   }
 }
 
+/* ============================================
+   AUTH BUTTONS (LOGIN/LOGOUT) - Elegant & Subtle Design
+   ============================================ */
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  background: transparent;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.auth-btn i {
+  font-size: 14px;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+}
+
+.auth-btn span {
+  display: inline-block;
+}
+
+/* Login Button - Subtle Green */
+.auth-btn-login {
+  color: #00c087;
+  border-color: rgba(0, 192, 135, 0.3);
+  background: rgba(0, 192, 135, 0.05);
+}
+
+.auth-btn-login:hover {
+  color: #00d99a;
+  border-color: rgba(0, 192, 135, 0.5);
+  background: rgba(0, 192, 135, 0.1);
+}
+
+.auth-btn-login:hover i {
+  opacity: 1;
+}
+
+.auth-btn-login:active {
+  background: rgba(0, 192, 135, 0.15);
+}
+
+/* Logout Button - Subtle Red */
+.auth-btn-logout {
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.3);
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.auth-btn-logout:hover {
+  color: #ff5252;
+  border-color: rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.auth-btn-logout:hover i {
+  opacity: 1;
+}
+
+.auth-btn-logout:active {
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.auth-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 192, 135, 0.2);
+}
+
+.auth-btn-logout:focus {
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auth-btn {
+    padding: 7px 14px;
+    font-size: 12px;
+    gap: 5px;
+  }
+  
+  .auth-btn i {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .auth-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  
+  .auth-btn i {
+    font-size: 12px;
+  }
+}
+

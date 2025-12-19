@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useWallet } from '../../../context/WalletContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { tradingPortalCreatedAction, tradingPortalVerifiedAction, loadingToggleAction } from '../../../store/actions/AuthActions';
-import { createTradingPortalAccount, verifyOTP, resendOTP } from '../../../services/TradingPortalService';
+import { verifyOTP, resendOTP } from '../../../services/TradingPortalService';
+import { register } from '../../../services/authApiService';
 import swal from 'sweetalert';
 import './TradingPortalModal.css';
 
@@ -18,7 +19,9 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
   const dispatch = useDispatch();
   const { address, isConnected } = useWallet();
   const { tradingPortal } = useSelector(state => state.auth);
-  const [step, setStep] = useState('register'); // 'register' o 'verify'
+  // OTP deshabilitado temporalmente
+  // const [step, setStep] = useState('register'); // 'register' o 'verify'
+  const [step] = useState('register'); // Solo registro por ahora
   
   // Form state
   const [fullName, setFullName] = useState('');
@@ -52,8 +55,8 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
 
     if (!password) {
       newErrors.password = t('trading_portal.errors.password_required', 'Password is required');
-    } else if (password.length < 6) {
-      newErrors.password = t('trading_portal.errors.password_min', 'Password must be at least 6 characters');
+    } else if (password.length < 8) {
+      newErrors.password = t('trading_portal.errors.password_min', 'Password must be at least 8 characters');
     }
 
     if (password !== confirmPassword) {
@@ -79,32 +82,90 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
     setLoading(true);
     dispatch(loadingToggleAction(true));
 
+    // Log para debug
+    console.log('[TradingPortalRegistrationModal] Datos del formulario:', {
+      fullName,
+      email,
+      passwordLength: password?.length,
+      password: password ? '*'.repeat(password.length) : 'undefined',
+      address
+    });
+
     try {
-      const result = await createTradingPortalAccount(fullName, email, password, address);
+      const result = await register(fullName, email, password, address);
       
       if (result.success) {
-        dispatch(tradingPortalCreatedAction({
+        const portalData = {
           fullName,
           email,
-        }));
+          // OTP deshabilitado temporalmente
+          // isVerified: false,
+        };
         
-        swal(
-          'Success', 
-          t('trading_portal.registration_success', 'Trading Portal account created! Please check your email for OTP verification.'),
-          'success'
-        );
+        dispatch(tradingPortalCreatedAction(portalData));
         
-        setStep('verify');
+        // Guardar en localStorage para persistencia
+        if (address) {
+          localStorage.setItem(`trading_portal_${address.toLowerCase()}`, JSON.stringify({
+            hasPortalAccount: true,
+            ...portalData,
+          }));
+        }
+        
+        swal({
+          title: 'Success',
+          text: t('trading_portal.registration_success_no_otp', 'Trading Portal account created successfully! You can now login.'),
+          icon: 'success',
+          button: 'OK'
+        }).then(() => {
+          // Cerrar el modal después del registro exitoso
+          handleClose();
+        });
+        
+        // OTP deshabilitado temporalmente - comentado
+        // setStep('verify');
       } else {
         throw new Error(result.message || 'Error creating account');
       }
     } catch (error) {
       console.error('[TradingPortalRegistrationModal] Registration error:', error);
-      swal(
-        'Error', 
-        error.message || t('trading_portal.errors.registration_failed', 'Failed to create Trading Portal account'),
-        'error'
-      );
+      
+      // Extraer el mensaje de error correctamente
+      // El servicio authApiService lanza un objeto { success: false, message: ..., error: ..., status: ... }
+      let errorMessage = t('trading_portal.errors.registration_failed', 'Failed to create Trading Portal account');
+      
+      if (error && typeof error === 'object') {
+        // Si el error viene del servicio authApiService
+        if (error.message) {
+          // Si el mensaje es un array, convertirlo a string
+          if (Array.isArray(error.message)) {
+            errorMessage = error.message.join('. ');
+          } else if (typeof error.message === 'string') {
+            errorMessage = error.message;
+          }
+        } else if (error.error?.message) {
+          errorMessage = Array.isArray(error.error.message) 
+            ? error.error.message.join('. ') 
+            : error.error.message;
+        } else if (error.response?.data?.message) {
+          const msg = error.response.data.message;
+          errorMessage = Array.isArray(msg) ? msg.join('. ') : msg;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      // Asegurarse de que errorMessage sea siempre un string
+      if (typeof errorMessage !== 'string') {
+        errorMessage = String(errorMessage);
+      }
+      
+      swal({
+        title: 'Error',
+        text: errorMessage,
+        icon: 'error',
+        button: 'OK'
+      });
     } finally {
       setLoading(false);
       dispatch(loadingToggleAction(false));
@@ -167,7 +228,8 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
       e.preventDefault();
       e.stopPropagation();
     }
-    setStep('register');
+    // OTP deshabilitado temporalmente
+    // setStep('register');
     setFullName('');
     setEmail('');
     setPassword('');
@@ -249,10 +311,8 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
             borderRadius: '12px 12px 0 0'
           }}>
             <h5 className="modal-title mb-0" style={{ color: '#ffffff', fontWeight: '600', fontSize: '18px' }}>
-              {step === 'register' 
-                ? t('trading_portal.create_account_title', 'Create Trading Portal Account')
-                : t('trading_portal.verify_otp_title', 'Verify OTP')
-              }
+              {t('trading_portal.create_account_title', 'Create Trading Portal Account')}
+              {/* OTP deshabilitado temporalmente */}
             </h5>
             <button 
               type="button" 
@@ -289,7 +349,8 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
             background: '#151a2e',
             color: '#ffffff'
           }}>
-            {step === 'register' ? (
+            {/* OTP deshabilitado temporalmente - solo mostrar formulario de registro */}
+            {step === 'register' && (
               <form onSubmit={handleRegister}>
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{ 
@@ -497,7 +558,10 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
                   }
                 </button>
               </form>
-            ) : (
+            )}
+            
+            {/* OTP deshabilitado temporalmente - comentado
+            {step === 'verify' && (
               <form onSubmit={handleVerifyOTP}>
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{ 
@@ -588,6 +652,7 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
                 </button>
               </form>
             )}
+            */}
           </div>
         </div>
       </div>

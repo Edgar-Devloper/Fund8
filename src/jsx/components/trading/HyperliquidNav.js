@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { LOGOUT_ACTION } from '../../../store/actions/AuthActions';
+import { setToken } from '../../../services/jwtAuthService';
 import ConnectWalletButton from '../Web3/ConnectWalletButton';
 import LanguageSelector from '../LanguageSelector';
 import SettingsModal from '../Settings/SettingsModal';
@@ -10,24 +12,49 @@ import { useWallet } from '../../../context/WalletContext';
 import fund8Logo from '../../../images/brand/fund8-logo-black-bg.png';
 import './HyperliquidNav.css';
 
-// Componente para los botones Register/Login (definido antes de HyperliquidNav)
+// Componente para los botones Register/Login/Logout (definido antes de HyperliquidNav)
 const TradingPortalButtons = () => {
   const { t } = useTranslation();
   const { isConnected, address } = useWallet();
+  const dispatch = useDispatch();
   const { tradingPortal, auth } = useSelector(state => state.auth);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Verificar si tiene cuenta de Trading Portal pero no está logueado
   const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
-  const isLoggedIn = !!auth?.idToken; // Verificar si está logueado en el portal
+  const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token'); // Verificar si está logueado en el portal
   const isVerified = tradingPortal?.isVerified || false;
 
   // Mostrar Register si tiene wallet pero no tiene cuenta
   const showRegister = isConnected && address && !hasPortalAccount;
 
-  // Mostrar Login si tiene cuenta pero no está logueado o verificado
-  const showLogin = isConnected && address && hasPortalAccount && (!isLoggedIn || !isVerified);
+  // Mostrar Login si tiene cuenta pero NO está logueado
+  const showLogin = isConnected && address && hasPortalAccount && !isLoggedIn;
+
+  // Mostrar Logout si está logueado (esto tiene prioridad sobre Login)
+  const showLogout = isConnected && address && isLoggedIn;
+
+  // Función para hacer logout
+  const handleLogout = () => {
+    // Limpiar JWT token
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('jwt_wallet_address');
+    
+    // Limpiar token del servicio
+    setToken(null);
+    
+    // Limpiar solo el estado de auth (NO limpiar hasPortalAccount)
+    dispatch({
+      type: LOGOUT_ACTION
+    });
+    
+    // Mantener hasPortalAccount pero limpiar isVerified
+    // El estado de Trading Portal se mantiene porque el usuario sigue teniendo cuenta
+    // Solo se limpia el login, no la cuenta
+    
+    console.log('[TradingPortalButtons] Logout realizado');
+  };
 
   // Debug: Log para verificar estado
   console.log('[TradingPortalButtons] Estado:', {
@@ -37,22 +64,30 @@ const TradingPortalButtons = () => {
     isLoggedIn,
     isVerified,
     showRegister,
-    showLogin
+    showLogin,
+    showLogout
   });
 
-  // No mostrar nada si no hay wallet conectada o si ya está todo completo
+  // No mostrar nada si no hay wallet conectada
   if (!isConnected || !address) {
-    return null;
-  }
-
-  // Si ya tiene cuenta y está logueado y verificado, no mostrar botones
-  if (hasPortalAccount && isLoggedIn && isVerified) {
     return null;
   }
 
   return (
     <>
-      {showRegister && (
+      {/* Logout tiene prioridad - mostrar primero si está logueado */}
+      {showLogout && (
+        <button
+          className="auth-btn auth-btn-logout"
+          onClick={handleLogout}
+        >
+          <i className="bi bi-box-arrow-right"></i>
+          <span>{t('trading_portal.logout', 'Logout')}</span>
+        </button>
+      )}
+
+      {/* Register - solo si no tiene cuenta */}
+      {showRegister && !showLogout && (
         <button
           className="register-btn"
           onClick={() => {
@@ -85,33 +120,17 @@ const TradingPortalButtons = () => {
         </button>
       )}
 
-      {showLogin && (
+      {/* Login - solo si tiene cuenta pero NO está logueado */}
+      {showLogin && !showLogout && (
         <button
-          className="login-btn"
+          className="auth-btn auth-btn-login"
           onClick={() => {
             console.log('[TradingPortalButtons] Login button clicked');
             setShowLoginModal(true);
           }}
-          style={{
-            padding: '8px 16px',
-            background: '#00c087',
-            border: 'none',
-            borderRadius: '8px',
-            color: '#ffffff',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#00b079';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#00c087';
-          }}
         >
-          {t('trading_portal.login', 'Login')}
+          <i className="bi bi-box-arrow-in-right"></i>
+          <span>{t('trading_portal.login', 'Login')}</span>
         </button>
       )}
       

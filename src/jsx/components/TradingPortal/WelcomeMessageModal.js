@@ -19,15 +19,42 @@ const WelcomeMessageModal = ({ onClose, show }) => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Verificar estado del Trading Portal
-  const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
-  const isLoggedIn = !!auth?.idToken;
-  const isVerified = tradingPortal?.isVerified || false;
+  // Cerrar automáticamente si el usuario se loguea
+  useEffect(() => {
+    const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token');
+    if (isLoggedIn && show) {
+      console.log('[WelcomeMessageModal] Usuario logueado detectado, cerrando modal');
+      onClose();
+    }
+  }, [auth?.idToken, show, onClose]);
 
   // Determinar qué mostrar
+  // Verificar si tiene cuenta desde localStorage como respaldo
+  const [hasAccount, setHasAccount] = useState(false);
+  
+  useEffect(() => {
+    if (address) {
+      try {
+        const savedData = localStorage.getItem(`trading_portal_${address.toLowerCase()}`);
+        if (savedData) {
+          const portalData = JSON.parse(savedData);
+          setHasAccount(portalData.hasPortalAccount || false);
+        } else {
+          setHasAccount(false);
+        }
+      } catch (error) {
+        setHasAccount(false);
+      }
+    } else {
+      setHasAccount(false);
+    }
+  }, [address, show]);
+
+  const hasPortalAccount = tradingPortal?.hasPortalAccount || hasAccount;
+  
   const showConnectWallet = !isConnected || !address;
-  const showRegister = isConnected && address && !hasPortalAccount;
-  const showLogin = isConnected && address && hasPortalAccount && (!isLoggedIn || !isVerified);
+  const showRegister = isConnected && address && !hasPortalAccount; // Mostrar Register solo si NO tiene cuenta
+  const showLogin = isConnected && address && hasPortalAccount; // Mostrar Login solo si YA tiene cuenta
 
 
   if (!show) return null;
@@ -305,15 +332,35 @@ const WelcomeMessageModal = ({ onClose, show }) => {
                   {t('trading_portal.wallet_connected', 'Wallet connected')}: {formatAddress(address)}
                 </p>
                 <p style={{ 
-                  fontSize: '14px', 
+                  fontSize: '15px', 
                   color: '#a0aec0',
-                  marginBottom: '20px'
+                  marginBottom: '20px',
+                  textAlign: 'center'
                 }}>
-                  {t('trading_portal.login_required', 'Please log in with your email and password to access the trading portal.')}
+                  You already have an account.{' '}
+                  <span
+                    onClick={() => {
+                      setShowLoginModal(true);
+                    }}
+                    style={{
+                      color: '#00c087',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      fontWeight: '500'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#00a875';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#00c087';
+                    }}
+                  >
+                    Login here
+                  </span>
                 </p>
                 <button
                   onClick={() => {
-                    setShowLoginModal(true);
+                    setShowRegisterModal(true);
                   }}
                   style={{
                     padding: '12px 24px',
@@ -339,7 +386,7 @@ const WelcomeMessageModal = ({ onClose, show }) => {
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  {t('trading_portal.login', 'Login')}
+                  {t('trading_portal.register', 'Register')}
                 </button>
               </div>
             )}

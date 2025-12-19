@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNFT } from '../../context/NFTContext';
 import { useWallet } from '../../context/WalletContext';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import NFTSelector from './NFTSelector';
 
@@ -9,6 +10,7 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const { isConnected, address } = useWallet();
+  const { tradingPortal, auth } = useSelector(state => state.auth);
   const { selectedNFT, hasNFTs, isLoading, error, loadNFTs, deselectNFT, selectNFT } = useNFT();
   const [showModal, setShowModal] = useState(false);
   const hasShownOnceRef = useRef(false);
@@ -83,6 +85,16 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
     if (!isConnected || !address) {
       setShowModal(false);
       wasConnectedRef.current = false;
+      return;
+    }
+
+    // NO mostrar el modal de NFT si el usuario ya tiene cuenta de Trading Portal y está logueado
+    const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
+    const isLoggedIn = !!auth?.idToken;
+    const isVerified = tradingPortal?.isVerified || false;
+    
+    if (hasPortalAccount && isLoggedIn && isVerified) {
+      setShowModal(false);
       return;
     }
 

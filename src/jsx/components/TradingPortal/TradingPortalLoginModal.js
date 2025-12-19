@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useWallet } from '../../../context/WalletContext';
 import { loadingToggleAction, tradingPortalLoadedAction } from '../../../store/actions/AuthActions';
-import { login } from '../../../services/AuthService'; // Usar servicio de autenticación existente
+import { login, loginNonce, loginVerify } from '../../../services/authApiService';
+import { setToken } from '../../../services/jwtAuthService';
 import swal from 'sweetalert';
 import './TradingPortalModal.css';
 
@@ -24,7 +25,7 @@ import './TradingPortalModal.css';
 const TradingPortalLoginModal = ({ onClose, show }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { address } = useWallet();
+  const { address, signer } = useWallet();
   const { tradingPortal } = useSelector(state => state.auth);
   
   const [email, setEmail] = useState(tradingPortal?.email || '');
@@ -63,37 +64,144 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       return;
     }
 
+    if (!signer) {
+      swal({
+        title: 'Error',
+        text: t('trading_portal.errors.signer_required', 'Wallet signer not available. Please reconnect your wallet.'),
+        icon: 'error',
+        button: 'OK'
+      });
+      return;
+    }
+
     setLoading(true);
     dispatch(loadingToggleAction(true));
 
     try {
-      // Login usando el servicio de autenticación existente
-      // Este login es para el Trading Portal backend
-      const response = await login(email, password);
+      // Paso 1: Validar email y password
+      console.log('[TradingPortalLoginModal] Paso 1: Validando credenciales...');
+      const loginResult = await login(email, password);
       
-      if (response.data) {
-        // Actualizar estado de Trading Portal
-        dispatch(tradingPortalLoadedAction({
-          fullName: tradingPortal?.fullName || '',
-          email: email,
-          isVerified: true,
-        }));
-        
-        swal(
-          'Success', 
-          t('trading_portal.login_success', 'Login successful! You now have full access to the Trading Portal.'),
-          'success'
-        );
-        
-        onClose();
+      if (!loginResult.success) {
+        throw new Error(loginResult.message || 'Error al validar credenciales');
       }
+
+      // Paso 2: Obtener mensaje para firmar usando el loginSessionId del paso 1
+      console.log('[TradingPortalLoginModal] Paso 2: Obteniendo mensaje para firmar...');
+      console.log('[TradingPortalLoginModal] Respuesta del login:', loginResult.data);
+      
+      // Extraer loginSessionId de la respuesta
+      const loginSessionId = loginResult.data?.loginSessionId || loginResult.data?.data?.loginSessionId;
+      
+      if (!loginSessionId) {
+        console.error('[TradingPortalLoginModal] No se encontró loginSessionId en:', loginResult);
+        throw new Error('No se recibió loginSessionId del servidor. Por favor intenta de nuevo.');
+      }
+      
+      console.log('[TradingPortalLoginModal] Usando loginSessionId:', loginSessionId);
+      const nonceResult = await loginNonce(loginSessionId);
+      
+      if (!nonceResult.success || !nonceResult.data?.message) {
+        throw new Error(nonceResult.message || 'Error al obtener mensaje para firmar');
+      }
+
+      const messageToSign = nonceResult.data.message;
+      console.log('[TradingPortalLoginModal] Mensaje recibido:', messageToSign);
+
+      // Paso 3: Firmar el mensaje con la wallet
+      console.log('[TradingPortalLoginModal] Paso 3: Solicitando firma del mensaje...');
+      const signature = await signer.signMessage(messageToSign);
+      console.log('[TradingPortalLoginModal] Firma obtenida:', signature);
+
+      // Paso 4: Verificar firma y obtener JWT usando el loginSessionId
+      console.log('[TradingPortalLoginModal] Paso 4: Verificando firma y obteniendo JWT...');
+      const verifyResult = await loginVerify(loginSessionId, signature);
+      
+      if (!verifyResult.success || !verifyResult.token) {
+        throw new Error(verifyResult.message || 'Error al verificar firma');
+      }
+
+      // Guardar el token JWT
+      const jwtToken = verifyResult.token;
+      setToken(jwtToken);
+      localStorage.setItem('jwt_token', jwtToken);
+      localStorage.setItem('jwt_wallet_address', address);
+
+      // Actualizar estado de Trading Portal
+      const portalData = {
+        fullName: tradingPortal?.fullName || '',
+        email: email,
+        isVerified: true,
+      };
+      
+      dispatch(tradingPortalLoadedAction(portalData));
+      
+      // Guardar en localStorage para persistencia
+      if (address) {
+        localStorage.setItem(`trading_portal_${address.toLowerCase()}`, JSON.stringify({
+          hasPortalAccount: true,
+          ...portalData,
+        }));
+      }
+
+      // Actualizar estado de auth con el token
+      dispatch({
+        type: 'LOGIN_CONFIRMED_ACTION',
+        payload: {
+          idToken: jwtToken,
+          email: email,
+        }
+      });
+      
+      // Cerrar el modal primero
+      onClose();
+      
+      // Mostrar mensaje de éxito después de cerrar el modal con z-index alto
+      setTimeout(() => {
+        swal({
+          title: 'Success',
+          text: t('trading_portal.login_success', 'Login successful! You now have full access to the Trading Portal.'),
+          icon: 'success',
+          button: 'OK'
+        }).then(() => {
+          // El modal ya está cerrado, solo confirmar
+        });
+        
+        // Asegurar que el swal tenga z-index alto
+        setTimeout(() => {
+          const swalContainer = document.querySelector('.swal2-container');
+          if (swalContainer) {
+            swalContainer.style.zIndex = '10000000';
+          }
+        }, 100);
+      }, 300); // Pequeño delay para que el modal se cierre primero
     } catch (error) {
       console.error('[TradingPortalLoginModal] Login error:', error);
-      swal(
-        'Error', 
-        error.response?.data?.error?.message || t('trading_portal.errors.login_failed', 'Invalid email or password'),
-        'error'
-      );
+      
+      // Extraer mensaje de error
+      let errorMessage = t('trading_portal.errors.login_failed', 'Invalid email or password');
+      
+      if (error && typeof error === 'object') {
+        if (error.message) {
+          if (Array.isArray(error.message)) {
+            errorMessage = error.message.join('. ');
+          } else if (typeof error.message === 'string') {
+            errorMessage = error.message;
+          }
+        } else if (error.response?.data?.message) {
+          const msg = error.response.data.message;
+          errorMessage = Array.isArray(msg) ? msg.join('. ') : msg;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      swal({
+        title: 'Error',
+        text: errorMessage,
+        icon: 'error',
+        button: 'OK'
+      });
     } finally {
       setLoading(false);
       dispatch(loadingToggleAction(false));

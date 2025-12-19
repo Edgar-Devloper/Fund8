@@ -116,10 +116,10 @@ export function AuthReducer(state = initialState, action) {
                 expiresIn: '',
                 refreshToken: '',
             },
+            // Mantener hasPortalAccount porque el usuario sigue teniendo cuenta
+            // Solo limpiar isVerified (el login)
             tradingPortal: {
-                hasPortalAccount: false,
-                fullName: '',
-                email: '',
+                ...state.tradingPortal,
                 isVerified: false,
             },
         };
