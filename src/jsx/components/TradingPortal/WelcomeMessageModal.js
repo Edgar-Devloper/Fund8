@@ -319,7 +319,8 @@ const WelcomeMessageModal = ({ onClose, show }) => {
               </div>
             )}
 
-            {showLogin && (
+            {/* Siempre mostrar opción de login si hay wallet conectada */}
+            {isConnected && address && (
               <div style={{ 
                 marginTop: '20px',
                 marginBottom: '20px'
@@ -358,36 +359,6 @@ const WelcomeMessageModal = ({ onClose, show }) => {
                     Login here
                   </span>
                 </p>
-                <button
-                  onClick={() => {
-                    setShowRegisterModal(true);
-                  }}
-                  style={{
-                    padding: '12px 24px',
-                    background: '#00c087',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    width: '100%',
-                    maxWidth: '300px',
-                    margin: '0 auto',
-                    display: 'block'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#00a875';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#00c087';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  {t('trading_portal.register', 'Register')}
-                </button>
               </div>
             )}
           </div>

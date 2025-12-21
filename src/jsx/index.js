@@ -12,6 +12,12 @@ import PremiumUpgradeNotification from "./components/PremiumUpgradeNotification"
 /// Trading - Página principal
 import TradingPage from './pages/Trading';
 
+/// Prop Dashboard - Página del Prop Dashboard
+import PropDashboard from './pages/PropDashboard';
+
+/// Operations - Página de operaciones de trading
+import OperationsPage from './pages/Operations';
+
 /// NFT Registration - Página de registro de NFT
 import NFTRegistration from './pages/NFTRegistration';
 
@@ -27,6 +33,11 @@ const Markup = () => {
       <Routes>
         <Route path="/" element={<TradingPage />} />
         <Route path="/trading" element={<TradingPage />} />
+        {/* Prop Dashboard */}
+        <Route path="/prop-dashboard" element={<PropDashboard />} />
+        <Route path="/propfirm" element={<PropDashboard />} />
+        {/* Operations - Trading Operations */}
+        <Route path="/operations" element={<OperationsPage />} />
         {/* Ruta para registro de NFT - detecta plataforma automáticamente */}
         <Route path="/register" element={<NFTRegistration />} />
         <Route path="/nft/register" element={<NFTRegistration />} />

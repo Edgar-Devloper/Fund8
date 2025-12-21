@@ -1,0 +1,14 @@
+.operations-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #0a0e27;
+}
+
+.operations-page table {
+  width: 100%;
+}
+
+.operations-page table tbody tr:hover {
+  background-color: #1a1f3a;
+}
+

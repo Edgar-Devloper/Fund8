@@ -33,40 +33,8 @@ export const WalletProvider = ({ children }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
   
-  // Verificar si hay una cuenta conectada al montar (puede ser de Thirdweb)
-  useEffect(() => {
-    const checkInitialConnection = async () => {
-      try {
-        if (typeof window.ethereum !== 'undefined') {
-          const accounts = await window.ethereum.request({ 
-            method: 'eth_accounts',
-            params: []
-          });
-          
-          if (accounts && accounts.length > 0) {
-            const connectedAddress = accounts[0];
-            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-            const web3Signer = web3Provider.getSigner();
-            setAddress(connectedAddress);
-            setProvider(web3Provider);
-            setSigner(web3Signer);
-            console.log('[Wallet] Cuenta detectada al iniciar:', connectedAddress);
-          }
-        }
-      } catch (err) {
-        console.debug('[Wallet] Error al verificar cuenta inicial:', err);
-      }
-    };
-
-    // Delay para permitir que Thirdweb se conecte primero
-    const timeoutId = setTimeout(() => {
-      checkInitialConnection();
-    }, 1000); // Aumentado a 1 segundo para dar tiempo a Thirdweb
-
-    return () => clearTimeout(timeoutId);
-  }, []); // Solo ejecutar una vez al montar
-  
-  // Don't check for MetaMask on mount - only when user clicks connect
+  // No detectar MetaMask automáticamente al cargar la página
+  // Solo conectar cuando el usuario haga clic explícitamente en "Connect Wallet"
 
   const connectWallet = useCallback(async () => {
     // Always show MetaMask popup when user clicks connect

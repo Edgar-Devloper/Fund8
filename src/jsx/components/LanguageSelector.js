@@ -82,7 +82,6 @@ const LanguageSelector = ({ variant = 'default' }) => {
       >
         <button
           ref={buttonRef}
-          className="nav-icon-btn"
           type="button"
           onClick={(e) => {
             e.preventDefault();
@@ -90,18 +89,14 @@ const LanguageSelector = ({ variant = 'default' }) => {
             setIsOpen(prev => !prev);
           }}
           style={{ 
-            border: '1px solid var(--hl-dark-border, #1e2541)',
+            border: 'none',
             background: 'transparent',
             boxShadow: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            borderRadius: '8px',
             color: 'var(--hl-text-secondary, #a0aec0)',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
             outline: 'none',
             padding: 0,
             pointerEvents: 'auto',

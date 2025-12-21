@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,8 +30,21 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
   
   const [email, setEmail] = useState(tradingPortal?.email || '');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Cargar email guardado si existe
+  useEffect(() => {
+    if (show) {
+      const rememberedEmail = localStorage.getItem('trading_portal_remembered_email');
+      if (rememberedEmail && !email) {
+        setEmail(rememberedEmail);
+        setRememberMe(true);
+      }
+    }
+  }, [show]);
 
   if (!show) return null;
 
@@ -142,6 +155,13 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
           hasPortalAccount: true,
           ...portalData,
         }));
+      }
+
+      // Guardar email si "Remember me" está activado
+      if (rememberMe) {
+        localStorage.setItem('trading_portal_remembered_email', email);
+      } else {
+        localStorage.removeItem('trading_portal_remembered_email');
       }
 
       // Actualizar estado de auth con el token
@@ -370,29 +390,79 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
                 }}>
                   {t('trading_portal.password', 'Password')} *
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors({ ...errors, password: '' });
-                  }}
-                  className="form-control"
-                  style={{
-                    background: '#0a0e27',
-                    border: errors.password ? '1px solid #ff5c5c' : '1px solid #1e2541',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    padding: '12px 16px',
-                    fontSize: '14px'
-                  }}
-                  placeholder={t('trading_portal.password_placeholder', 'Enter your password')}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors({ ...errors, password: '' });
+                    }}
+                    className="form-control"
+                    style={{
+                      background: '#0a0e27',
+                      border: errors.password ? '1px solid #ff5c5c' : '1px solid #1e2541',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      padding: '12px 40px 12px 16px',
+                      fontSize: '14px',
+                      width: '100%'
+                    }}
+                    placeholder={t('trading_portal.password_placeholder', 'Enter your password')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#a0aec0',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '18px'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#a0aec0'}
+                  >
+                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
                 {errors.password && (
                   <small style={{ color: '#ff5c5c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
                     {errors.password}
                   </small>
                 )}
+              </div>
+
+              {/* Remember Me checkbox */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  color: '#a0aec0',
+                  fontSize: '14px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    style={{
+                      marginRight: '8px',
+                      cursor: 'pointer',
+                      width: '16px',
+                      height: '16px'
+                    }}
+                  />
+                  <span>{t('trading_portal.remember_me', 'Remember me')}</span>
+                </label>
               </div>
 
               <button

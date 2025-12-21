@@ -7,8 +7,10 @@ import { setToken } from '../../../services/jwtAuthService';
 import ConnectWalletButton from '../Web3/ConnectWalletButton';
 import LanguageSelector from '../LanguageSelector';
 import SettingsModal from '../Settings/SettingsModal';
-import BalanceDisplay from './BalanceDisplay';
+import SupportButton from '../Support/SupportButton';
 import { useWallet } from '../../../context/WalletContext';
+import { useUserBalance } from '../../../hooks/useUserBalance';
+import { useNFT } from '../../../context/NFTContext';
 import fund8Logo from '../../../images/brand/fund8-logo-black-bg.png';
 import './HyperliquidNav.css';
 
@@ -18,13 +20,76 @@ const TradingPortalButtons = () => {
   const { isConnected, address } = useWallet();
   const dispatch = useDispatch();
   const { tradingPortal, auth } = useSelector(state => state.auth);
+  const { userState, loading: balanceLoading } = useUserBalance();
+  const { selectedNFT } = useNFT();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  // Estado para mostrar dropdown de detalles del usuario
+  const [showUserDetails, setShowUserDetails] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+  const userDetailsRef = useRef(null);
+  const emailButtonRef = useRef(null);
 
   // Verificar si tiene cuenta de Trading Portal pero no está logueado
   const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
   const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token'); // Verificar si está logueado en el portal
   const isVerified = tradingPortal?.isVerified || false;
+  
+  // Obtener email del usuario logueado desde múltiples fuentes
+  const getEmailFromLocalStorage = () => {
+    // Intentar obtener del trading portal en localStorage usando la dirección de wallet
+    const walletAddress = address?.toLowerCase();
+    if (walletAddress) {
+      const tradingPortalKey = `trading_portal_${walletAddress}`;
+      const tradingPortalData = localStorage.getItem(tradingPortalKey);
+      if (tradingPortalData) {
+        try {
+          const parsed = JSON.parse(tradingPortalData);
+          if (parsed.email) {
+            console.log('[TradingPortalButtons] Email encontrado en trading_portal localStorage:', parsed.email);
+            return parsed.email;
+          }
+        } catch (e) {
+          console.error('Error parsing trading portal data:', e);
+        }
+      }
+    }
+    
+    // Intentar obtener del JWT token
+    const jwtToken = localStorage.getItem('jwt_token');
+    if (jwtToken) {
+      try {
+        const payload = JSON.parse(atob(jwtToken.split('.')[1]));
+        if (payload.email) {
+          console.log('[TradingPortalButtons] Email encontrado en JWT token:', payload.email);
+          return payload.email;
+        }
+      } catch (e) {
+        console.error('Error parsing JWT token:', e);
+      }
+    }
+    
+    // Intentar obtener de otras fuentes
+    const rememberedEmail = localStorage.getItem('trading_portal_remembered_email');
+    if (rememberedEmail) {
+      console.log('[TradingPortalButtons] Email encontrado en trading_portal_remembered_email:', rememberedEmail);
+      return rememberedEmail;
+    }
+    
+    return null;
+  };
+  
+  const userEmail = tradingPortal?.email || auth?.email || getEmailFromLocalStorage() || null;
+  
+  // Debug: Log para verificar email
+  console.log('[TradingPortalButtons] Email obtenido:', {
+    fromTradingPortal: tradingPortal?.email,
+    fromAuth: auth?.email,
+    fromLocalStorage: getEmailFromLocalStorage(),
+    finalEmail: userEmail,
+    address: address
+  });
 
   // Mostrar Register si tiene wallet pero no tiene cuenta
   const showRegister = isConnected && address && !hasPortalAccount;
@@ -34,6 +99,65 @@ const TradingPortalButtons = () => {
 
   // Mostrar Logout si está logueado (esto tiene prioridad sobre Login)
   const showLogout = isConnected && address && isLoggedIn;
+  
+  // Mostrar email si está disponible (incluso si no está completamente logueado pero tiene email guardado)
+  const shouldShowEmail = userEmail && (isConnected && address);
+
+  // Formatear dirección de wallet
+  const formatAddress = (addr) => {
+    if (!addr) return '';
+    return `${addr.slice(0, 8)}...${addr.slice(-6)}`;
+  };
+
+  // Formatear moneda
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
+
+  // Obtener balance USDC
+  const usdcBalance = userState?.withdrawable 
+    ? parseFloat(userState.withdrawable) 
+    : userState?.crossMarginSummary?.accountValue 
+      ? parseFloat(userState.crossMarginSummary.accountValue) 
+      : 0;
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        userDetailsRef.current && 
+        !userDetailsRef.current.contains(event.target) &&
+        emailButtonRef.current &&
+        !emailButtonRef.current.contains(event.target)
+      ) {
+        setShowUserDetails(false);
+      }
+    };
+
+    if (showUserDetails) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDetails]);
+
+  // Calcular posición del dropdown
+  useEffect(() => {
+    if (showUserDetails && emailButtonRef.current) {
+      const rect = emailButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, [showUserDetails]);
 
   // Función para hacer logout
   const handleLogout = () => {
@@ -73,17 +197,271 @@ const TradingPortalButtons = () => {
     return null;
   }
 
+
   return (
     <>
-      {/* Logout tiene prioridad - mostrar primero si está logueado */}
-      {showLogout && (
-        <button
-          className="auth-btn auth-btn-logout"
-          onClick={handleLogout}
-        >
-          <i className="bi bi-box-arrow-right"></i>
-          <span>{t('trading_portal.logout', 'Logout')}</span>
-        </button>
+      {/* Mostrar email y logout si está logueado */}
+      {(shouldShowEmail || showLogout) && (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '12px',
+          marginRight: '8px',
+          position: 'relative'
+        }}>
+          {/* Mostrar email si está disponible - clickeable */}
+          {userEmail && (
+            <div style={{ position: 'relative' }}>
+              <button
+                ref={emailButtonRef}
+                onClick={() => setShowUserDetails(!showUserDetails)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#a0aec0',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '200px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#a0aec0';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                title={userEmail}
+              >
+                <span>{userEmail}</span>
+                <i className="fa fa-chevron-down" style={{ fontSize: '10px', marginLeft: '4px' }}></i>
+              </button>
+
+              {/* Dropdown con detalles del usuario */}
+              {showUserDetails && (
+                <div
+                  ref={userDetailsRef}
+                  style={{
+                    position: 'fixed',
+                    top: `${dropdownPosition.top}px`,
+                    right: `${dropdownPosition.right}px`,
+                    background: 'rgba(21, 26, 46, 0.98)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    minWidth: '320px',
+                    zIndex: 10010,
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                >
+                  <h6 style={{
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    marginBottom: '16px',
+                    paddingBottom: '12px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}>
+                    {t('user_info.user_details', 'Detalles del Usuario')}
+                  </h6>
+
+                  {/* Balance USDC */}
+                  <div style={{
+                    background: 'rgba(0, 192, 135, 0.1)',
+                    border: '1px solid rgba(0, 192, 135, 0.2)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '12px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '4px'
+                    }}>
+                      <span style={{ color: '#a0aec0', fontSize: '12px', fontWeight: '500' }}>
+                        {t('user_info.balance_usdc', 'Balance USDC')}:
+                      </span>
+                      <span style={{ 
+                        color: '#00c087', 
+                        fontSize: '16px', 
+                        fontWeight: '600'
+                      }}>
+                        {balanceLoading ? (
+                          <span style={{ color: '#718096', fontSize: '14px' }}>...</span>
+                        ) : (
+                          formatCurrency(usdcBalance)
+                        )}
+                      </span>
+                    </div>
+                    <div style={{
+                      fontSize: '11px',
+                      color: '#718096',
+                      marginTop: '4px'
+                    }}>
+                      {t('user_info.on_bnb', 'en BNB')}
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 0',
+                    marginBottom: '8px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <i className="fa fa-envelope" style={{ color: '#a0aec0', fontSize: '12px' }}></i>
+                      <span style={{ color: '#a0aec0', fontSize: '13px' }}>
+                        {t('user_info.email', 'Email')}:
+                      </span>
+                    </div>
+                    <span style={{ 
+                      color: '#ffffff', 
+                      fontSize: '13px', 
+                      fontWeight: '500',
+                      maxWidth: '180px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }} title={userEmail}>
+                      {userEmail}
+                    </span>
+                  </div>
+
+                  {/* Wallet Address */}
+                  {address && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '10px 0',
+                      marginBottom: '8px',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="fa fa-wallet" style={{ color: '#a0aec0', fontSize: '12px' }}></i>
+                        <span style={{ color: '#a0aec0', fontSize: '13px' }}>
+                          {t('user_info.wallet', 'Wallet')}:
+                        </span>
+                      </div>
+                      <span style={{ 
+                        color: '#00c087', 
+                        fontSize: '13px', 
+                        fontWeight: '500',
+                        fontFamily: 'monospace'
+                      }} title={address}>
+                        {formatAddress(address)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* NFT ID / Username */}
+                  {selectedNFT && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '10px 0',
+                      marginBottom: '8px',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="fa fa-image" style={{ color: '#a0aec0', fontSize: '12px' }}></i>
+                        <span style={{ color: '#a0aec0', fontSize: '13px' }}>
+                          {t('user_info.nft_id', 'NFT ID')}:
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ 
+                          color: '#00c087', 
+                          fontSize: '13px', 
+                          fontWeight: '500',
+                          fontFamily: 'monospace'
+                        }}>
+                          #{selectedNFT.tokenId}
+                        </span>
+                        {selectedNFT.name && (
+                          <span style={{
+                            fontSize: '11px',
+                            color: '#718096'
+                          }}>
+                            ({selectedNFT.name})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Estado de verificación */}
+                  {isVerified && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 0',
+                      marginTop: '8px',
+                      paddingTop: '12px',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                      <i className="fa fa-check-circle" style={{ color: '#00c087', fontSize: '14px' }}></i>
+                      <span style={{ color: '#00c087', fontSize: '12px', fontWeight: '500' }}>
+                        {t('user_info.verified', 'Cuenta Verificada')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Botón de logout */}
+          {showLogout && (
+            <button
+              className="auth-btn auth-btn-logout"
+              onClick={handleLogout}
+              style={{
+                padding: '8px 16px',
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              }}
+            >
+              <i className="bi bi-box-arrow-right"></i>
+              <span>{t('trading_portal.logout', 'Logout')}</span>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Register - solo si no tiene cuenta */}
@@ -195,6 +573,16 @@ const HyperliquidNav = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { auth } = useSelector(state => state.auth);
+  
+  // Verificar si el usuario está logueado
+  const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token');
+  
+  // Función para cambiar entre Trading Portal y Prop Dashboard
+  const handleSwitchPage = () => {
+    // Redirigir a https://fund8.io/
+    window.location.href = 'https://fund8.io/';
+  };
 
   // Handle scroll to show/hide nav
   useEffect(() => {
@@ -338,11 +726,51 @@ const HyperliquidNav = () => {
 
         {/* Right Actions */}
         <div className="hyperliquid-nav-actions">
-          <BalanceDisplay />
-          
           <ConnectWalletButton />
           
           <LanguageSelector variant="icon" />
+          
+          {/* Botón de Soporte */}
+          <SupportButton />
+          
+          {/* Botón para cambiar entre Trading Portal y Prop Dashboard */}
+          {isLoggedIn && (
+            <button
+              onClick={handleSwitchPage}
+              title="Switch to Prop Dashboard"
+              style={{
+                padding: '0',
+                background: 'transparent',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'auto',
+                height: 'auto'
+              }}
+            >
+              {/* Icono: dos flechas horizontales opuestas (izquierda y derecha) */}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {/* Flecha hacia la izquierda (arriba) */}
+                <line x1="18" y1="8" x2="6" y2="8" />
+                <polyline points="10 4 6 8 10 12" />
+                {/* Flecha hacia la derecha (abajo) */}
+                <line x1="6" y1="16" x2="18" y2="16" />
+                <polyline points="14 12 18 16 14 20" />
+              </svg>
+            </button>
+          )}
           
           {/* Register/Login Buttons - Trading Portal */}
           <TradingPortalButtons />
