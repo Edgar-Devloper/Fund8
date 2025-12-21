@@ -2,7 +2,7 @@
 
 # Frontend Fund8 V3
 #Version 2.1
-
+ 
 Plataforma de trading de criptomonedas integrada con HyperLiquid.
 
 ## 🚀 Inicio Rápido 
