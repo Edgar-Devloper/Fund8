@@ -34,6 +34,9 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSignatureStep, setShowSignatureStep] = useState(false);
+  const [loginSessionId, setLoginSessionId] = useState(null);
+  const [messageToSign, setMessageToSign] = useState(null);
 
   // Cargar email guardado si existe
   useEffect(() => {
@@ -43,6 +46,13 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
         setEmail(rememberedEmail);
         setRememberMe(true);
       }
+    } else {
+      // Resetear estado cuando se cierra el modal
+      setShowSignatureStep(false);
+      setLoginSessionId(null);
+      setMessageToSign(null);
+      setPassword('');
+      setErrors({});
     }
   }, [show]);
 
@@ -87,6 +97,12 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       return;
     }
 
+    // Si ya estamos en el paso de firma, proceder con la firma
+    if (showSignatureStep && loginSessionId && messageToSign) {
+      await handleSignature();
+      return;
+    }
+
     setLoading(true);
     dispatch(loadingToggleAction(true));
 
@@ -104,23 +120,70 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       console.log('[TradingPortalLoginModal] Respuesta del login:', loginResult.data);
       
       // Extraer loginSessionId de la respuesta
-      const loginSessionId = loginResult.data?.loginSessionId || loginResult.data?.data?.loginSessionId;
+      const sessionId = loginResult.data?.loginSessionId || loginResult.data?.data?.loginSessionId;
       
-      if (!loginSessionId) {
+      if (!sessionId) {
         console.error('[TradingPortalLoginModal] No se encontró loginSessionId en:', loginResult);
         throw new Error('No se recibió loginSessionId del servidor. Por favor intenta de nuevo.');
       }
       
-      console.log('[TradingPortalLoginModal] Usando loginSessionId:', loginSessionId);
-      const nonceResult = await loginNonce(loginSessionId);
+      console.log('[TradingPortalLoginModal] Usando loginSessionId:', sessionId);
+      const nonceResult = await loginNonce(sessionId);
       
       if (!nonceResult.success || !nonceResult.data?.message) {
         throw new Error(nonceResult.message || 'Error al obtener mensaje para firmar');
       }
 
-      const messageToSign = nonceResult.data.message;
-      console.log('[TradingPortalLoginModal] Mensaje recibido:', messageToSign);
+      const msgToSign = nonceResult.data.message;
+      console.log('[TradingPortalLoginModal] Mensaje recibido:', msgToSign);
 
+      // Guardar datos para el paso de firma
+      setLoginSessionId(sessionId);
+      setMessageToSign(msgToSign);
+      setShowSignatureStep(true);
+      setLoading(false);
+      dispatch(loadingToggleAction(false));
+    } catch (error) {
+      console.error('[TradingPortalLoginModal] Login error:', error);
+      
+      // Extraer mensaje de error
+      let errorMessage = t('trading_portal.errors.login_failed', 'Invalid email or password');
+      
+      if (error && typeof error === 'object') {
+        if (error.message) {
+          if (Array.isArray(error.message)) {
+            errorMessage = error.message.join('. ');
+          } else if (typeof error.message === 'string') {
+            errorMessage = error.message;
+          }
+        } else if (error.response?.data?.message) {
+          const msg = error.response.data.message;
+          errorMessage = Array.isArray(msg) ? msg.join('. ') : msg;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      swal({
+        title: 'Error',
+        text: errorMessage,
+        icon: 'error',
+        button: 'OK'
+      });
+      setLoading(false);
+      dispatch(loadingToggleAction(false));
+    }
+  };
+
+  const handleSignature = async () => {
+    if (!signer || !messageToSign || !loginSessionId) {
+      return;
+    }
+
+    setLoading(true);
+    dispatch(loadingToggleAction(true));
+
+    try {
       // Paso 3: Firmar el mensaje con la wallet
       console.log('[TradingPortalLoginModal] Paso 3: Solicitando firma del mensaje...');
       const signature = await signer.signMessage(messageToSign);
@@ -331,20 +394,22 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
             background: '#151a2e',
             color: '#ffffff'
           }}>
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ 
-                fontSize: '14px', 
-                color: '#a0aec0', 
-                lineHeight: '1.6',
-                marginBottom: '20px'
-              }}>
-                {t('trading_portal.login_description', 
-                  'Enter your Trading Portal credentials to access your account, referral links, commissions, and full dashboard features.'
-                )}
-              </p>
-            </div>
+            {!showSignatureStep ? (
+              <>
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#a0aec0', 
+                    lineHeight: '1.6',
+                    marginBottom: '20px'
+                  }}>
+                    {t('trading_portal.login_description', 
+                      'Enter your Trading Portal credentials to access your account, referral links, commissions, and full dashboard features.'
+                    )}
+                  </p>
+                </div>
 
-            <form onSubmit={handleLogin}>
+                <form onSubmit={handleLogin}>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ 
                   display: 'block', 
@@ -488,6 +553,112 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
                 }
               </button>
             </form>
+              </>
+            ) : (
+              <div>
+                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'rgba(0, 192, 135, 0.1)',
+                    border: '2px solid #00c087',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 20px auto'
+                  }}>
+                    <i className="fa fa-check-circle" style={{ fontSize: '32px', color: '#00c087' }}></i>
+                  </div>
+                  <h6 style={{ 
+                    color: '#ffffff', 
+                    fontSize: '18px', 
+                    fontWeight: '600',
+                    marginBottom: '12px'
+                  }}>
+                    {t('trading_portal.credentials_validated', 'Credentials Validated')}
+                  </h6>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#a0aec0', 
+                    lineHeight: '1.6',
+                    marginBottom: '8px'
+                  }}>
+                    {t('trading_portal.signature_required', 
+                      'Please sign the message with your wallet to complete the login process.'
+                    )}
+                  </p>
+                  <p style={{ 
+                    fontSize: '12px', 
+                    color: '#718096', 
+                    marginTop: '16px'
+                  }}>
+                    {t('trading_portal.wallet_address', 'Wallet')}: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSignatureStep(false);
+                      setLoginSessionId(null);
+                      setMessageToSign(null);
+                    }}
+                    disabled={loading}
+                    style={{
+                      flex: 1,
+                      borderRadius: '8px',
+                      padding: '12px 20px',
+                      background: 'transparent',
+                      border: '1px solid #1e2541',
+                      color: '#a0aec0',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!loading) {
+                        e.currentTarget.style.borderColor = '#718096';
+                        e.currentTarget.style.color = '#ffffff';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!loading) {
+                        e.currentTarget.style.borderColor = '#1e2541';
+                        e.currentTarget.style.color = '#a0aec0';
+                      }
+                    }}
+                  >
+                    {t('trading_portal.cancel', 'Cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSignature}
+                    disabled={loading}
+                    style={{
+                      flex: 1,
+                      borderRadius: '8px',
+                      padding: '12px 20px',
+                      background: loading ? '#1f2640' : '#00c087',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      opacity: loading ? 0.6 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {loading 
+                      ? t('trading_portal.signing', 'Signing...') 
+                      : t('trading_portal.sign_message', 'Sign Message')
+                    }
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

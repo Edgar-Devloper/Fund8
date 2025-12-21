@@ -90,22 +90,9 @@ export const authService = {
   // Obtener nonce del backend
   getNonce: async (walletAddress) => {
     try {
-      const baseUrl = getBackendUrl();
-      // Verificar si la URL base incluye /api
-      // Si no lo incluye, agregarlo al endpoint
-      let endpoint = '/auth/nonce';
-      if (!baseUrl.endsWith('/api')) {
-        // Si la URL base no termina en /api, el endpoint debe incluir /api
-        endpoint = '/api/auth/nonce';
-      }
-      
-      const fullUrl = `${baseUrl}${endpoint}`;
-      console.log('[Auth Service] ===== DEBUG NONCE =====');
-      console.log('[Auth Service] URL completa:', fullUrl);
-      console.log('[Auth Service] Base URL:', baseUrl);
-      console.log('[Auth Service] Endpoint:', endpoint);
-      console.log('[Auth Service] Enviando walletAddress:', walletAddress);
-      console.log('[Auth Service] backendApi baseURL:', backendApi.defaults.baseURL);
+      // El endpoint siempre es /auth/nonce
+      // El baseURL ya está configurado correctamente en backendApi
+      const endpoint = '/auth/nonce';
       
       const response = await backendApi.post(endpoint, {
         walletAddress
@@ -138,15 +125,10 @@ export const authService = {
   // Verificar firma y obtener JWT
   verify: async (walletAddress, signature) => {
     try {
-      // Verificar si la URL base incluye /api
-      // Si no lo incluye, agregarlo al endpoint
-      let endpoint = '/auth/verify';
-      if (!getBackendUrl().endsWith('/api')) {
-        // Si la URL base no termina en /api, el endpoint debe incluir /api
-        endpoint = '/api/auth/verify';
-      }
+      // El endpoint siempre es /auth/verify
+      // El baseURL ya está configurado correctamente en backendApi
+      const endpoint = '/auth/verify';
       
-      console.log('[Auth Service] Verificando firma, endpoint:', endpoint);
       const response = await backendApi.post(endpoint, {
         walletAddress,
         signature

@@ -38,7 +38,6 @@ export async function register(name, email, password, walletAddress) {
       emailLength: email?.length,
       passwordLength: password?.length
     });
-    console.log('[AuthApiService] Payload completo:', payload);
     
     const response = await jwtApiService.post(endpoint, payload);
     
