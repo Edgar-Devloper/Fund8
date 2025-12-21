@@ -14,7 +14,7 @@ import './TradingPortalModal.css';
  * Modal para crear cuenta de Trading Portal
  * Se muestra cuando el usuario tiene wallet/NFT conectado pero no tiene cuenta de Trading Portal
  */
-const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) => {
+const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRegistrationSuccess }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { address, isConnected } = useWallet();
@@ -135,15 +135,33 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
           localStorage.removeItem('trading_portal_remembered_email');
         }
         
-        swal({
-          title: 'Success',
-          text: t('trading_portal.registration_success_no_otp', 'Trading Portal account created successfully! You can now login.'),
-          icon: 'success',
-          button: 'OK'
-        }).then(() => {
-          // Cerrar el modal después del registro exitoso
-          handleClose();
-        });
+        // Cerrar el modal primero
+        handleClose();
+        
+        // Llamar al callback de éxito si existe (para cerrar el modal principal)
+        if (onRegistrationSuccess) {
+          setTimeout(() => {
+            onRegistrationSuccess();
+          }, 100);
+        }
+        
+        // Mostrar mensaje de éxito después de cerrar el modal con un pequeño delay
+        setTimeout(() => {
+          swal({
+            title: 'Success',
+            text: t('trading_portal.registration_success_no_otp', 'Trading Portal account created successfully! You can now login.'),
+            icon: 'success',
+            button: 'OK'
+          });
+          
+          // Asegurar que el swal tenga z-index alto
+          setTimeout(() => {
+            const swalContainer = document.querySelector('.swal2-container');
+            if (swalContainer) {
+              swalContainer.style.zIndex = '10000000';
+            }
+          }, 100);
+        }, 300); // Pequeño delay para que el modal se cierre completamente
         
         // OTP deshabilitado temporalmente - comentado
         // setStep('verify');
@@ -157,7 +175,11 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
       // El servicio authApiService lanza un objeto { success: false, message: ..., error: ..., status: ... }
       let errorMessage = t('trading_portal.errors.registration_failed', 'Failed to create Trading Portal account');
       
-      if (error && typeof error === 'object') {
+      // Manejar error 409 (Conflict) - Usuario ya existe
+      if (error?.status === 409 || error?.error?.status === 409) {
+        errorMessage = t('trading_portal.errors.account_exists', 
+          'An account with this email or wallet already exists. Please try logging in instead.');
+      } else if (error && typeof error === 'object') {
         // Si el error viene del servicio authApiService
         if (error.message) {
           // Si el mensaje es un array, convertirlo a string
@@ -184,7 +206,7 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false }) =>
       }
       
       swal({
-        title: 'Error',
+        title: error?.status === 409 ? t('trading_portal.errors.account_exists_title', 'Account Already Exists') : 'Error',
         text: errorMessage,
         icon: 'error',
         button: 'OK'

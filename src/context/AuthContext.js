@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
 import { useWallet } from './WalletContext';
 import { authService } from '../services/jwtAuthService';
 
@@ -18,6 +18,8 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState(null);
+  const authAttemptedRef = useRef(null); // Para evitar múltiples intentos de autenticación (guarda la dirección)
+  const backendUnavailableRef = useRef(false); // Para marcar si el backend no está disponible
 
   // Definir logout primero para que pueda ser usado en otros hooks
   const logout = useCallback(() => {
@@ -25,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setAuthError(null);
     authService.setToken(null);
+    authAttemptedRef.current = null; // Reset el flag de intento de autenticación
     
     // Limpiar localStorage de autenticación
     localStorage.removeItem('jwt_token');
@@ -99,6 +102,7 @@ export const AuthProvider = ({ children }) => {
       // La autenticación JWT es opcional
       if (err.response?.status === 404 || err.message?.includes('404')) {
         console.warn('[Auth] Backend de autenticación no disponible (404). Continuando sin autenticación JWT.');
+        backendUnavailableRef.current = true; // Marcar que el backend no está disponible
         setAuthError(null); // No mostrar error si el backend no está disponible
         setIsAuthenticated(false);
         setAccessToken(null);
@@ -202,8 +206,14 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     
+    // Si el backend no está disponible (404 previo), no intentar autenticar
+    if (backendUnavailableRef.current) {
+      return;
+    }
+    
     // NO autenticar si ya estamos autenticados
     if (isAuthenticated) {
+      authAttemptedRef.current = null; // Reset cuando se autentica exitosamente
       return;
     }
     
@@ -222,13 +232,20 @@ export const AuthProvider = ({ children }) => {
     // - NO está en proceso de autenticación
     // - NO hay error previo
     // - NO hay token válido guardado
+    // - NO se ha intentado autenticar ya para esta wallet
+    const currentAddressLower = address?.toLowerCase();
+    const hasAttemptedForThisWallet = authAttemptedRef.current === currentAddressLower;
+    
     if (isConnected && 
         address && 
         signer && 
         !isAuthenticating && 
         !authError &&
-        !hasValidToken) {
+        !hasValidToken &&
+        !hasAttemptedForThisWallet) {
       console.log('[Auth] No hay token válido, iniciando autenticación...');
+      authAttemptedRef.current = currentAddressLower; // Marcar que se intentó autenticar para esta wallet
+      
       // Pequeño delay para asegurar que todos los efectos anteriores hayan terminado
       const timer = setTimeout(() => {
         // Verificar una vez más antes de autenticar (por si otro efecto restauró el token)
@@ -239,7 +256,9 @@ export const AuthProvider = ({ children }) => {
                             finalAddress.toLowerCase() !== address.toLowerCase();
         
         if (stillNoToken && !isAuthenticated) {
-      authenticate();
+          authenticate();
+        } else {
+          authAttemptedRef.current = null; // Reset si se encontró token
         }
       }, 200);
       return () => clearTimeout(timer);

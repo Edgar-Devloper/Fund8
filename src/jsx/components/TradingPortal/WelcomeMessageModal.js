@@ -374,6 +374,14 @@ const WelcomeMessageModal = ({ onClose, show }) => {
             // Si se completó el registro, el modal principal puede cerrarse o actualizarse
             // El estado se actualizará automáticamente desde Redux
           }}
+          onRegistrationSuccess={() => {
+            // Cerrar el modal de registro
+            setShowRegisterModal(false);
+            // Cerrar el modal principal después de un pequeño delay
+            setTimeout(() => {
+              onClose();
+            }, 200);
+          }}
         />
       )}
 
