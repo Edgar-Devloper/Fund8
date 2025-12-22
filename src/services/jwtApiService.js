@@ -39,26 +39,10 @@ export const jwtApiService = {
    */
   post: async (url, data = {}, config = {}) => {
     try {
-      // Log detallado para debugging
-      const fullUrl = api.defaults.baseURL + url;
-      console.log('[Backend API] POST Request:', {
-        endpoint: url,
-        baseURL: api.defaults.baseURL,
-        fullURL: fullUrl
-      });
-      
       const response = await api.post(url, data, config);
       return response.data;
     } catch (error) {
-      const fullUrl = error.config?.baseURL + error.config?.url;
-      console.error('[Backend API] POST Error:', {
-        message: error.message,
-        status: error.response?.status,
-        endpoint: error.config?.url,
-        baseURL: error.config?.baseURL,
-        fullURL: fullUrl,
-        response: error.response?.data
-      });
+      console.error('[Backend API] POST Error:', error);
       throw error;
     }
   },

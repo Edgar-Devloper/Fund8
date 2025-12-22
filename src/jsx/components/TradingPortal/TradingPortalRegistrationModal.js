@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useWallet } from '../../../context/WalletContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { tradingPortalCreatedAction, tradingPortalVerifiedAction, loadingToggleAction } from '../../../store/actions/AuthActions';
-import { verifyOTP, resendOTP } from '../../../services/TradingPortalService';
+// OTP deshabilitado temporalmente
+// import { verifyOTP, resendOTP } from '../../../services/TradingPortalService';
 import { register } from '../../../services/authApiService';
 import swal from 'sweetalert';
 import './TradingPortalModal.css';
@@ -42,6 +43,18 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
 
   // Determinar si el modal debe mostrarse
   const shouldShow = show || forceShow;
+
+  // Función helper para asegurar que swal tenga z-index alto
+  const showSwalWithHighZIndex = (swalConfig) => {
+    swal(swalConfig);
+    // Asegurar que el swal tenga z-index alto para aparecer por encima del modal
+    setTimeout(() => {
+      const swalContainer = document.querySelector('.swal2-container');
+      if (swalContainer) {
+        swalContainer.style.zIndex = '10000000';
+      }
+    }, 100);
+  };
 
   // Cargar email guardado si existe
   useEffect(() => {
@@ -91,7 +104,12 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
     }
 
     if (!address) {
-      swal('Error', t('trading_portal.errors.wallet_required', 'Please connect your wallet first'), 'error');
+      showSwalWithHighZIndex({
+        title: 'Error',
+        text: t('trading_portal.errors.wallet_required', 'Please connect your wallet first'),
+        icon: 'error',
+        button: 'OK'
+      });
       return;
     }
 
@@ -205,7 +223,7 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
         errorMessage = String(errorMessage);
       }
       
-      swal({
+      showSwalWithHighZIndex({
         title: error?.status === 409 ? t('trading_portal.errors.account_exists_title', 'Account Already Exists') : 'Error',
         text: errorMessage,
         icon: 'error',
@@ -217,11 +235,18 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
     }
   };
 
+  // OTP deshabilitado temporalmente
+  /*
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
 
     if (!otp.trim()) {
-      swal('Error', t('trading_portal.errors.otp_required', 'OTP is required'), 'error');
+      showSwalWithHighZIndex({
+        title: 'Error',
+        text: t('trading_portal.errors.otp_required', 'OTP is required'),
+        icon: 'error',
+        button: 'OK'
+      });
       return;
     }
 
@@ -234,11 +259,12 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
       if (result.success) {
         dispatch(tradingPortalVerifiedAction());
         
-        swal(
-          'Success', 
-          t('trading_portal.verification_success', 'OTP verified successfully! Your Trading Portal account is now active.'),
-          'success'
-        );
+        showSwalWithHighZIndex({
+          title: 'Success',
+          text: t('trading_portal.verification_success', 'OTP verified successfully! Your Trading Portal account is now active.'),
+          icon: 'success',
+          button: 'OK'
+        });
         
         onClose();
       } else {
@@ -246,11 +272,12 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
       }
     } catch (error) {
       console.error('[TradingPortalRegistrationModal] OTP verification error:', error);
-      swal(
-        'Error', 
-        error.message || t('trading_portal.errors.otp_invalid', 'Invalid OTP. Please try again.'),
-        'error'
-      );
+      showSwalWithHighZIndex({
+        title: 'Error',
+        text: error.message || t('trading_portal.errors.otp_invalid', 'Invalid OTP. Please try again.'),
+        icon: 'error',
+        button: 'OK'
+      });
     } finally {
       setLoading(false);
       dispatch(loadingToggleAction(false));
@@ -261,12 +288,23 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
     try {
       await resendOTP(email);
       setOtpResent(true);
-      swal('Success', t('trading_portal.otp_resent', 'OTP resent successfully. Please check your email.'), 'success');
+      showSwalWithHighZIndex({
+        title: 'Success',
+        text: t('trading_portal.otp_resent', 'OTP resent successfully. Please check your email.'),
+        icon: 'success',
+        button: 'OK'
+      });
       setTimeout(() => setOtpResent(false), 5000);
     } catch (error) {
-      swal('Error', error.message || t('trading_portal.errors.resend_failed', 'Failed to resend OTP'), 'error');
+      showSwalWithHighZIndex({
+        title: 'Error',
+        text: error.message || t('trading_portal.errors.resend_failed', 'Failed to resend OTP'),
+        icon: 'error',
+        button: 'OK'
+      });
     }
   };
+  */
 
   const handleClose = (e) => {
     if (e) {

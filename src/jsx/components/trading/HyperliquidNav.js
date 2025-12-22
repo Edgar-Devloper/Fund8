@@ -33,11 +33,59 @@ const TradingPortalButtons = () => {
 
   // Verificar si tiene cuenta de Trading Portal pero no está logueado
   const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
-  const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token'); // Verificar si está logueado en el portal
+  
+  // Estado para forzar re-render cuando cambie el token
+  const [tokenCheck, setTokenCheck] = useState(0);
+  
+  // Verificar si está logueado: buscar token JWT en localStorage o en Redux
+  const jwtToken = localStorage.getItem('jwt_token');
+  const isLoggedIn = !!jwtToken || !!auth?.idToken;
   const isVerified = tradingPortal?.isVerified || false;
   
+  // Escuchar cambios en localStorage para detectar cuando se guarda el token después del registro
+  useEffect(() => {
+    const checkToken = () => {
+      const currentToken = localStorage.getItem('jwt_token');
+      if (currentToken !== jwtToken) {
+        setTokenCheck(prev => prev + 1);
+      }
+    };
+    
+    // Verificar cada segundo si hay un nuevo token (solo por un tiempo limitado)
+    const interval = setInterval(checkToken, 1000);
+    
+    // Limpiar después de 10 segundos
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 10000);
+    
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [jwtToken]);
+  
   // Obtener email del usuario logueado desde múltiples fuentes
+  // Solo obtener email si está logueado
   const getEmailFromLocalStorage = () => {
+    // Si no está logueado, no devolver email
+    if (!isLoggedIn) {
+      return null;
+    }
+    
+    // Intentar obtener del JWT token primero (más confiable)
+    const jwtToken = localStorage.getItem('jwt_token');
+    if (jwtToken) {
+      try {
+        const payload = JSON.parse(atob(jwtToken.split('.')[1]));
+        if (payload.email) {
+          return payload.email;
+        }
+      } catch (e) {
+        console.error('Error parsing JWT token:', e);
+      }
+    }
+    
     // Intentar obtener del trading portal en localStorage usando la dirección de wallet
     const walletAddress = address?.toLowerCase();
     if (walletAddress) {
@@ -47,7 +95,6 @@ const TradingPortalButtons = () => {
         try {
           const parsed = JSON.parse(tradingPortalData);
           if (parsed.email) {
-            console.log('[TradingPortalButtons] Email encontrado en trading_portal localStorage:', parsed.email);
             return parsed.email;
           }
         } catch (e) {
@@ -56,52 +103,28 @@ const TradingPortalButtons = () => {
       }
     }
     
-    // Intentar obtener del JWT token
-    const jwtToken = localStorage.getItem('jwt_token');
-    if (jwtToken) {
-      try {
-        const payload = JSON.parse(atob(jwtToken.split('.')[1]));
-        if (payload.email) {
-          console.log('[TradingPortalButtons] Email encontrado en JWT token:', payload.email);
-          return payload.email;
-        }
-      } catch (e) {
-        console.error('Error parsing JWT token:', e);
-      }
-    }
-    
     // Intentar obtener de otras fuentes
     const rememberedEmail = localStorage.getItem('trading_portal_remembered_email');
     if (rememberedEmail) {
-      console.log('[TradingPortalButtons] Email encontrado en trading_portal_remembered_email:', rememberedEmail);
       return rememberedEmail;
     }
     
     return null;
   };
   
-  const userEmail = tradingPortal?.email || auth?.email || getEmailFromLocalStorage() || null;
-  
-  // Debug: Log para verificar email
-  console.log('[TradingPortalButtons] Email obtenido:', {
-    fromTradingPortal: tradingPortal?.email,
-    fromAuth: auth?.email,
-    fromLocalStorage: getEmailFromLocalStorage(),
-    finalEmail: userEmail,
-    address: address
-  });
+  const userEmail = isLoggedIn ? (tradingPortal?.email || auth?.email || getEmailFromLocalStorage() || null) : null;
 
   // Mostrar Register si tiene wallet pero no tiene cuenta
   const showRegister = isConnected && address && !hasPortalAccount;
 
-  // Mostrar Login si tiene cuenta pero NO está logueado
-  const showLogin = isConnected && address && hasPortalAccount && !isLoggedIn;
+  // Mostrar Login siempre si está conectado y NO está logueado (independientemente de si tiene cuenta)
+  const showLogin = isConnected && address && !isLoggedIn;
 
   // Mostrar Logout si está logueado (esto tiene prioridad sobre Login)
   const showLogout = isConnected && address && isLoggedIn;
   
-  // Mostrar email si está disponible (incluso si no está completamente logueado pero tiene email guardado)
-  const shouldShowEmail = userEmail && (isConnected && address);
+  // Mostrar email solo si está logueado (no mostrar después del logout)
+  const shouldShowEmail = userEmail && (isConnected && address) && isLoggedIn;
 
   // Formatear dirección de wallet
   const formatAddress = (addr) => {
@@ -165,6 +188,31 @@ const TradingPortalButtons = () => {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('jwt_wallet_address');
     
+    // Limpiar email guardado
+    localStorage.removeItem('trading_portal_remembered_email');
+    
+    // Limpiar datos del trading portal para esta wallet
+    if (address) {
+      const walletAddress = address.toLowerCase();
+      const tradingPortalKey = `trading_portal_${walletAddress}`;
+      const tradingPortalData = localStorage.getItem(tradingPortalKey);
+      if (tradingPortalData) {
+        try {
+          const parsed = JSON.parse(tradingPortalData);
+          // Mantener hasPortalAccount pero limpiar email e isVerified
+          const cleanedData = {
+            ...parsed,
+            email: null,
+            isVerified: false
+          };
+          localStorage.setItem(tradingPortalKey, JSON.stringify(cleanedData));
+        } catch (e) {
+          // Si hay error, eliminar completamente
+          localStorage.removeItem(tradingPortalKey);
+        }
+      }
+    }
+    
     // Limpiar token del servicio
     setToken(null);
     
@@ -173,24 +221,13 @@ const TradingPortalButtons = () => {
       type: LOGOUT_ACTION
     });
     
-    // Mantener hasPortalAccount pero limpiar isVerified
-    // El estado de Trading Portal se mantiene porque el usuario sigue teniendo cuenta
-    // Solo se limpia el login, no la cuenta
+    // Cerrar dropdown si está abierto
+    setShowUserDetails(false);
     
-    console.log('[TradingPortalButtons] Logout realizado');
+    // Forzar re-render para actualizar la UI
+    setTokenCheck(prev => prev + 1);
   };
 
-  // Debug: Log para verificar estado
-  console.log('[TradingPortalButtons] Estado:', {
-    isConnected,
-    address: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'none',
-    hasPortalAccount,
-    isLoggedIn,
-    isVerified,
-    showRegister,
-    showLogin,
-    showLogout
-  });
 
   // No mostrar nada si no hay wallet conectada
   if (!isConnected || !address) {
@@ -469,7 +506,6 @@ const TradingPortalButtons = () => {
         <button
           className="register-btn"
           onClick={() => {
-            console.log('[TradingPortalButtons] Register button clicked');
             setShowRegisterModal(true);
           }}
           style={{
@@ -503,7 +539,6 @@ const TradingPortalButtons = () => {
         <button
           className="auth-btn auth-btn-login"
           onClick={() => {
-            console.log('[TradingPortalButtons] Login button clicked');
             setShowLoginModal(true);
           }}
         >
@@ -517,7 +552,6 @@ const TradingPortalButtons = () => {
         show={showRegisterModal} 
         onClose={() => {
           setShowRegisterModal(false);
-          console.log('[TradingPortalButtons] Register modal closed');
         }} 
       />
       
@@ -525,7 +559,6 @@ const TradingPortalButtons = () => {
         show={showLoginModal} 
         onClose={() => {
           setShowLoginModal(false);
-          console.log('[TradingPortalButtons] Login modal closed');
         }} 
       />
     </>

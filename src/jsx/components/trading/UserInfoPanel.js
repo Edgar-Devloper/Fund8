@@ -57,17 +57,6 @@ const UserInfoPanel = () => {
       padding: '20px',
       marginBottom: '20px'
     }}>
-      <h6 style={{
-        color: '#ffffff',
-        fontSize: '14px',
-        fontWeight: '600',
-        marginBottom: '16px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}>
-        {t('user_info.title', 'User Information')}
-      </h6>
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* Wallet Address */}
         <div style={{

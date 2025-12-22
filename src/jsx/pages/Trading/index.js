@@ -11,7 +11,6 @@ import MarketTicker from "../../components/trading/MarketTicker";
 import TradingControls from "../../components/trading/TradingControls";
 import ActivePositionsPanel from "../../components/trading/ActivePositionsPanel";
 import TradingStatsPanel from "../../components/trading/TradingStatsPanel";
-import UserInfoPanel from "../../components/trading/UserInfoPanel";
 import { HyperliquidTradingProvider } from "../../components/trading/context/HyperliquidTradingProvider";
 import WelcomeMessageModal from "../../components/TradingPortal/WelcomeMessageModal";
 import TradingPortalRegistrationModal from "../../components/TradingPortal/TradingPortalRegistrationModal";
@@ -250,9 +249,6 @@ const TradingPage = () => {
 
           {/* COLUMNA DERECHA: Trading Controls + OrderForm */}
           <div className="trading-side-column">
-            {/* User Info Panel */}
-            <UserInfoPanel />
-            
             {/* Trading Controls Section - Cross, 20x, M + Market/Limit/Stop Limit tabs */}
             <TradingControls 
               orderConfig={orderConfig}

@@ -20,32 +20,17 @@ const getBackendUrl = () => {
   // Usar REACT_APP_API_BASE_URL si está configurado
   const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
   if (apiBaseUrl) {
-    const normalized = normalizeBaseUrl(apiBaseUrl);
-    console.log('[Auth Service] Usando REACT_APP_API_BASE_URL:', {
-      original: apiBaseUrl,
-      normalized: normalized
-    });
-    return normalized;
+    return normalizeBaseUrl(apiBaseUrl);
   }
   
   // Fallback a otras variables por compatibilidad
   if (process.env.REACT_APP_BACKEND_API_URL) {
-    const normalized = normalizeBaseUrl(process.env.REACT_APP_BACKEND_API_URL);
-    console.log('[Auth Service] Usando REACT_APP_BACKEND_API_URL:', {
-      original: process.env.REACT_APP_BACKEND_API_URL,
-      normalized: normalized
-    });
-    return normalized;
+    return normalizeBaseUrl(process.env.REACT_APP_BACKEND_API_URL);
   }
   
   // Por defecto, asume que el backend está en el mismo dominio
   const defaultUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  const normalized = normalizeBaseUrl(defaultUrl);
-  console.warn('[Auth Service] No se encontró REACT_APP_API_BASE_URL, usando:', {
-    original: defaultUrl,
-    normalized: normalized
-  });
-  return normalized;
+  return normalizeBaseUrl(defaultUrl);
 };
 
 // Cliente axios para el backend
@@ -57,8 +42,6 @@ const backendApi = axios.create({
   }
 });
 
-// Log para verificar la configuración
-console.log('[Auth Service] Cliente API configurado con baseURL:', getBackendUrl());
 
 // Token JWT (se establece dinámicamente)
 let jwtToken = null;
