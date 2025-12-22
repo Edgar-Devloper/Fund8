@@ -1,24 +1,51 @@
 import axios from 'axios';
 
+// Función para normalizar la URL base (asegurar que termine en /api)
+const normalizeBaseUrl = (url) => {
+  if (!url) return url;
+  
+  // Remover espacios y barras finales
+  let normalized = url.trim().replace(/\/+$/, '');
+  
+  // Si no termina en /api, agregarlo
+  if (!normalized.endsWith('/api')) {
+    normalized = normalized + '/api';
+  }
+  
+  return normalized;
+};
+
 // URL base del backend (ajusta según tu configuración)
 const getBackendUrl = () => {
   // Usar REACT_APP_API_BASE_URL si está configurado
   const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
   if (apiBaseUrl) {
-    console.log('[Auth Service] Usando REACT_APP_API_BASE_URL:', apiBaseUrl);
-    return apiBaseUrl;
+    const normalized = normalizeBaseUrl(apiBaseUrl);
+    console.log('[Auth Service] Usando REACT_APP_API_BASE_URL:', {
+      original: apiBaseUrl,
+      normalized: normalized
+    });
+    return normalized;
   }
   
   // Fallback a otras variables por compatibilidad
   if (process.env.REACT_APP_BACKEND_API_URL) {
-    console.log('[Auth Service] Usando REACT_APP_BACKEND_API_URL:', process.env.REACT_APP_BACKEND_API_URL);
-    return process.env.REACT_APP_BACKEND_API_URL;
+    const normalized = normalizeBaseUrl(process.env.REACT_APP_BACKEND_API_URL);
+    console.log('[Auth Service] Usando REACT_APP_BACKEND_API_URL:', {
+      original: process.env.REACT_APP_BACKEND_API_URL,
+      normalized: normalized
+    });
+    return normalized;
   }
   
   // Por defecto, asume que el backend está en el mismo dominio
   const defaultUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  console.warn('[Auth Service] No se encontró REACT_APP_API_BASE_URL, usando:', defaultUrl);
-  return defaultUrl;
+  const normalized = normalizeBaseUrl(defaultUrl);
+  console.warn('[Auth Service] No se encontró REACT_APP_API_BASE_URL, usando:', {
+    original: defaultUrl,
+    normalized: normalized
+  });
+  return normalized;
 };
 
 // Cliente axios para el backend
