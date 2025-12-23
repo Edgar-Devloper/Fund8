@@ -373,7 +373,23 @@
     "docs": "Docs",
     "stats": "Stats",
     "offers": "Offers",
-    "announcements": "Announcements"
+    "announcements": "Announcements",
+    "back_to_defily": "Volver a DeFily"
+  },
+  "account_switch": {
+    "switch": "Switch",
+    "fund8_website": "Fund8 Website",
+    "affiliate_partner": "Affiliate Partner",
+    "prop_dashboard": "Prop Dashboard"
+  },
+  "user_info": {
+    "user_details": "Detalles del Usuario",
+    "email": "Email",
+    "wallet": "Wallet",
+    "nft_id": "NFT ID",
+    "balance_usdc": "Balance USDC",
+    "on_bnb": "en BNB",
+    "verified": "Cuenta Verificada"
   }
 }
 

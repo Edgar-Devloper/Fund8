@@ -460,6 +460,125 @@ const TradingPortalButtons = () => {
                       </span>
                     </div>
                   )}
+
+                  {/* Separador para opciones de navegación */}
+                  <div style={{
+                    marginTop: '16px',
+                    marginBottom: '12px',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                  }} />
+
+                  {/* Opciones de navegación */}
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
+                  }}>
+                    {/* Fund8 Website */}
+                    <a
+                      href="https://fund8.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowUserDetails(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        background: 'transparent',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textDecoration: 'none',
+                        width: '100%'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      }}
+                    >
+                      <i className="fa fa-globe" style={{ color: '#a0aec0', fontSize: '14px', width: '20px' }}></i>
+                      <span>{t('account_switch.fund8_website', 'Fund8 Website')}</span>
+                    </a>
+
+                    {/* Affiliate Partner (DeFily) */}
+                    <a
+                      href="https://app.defily.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowUserDetails(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        background: 'transparent',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textDecoration: 'none',
+                        width: '100%'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      }}
+                    >
+                      <i className="fa fa-handshake" style={{ color: '#a0aec0', fontSize: '14px', width: '20px' }}></i>
+                      <span>{t('account_switch.affiliate_partner', 'Affiliate Partner')}</span>
+                    </a>
+
+                    {/* Prop Dashboard */}
+                    <a
+                      href="https://dashboard.fund8.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowUserDetails(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        background: 'transparent',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textDecoration: 'none',
+                        width: '100%'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      }}
+                    >
+                      <i className="fa fa-tachometer-alt" style={{ color: '#a0aec0', fontSize: '14px', width: '20px' }}></i>
+                      <span>{t('account_switch.prop_dashboard', 'Prop Dashboard')}</span>
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -682,6 +801,7 @@ const HyperliquidNav = () => {
     { id: 'stats', label: t('topbar.stats', 'Stats'), path: '#' },
     { id: 'offers', label: t('topbar.offers', 'Offers'), path: '#' },
     { id: 'announcements', label: t('topbar.announcements', 'Announcements'), path: '#' },
+    { id: 'back_to_defily', label: t('topbar.back_to_defily', 'Back to DeFily'), path: 'https://app.defily.ai', isExternal: true },
   ];
 
   const isActive = (path) => {
@@ -963,30 +1083,65 @@ const MoreMenuSubmenu = ({ items }) => {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          {items.map((subItem) => (
-            <Link
-              key={subItem.id}
-              to={subItem.path}
-              className="more-submenu-item"
-              style={{
-                display: 'block',
-                padding: '10px 20px',
-                color: '#ffffff',
-                textDecoration: 'none',
-                fontSize: '14px',
-                transition: 'background-color 0.2s',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              {subItem.label}
-            </Link>
-          ))}
+          {items.map((subItem) => {
+            // Si es un link externo, usar <a> en lugar de <Link>
+            if (subItem.isExternal) {
+              return (
+                <a
+                  key={subItem.id}
+                  href={subItem.path}
+                  className="more-submenu-item"
+                  style={{
+                    display: 'block',
+                    padding: '10px 20px',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'background-color 0.2s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = subItem.path;
+                  }}
+                >
+                  {subItem.label}
+                </a>
+              );
+            }
+            
+            // Links internos usan <Link>
+            return (
+              <Link
+                key={subItem.id}
+                to={subItem.path}
+                className="more-submenu-item"
+                style={{
+                  display: 'block',
+                  padding: '10px 20px',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  transition: 'background-color 0.2s',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                {subItem.label}
+              </Link>
+            );
+          })}
           <div
             style={{
               position: 'absolute',

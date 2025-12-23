@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useWallet } from './WalletContext';
 import { getAllMyNFT } from '../features/smart-contracts/services/nft.service';
+import { getDefilyRedirectData, clearDefilyRedirectData } from '../utils/defilyIntegration';
 
 const NFTContext = createContext(undefined);
 
@@ -215,6 +216,48 @@ export const NFTProvider = ({ children }) => {
       }
     }
   }, [nfts, address, selectedNFT]);
+
+  // Auto-seleccionar NFT cuando viene desde DeFily
+  useEffect(() => {
+    // Solo procesar si hay wallet conectada, NFTs cargados y no hay NFT ya seleccionado
+    if (!address || !isConnected || nfts.length === 0 || selectedNFT) {
+      return;
+    }
+
+    // Verificar si viene de DeFily
+    const defilyData = getDefilyRedirectData();
+    if (!defilyData.isFromDefily || !defilyData.walletAddress || !defilyData.nftId) {
+      return;
+    }
+
+    // Verificar que la wallet conectada coincida con la de DeFily
+    if (address.toLowerCase() !== defilyData.walletAddress.toLowerCase()) {
+      console.log('[NFT Context] Wallet conectada no coincide con la de DeFily, ignorando auto-selección');
+      return;
+    }
+
+    // Buscar el NFT en la lista de NFTs del usuario
+    const nftToSelect = nfts.find(nft => nft.id === defilyData.nftId);
+    
+    if (nftToSelect) {
+      // Verificar que el NFT pertenece al usuario
+      if (!nftToSelect.ownerAddress || 
+          nftToSelect.ownerAddress.toLowerCase() === address.toLowerCase()) {
+        console.log('[NFT Context] Auto-seleccionando NFT desde DeFily:', defilyData.nftId);
+        selectNFT(nftToSelect);
+        
+        // Limpiar datos de DeFily después de usar
+        clearDefilyRedirectData();
+      } else {
+        console.warn('[NFT Context] NFT de DeFily no pertenece al usuario conectado');
+        clearDefilyRedirectData();
+      }
+    } else {
+      console.log('[NFT Context] NFT de DeFily no encontrado en la lista del usuario:', defilyData.nftId);
+      // Limpiar datos aunque no se encuentre el NFT
+      clearDefilyRedirectData();
+    }
+  }, [address, isConnected, nfts, selectedNFT, selectNFT]);
 
   const value = useMemo(() => ({
     // Estado
