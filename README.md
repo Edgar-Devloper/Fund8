@@ -4,7 +4,7 @@
 #Version 2.1
  
 Plataforma de trading de criptomonedas integrada con HyperLiquid.
-
+ 
 ## 🚀 Inicio Rápido 
   
 ### Requisitos
