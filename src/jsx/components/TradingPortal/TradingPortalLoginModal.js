@@ -239,15 +239,15 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       // Cerrar el modal primero
       onClose();
       
-      // Mostrar mensaje de éxito después de cerrar el modal con z-index alto
+      // Mostrar mensaje de éxito después de cerrar el modal con z-index alto y cerrar automáticamente
       setTimeout(() => {
         swal({
           title: 'Success',
           text: t('trading_portal.login_success', 'Login successful! You now have full access to the Trading Portal.'),
           icon: 'success',
-          button: 'OK'
-        }).then(() => {
-          // El modal ya está cerrado, solo confirmar
+          button: false, // No mostrar botón
+          timer: 3000, // Cerrar automáticamente después de 3 segundos
+          timerProgressBar: true // Mostrar barra de progreso
         });
         
         // Asegurar que el swal tenga z-index alto

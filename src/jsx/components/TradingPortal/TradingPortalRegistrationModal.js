@@ -163,13 +163,15 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
           }, 100);
         }
         
-        // Mostrar mensaje de éxito después de cerrar el modal con un pequeño delay
+        // Mostrar mensaje de éxito después de cerrar el modal con un pequeño delay y cerrar automáticamente
         setTimeout(() => {
           swal({
             title: 'Success',
             text: t('trading_portal.registration_success_no_otp', 'Trading Portal account created successfully! You can now login.'),
             icon: 'success',
-            button: 'OK'
+            button: false, // No mostrar botón
+            timer: 3000, // Cerrar automáticamente después de 3 segundos
+            timerProgressBar: true // Mostrar barra de progreso
           });
           
           // Asegurar que el swal tenga z-index alto
