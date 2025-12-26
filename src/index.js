@@ -7,6 +7,7 @@ import { client } from './features/third-web/libs/client.lib';
 import { store } from './store/store';
 import { WalletProvider } from './context/WalletContext.js';
 import ThirdwebSync from './context/ThirdwebSync';
+import DefilyThirdwebSync from './context/DefilyThirdwebSync';
 import { AuthProvider } from './context/AuthContext.js';
 import { NFTProvider } from './context/NFTContext.js';
 import { PlatformProvider } from './context/PlatformContext.js';
@@ -37,6 +38,7 @@ root.render(
         {client && ThirdwebProvider ? (
           <ThirdwebProvider>
             <WalletProvider>
+              <DefilyThirdwebSync />
               <ThirdwebSync />
               <PlatformProvider>
                 <ThemeContext>

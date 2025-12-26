@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
 import { useWallet } from './WalletContext';
 import { authService } from '../services/jwtAuthService';
+import { getDefilyRedirectData } from '../utils/defilyIntegration';
 
 const AuthContext = createContext(undefined);
 
@@ -194,8 +195,7 @@ export const AuthProvider = ({ children }) => {
   }, [address, isAuthenticated, accessToken]);
 
   // Autenticar automáticamente cuando se conecta la wallet (solo si NO hay token válido)
-  // DESHABILITADO TEMPORALMENTE: El backend de autenticación no está disponible
-  // La autenticación JWT es opcional y no bloquea el flujo de creación de NFT
+  // Incluye lógica especial para auto-autenticación cuando viene desde DeFily
   useEffect(() => {
     // NO autenticar automáticamente si el backend no está disponible
     // El usuario puede usar la app sin autenticación JWT
@@ -225,6 +225,13 @@ export const AuthProvider = ({ children }) => {
                          address && 
                          address.toLowerCase() === storedAddress.toLowerCase();
     
+    // Verificar si viene desde DeFily
+    const defilyData = getDefilyRedirectData();
+    const isFromDefily = defilyData.isFromDefily && 
+                        defilyData.walletAddress && 
+                        address &&
+                        address.toLowerCase() === defilyData.walletAddress.toLowerCase();
+    
     // Solo intentar autenticar si:
     // - Wallet está conectada
     // - Hay signer disponible
@@ -243,10 +250,19 @@ export const AuthProvider = ({ children }) => {
         !authError &&
         !hasValidToken &&
         !hasAttemptedForThisWallet) {
-      console.log('[Auth] No hay token válido, iniciando autenticación...');
+      
+      // Log diferenciado según si viene de DeFily o no
+      if (isFromDefily) {
+        console.log('[Auth] Viene desde DeFily, iniciando auto-autenticación...');
+      } else {
+        console.log('[Auth] No hay token válido, iniciando autenticación...');
+      }
+      
       authAttemptedRef.current = currentAddressLower; // Marcar que se intentó autenticar para esta wallet
       
       // Pequeño delay para asegurar que todos los efectos anteriores hayan terminado
+      // Si viene de DeFily, usar un delay ligeramente mayor para asegurar que la wallet esté completamente conectada
+      const delay = isFromDefily ? 500 : 200;
       const timer = setTimeout(() => {
         // Verificar una vez más antes de autenticar (por si otro efecto restauró el token)
         const finalToken = localStorage.getItem('jwt_token');
@@ -260,7 +276,7 @@ export const AuthProvider = ({ children }) => {
         } else {
           authAttemptedRef.current = null; // Reset si se encontró token
         }
-      }, 200);
+      }, delay);
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

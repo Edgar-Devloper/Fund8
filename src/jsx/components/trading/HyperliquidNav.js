@@ -730,24 +730,6 @@ const HyperliquidNav = () => {
   // Verificar si el usuario está logueado
   const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token');
   
-  // Función para cambiar entre Trading Portal (app.fund8.io) y Prop Dashboard (dashboard.fund8.io)
-  const handleSwitchPage = () => {
-    const currentHost = window.location.hostname;
-    
-    // Si estamos en app.fund8.io, redirigir a dashboard.fund8.io
-    if (currentHost === 'app.fund8.io' || currentHost.includes('app.fund8')) {
-      window.location.href = 'https://dashboard.fund8.io' + window.location.pathname + window.location.search;
-    } 
-    // Si estamos en dashboard.fund8.io, redirigir a app.fund8.io
-    else if (currentHost === 'dashboard.fund8.io' || currentHost.includes('dashboard.fund8')) {
-      window.location.href = 'https://app.fund8.io' + window.location.pathname + window.location.search;
-    }
-    // Para desarrollo local, usar los mismos dominios pero con protocolo http
-    else {
-      // En desarrollo, asumir que estamos en app y redirigir a dashboard
-      window.location.href = 'https://dashboard.fund8.io' + window.location.pathname + window.location.search;
-    }
-  };
 
   // Handle scroll to show/hide nav
   useEffect(() => {
@@ -898,43 +880,6 @@ const HyperliquidNav = () => {
           
           {/* Botón de Soporte */}
           <SupportButton />
-          
-          {/* Botón para cambiar entre Trading Portal y Prop Dashboard */}
-          <button
-            onClick={handleSwitchPage}
-            title="Switch to Prop Dashboard"
-            style={{
-              padding: '0',
-              background: 'transparent',
-              border: 'none',
-              color: '#ffffff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 'auto',
-              height: 'auto'
-            }}
-          >
-              {/* Icono: dos flechas horizontales opuestas (izquierda y derecha) */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                {/* Flecha hacia la izquierda (arriba) */}
-                <line x1="18" y1="8" x2="6" y2="8" />
-                <polyline points="10 4 6 8 10 12" />
-                {/* Flecha hacia la derecha (abajo) */}
-                <line x1="6" y1="16" x2="18" y2="16" />
-                <polyline points="14 12 18 16 14 20" />
-              </svg>
-          </button>
           
           {/* Register/Login Buttons - Trading Portal */}
           <TradingPortalButtons />

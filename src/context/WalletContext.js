@@ -36,6 +36,90 @@ export const WalletProvider = ({ children }) => {
   // No detectar MetaMask automáticamente al cargar la página
   // Solo conectar cuando el usuario haga clic explícitamente en "Connect Wallet"
 
+  /**
+   * Conecta la wallet de forma silenciosa (sin popup) si ya está autorizada
+   * Útil para auto-conexión cuando viene desde DeFily
+   * 
+   * @param {string} expectedAddress - Dirección esperada de la wallet (opcional, para validación)
+   * @returns {Promise<boolean>} True si la conexión fue exitosa, false en caso contrario
+   */
+  const connectWalletSilently = useCallback(async (expectedAddress = null) => {
+    console.log('[Wallet] connectWalletSilently llamado con expectedAddress:', expectedAddress);
+    try {
+      if (typeof window.ethereum === 'undefined') {
+        console.log('[Wallet] MetaMask no está instalado, no se puede conectar silenciosamente');
+        return false;
+      }
+
+      console.log('[Wallet] MetaMask disponible, obteniendo cuentas autorizadas...');
+      
+      // Intentar obtener cuentas sin mostrar popup
+      // Si MetaMask ya está autorizado, esto no mostrará popup
+      let accounts;
+      try {
+        // Primero intentar obtener cuentas autorizadas (puede retornar array vacío si no está autorizado)
+        accounts = await window.ethereum.request({ 
+          method: 'eth_accounts',
+          params: []
+        });
+        console.log('[Wallet] Cuentas autorizadas obtenidas:', accounts);
+      } catch (error) {
+        console.log('[Wallet] Error obteniendo cuentas autorizadas:', error);
+        return false;
+      }
+
+      // Si no hay cuentas autorizadas, no podemos conectar silenciosamente
+      if (!accounts || accounts.length === 0) {
+        console.log('[Wallet] No hay cuentas autorizadas para Fund8, no se puede conectar silenciosamente');
+        console.log('[Wallet] Nota: MetaMask puede estar autorizado para DeFily pero no para Fund8. El usuario deberá autorizar manualmente.');
+        return false;
+      }
+
+      const userAddress = accounts[0];
+      console.log('[Wallet] Cuenta autorizada encontrada:', userAddress);
+
+      // Si se especificó una dirección esperada, verificar que coincida
+      // Si no coincide, conectar con la wallet autorizada de todas formas
+      // (el usuario puede tener múltiples wallets o haber cambiado)
+      if (expectedAddress && userAddress.toLowerCase() !== expectedAddress.toLowerCase()) {
+        console.log('[Wallet] ⚠️ Wallet autorizada no coincide con la esperada:', {
+          authorized: userAddress,
+          expected: expectedAddress
+        });
+        console.log('[Wallet] Conectando con la wallet autorizada en MetaMask de todas formas');
+        // Continuar con la conexión usando la wallet autorizada
+      }
+
+      console.log('[Wallet] Creando provider y signer...');
+      // Conectar sin mostrar popup
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      const web3Signer = web3Provider.getSigner();
+
+      setProvider(web3Provider);
+      setSigner(web3Signer);
+      setAddress(userAddress);
+      setError(null);
+
+      console.log('[Wallet] ✅ Conectado silenciosamente:', userAddress);
+      return true;
+    } catch (err) {
+      console.error('[Wallet] ❌ Error en conexión silenciosa:', err);
+      return false;
+    }
+  }, []);
+
+  const disconnectWallet = useCallback(() => {
+    setAddress(null);
+    setProvider(null);
+    setSigner(null);
+    setError(null);
+    console.log('[Wallet] Desconectado');
+  }, []);
+
+  /**
+   * Conecta la wallet mostrando popup de MetaMask (comportamiento normal)
+   * Usado cuando el usuario hace clic explícitamente en "Connect Wallet"
+   */
   const connectWallet = useCallback(async () => {
     // Always show MetaMask popup when user clicks connect
     setIsConnecting(true);
@@ -120,15 +204,7 @@ export const WalletProvider = ({ children }) => {
     } finally {
       setIsConnecting(false);
     }
-  }, [address]);
-
-  const disconnectWallet = useCallback(() => {
-    setAddress(null);
-    setProvider(null);
-    setSigner(null);
-    setError(null);
-    console.log('[Wallet] Desconectado');
-  }, []);
+  }, [address, disconnectWallet]);
 
   // Escuchar cambios de cuenta/chain (incluyendo cuando Thirdweb conecta)
   useEffect(() => {
@@ -176,6 +252,9 @@ export const WalletProvider = ({ children }) => {
       };
   }, []); // Sin dependencias para evitar bucles infinitos
 
+  // Nota: La auto-conexión desde DeFily se maneja en DefilyThirdwebSync
+  // que se ejecuta antes que ThirdwebSync y prioriza la wallet de DeFily
+
   const value = {
     address,
     provider,
@@ -184,6 +263,7 @@ export const WalletProvider = ({ children }) => {
     isConnecting,
     error,
     connectWallet,
+    connectWalletSilently,
     disconnectWallet,
     // Exponer setters para sincronización con Thirdweb
     setAddress,
