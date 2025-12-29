@@ -78,6 +78,21 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
     }
   }, [forceShow]);
 
+  // Detectar cuando el usuario acaba de hacer login exitoso y resetear el flag
+  useEffect(() => {
+    const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token');
+    const hasAccount = tradingPortal?.hasPortalAccount || false;
+    
+    if (isConnected && address && isLoggedIn && hasAccount && hasNFTs) {
+      // Resetear el flag de "ya mostrado" para que aparezca el modal después del login
+      hasShownOnceRef.current = false;
+      const storageKey = getModalShownKey(address);
+      if (storageKey) {
+        localStorage.removeItem(storageKey);
+      }
+    }
+  }, [auth?.idToken, tradingPortal?.hasPortalAccount, isConnected, address, hasNFTs]);
+
   useEffect(() => {
     const storageKey = address ? getModalShownKey(address) : null;
     const hasShownBefore = storageKey ? localStorage.getItem(storageKey) === 'true' : false;
@@ -88,12 +103,14 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
       return;
     }
 
-    // NO mostrar el modal de NFT si el usuario ya tiene cuenta de Trading Portal y está logueado
+    // SOLO mostrar el modal de NFT si el usuario tiene cuenta de Trading Portal Y está logueado
+    // Esto previene que el modal se muestre antes de completar el registro/login
     const hasPortalAccount = tradingPortal?.hasPortalAccount || false;
-    const isLoggedIn = !!auth?.idToken;
-    const isVerified = tradingPortal?.isVerified || false;
+    const isLoggedIn = !!auth?.idToken || !!localStorage.getItem('jwt_token'); // Verificar también localStorage
+    const isVerified = tradingPortal?.isVerified !== false; // true si es true o undefined (no requiere verificación)
     
-    if (hasPortalAccount && isLoggedIn && isVerified) {
+    // Si NO tiene cuenta o NO está logueado, NO mostrar el modal de NFT
+    if (!hasPortalAccount || !isLoggedIn || !isVerified) {
       setShowModal(false);
       return;
     }
@@ -138,7 +155,7 @@ const NFTSelectionModal = ({ onClose, onSelect, forceShow = false }) => {
         }
       }
     }
-  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT, address, deselectNFT, isRegistrationRoute, location.pathname]);
+  }, [isConnected, hasNFTs, isLoading, forceShow, selectedNFT, address, deselectNFT, isRegistrationRoute, location.pathname, tradingPortal, auth]);
 
   const handleClose = () => {
     setShowModal(false);

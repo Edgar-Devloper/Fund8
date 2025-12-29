@@ -94,7 +94,12 @@ const WelcomeMessageModal = ({ onClose, show }) => {
         style={{ 
           pointerEvents: 'auto', 
           position: 'relative', 
-          zIndex: 1000000
+          zIndex: 1000000,
+          display: 'flex',
+          alignItems: 'center',
+          minHeight: '100vh',
+          margin: '0 auto',
+          padding: '20px 0'
         }}
       >
         <div 
@@ -109,7 +114,10 @@ const WelcomeMessageModal = ({ onClose, show }) => {
             zIndex: 1000001,
             maxWidth: '600px',
             width: '90%',
-            margin: '0 auto'
+            margin: '0 auto',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column'
           }} 
           onClick={(e) => {
             e.stopPropagation();
@@ -141,17 +149,19 @@ const WelcomeMessageModal = ({ onClose, show }) => {
           </button>
           
           <div className="modal-body" style={{ 
-            padding: '48px 40px', 
+            padding: window.innerWidth < 768 ? '32px 24px' : '48px 40px', 
             background: 'linear-gradient(135deg, #1a1f3a 0%, #151a2e 100%)',
             color: '#ffffff',
             textAlign: 'center',
-            borderRadius: '12px'
+            borderRadius: '12px',
+            overflowY: 'auto',
+            flex: '1 1 auto'
           }}>
             {/* Título */}
             <h3 style={{ 
               color: '#ffffff', 
               fontWeight: '600', 
-              fontSize: '24px',
+              fontSize: window.innerWidth < 768 ? '20px' : '24px',
               marginBottom: '16px'
             }}>
               {t('trading_portal.start_trading_title', 'Start trading on Fund8')}
@@ -159,7 +169,7 @@ const WelcomeMessageModal = ({ onClose, show }) => {
 
             {/* Mensaje principal */}
             <p style={{ 
-              fontSize: '15px', 
+              fontSize: window.innerWidth < 768 ? '14px' : '15px', 
               color: '#a0aec0', 
               lineHeight: '1.6',
               marginBottom: '24px',

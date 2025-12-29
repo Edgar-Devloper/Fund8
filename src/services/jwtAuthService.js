@@ -88,6 +88,47 @@ backendApi.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('token-expired'));
     }
     
+    // Si recibimos un 403 (Forbidden) relacionado con wallet mismatch
+    // SOLO mostrar error si no es un GET a /status (para evitar mostrar error después de login)
+    if (error.response?.status === 403 && 
+        error.response?.data?.message?.toLowerCase().includes('wallet')) {
+      
+      // NO mostrar error si es una llamada a /trading-portal/status
+      // (esto ocurre automáticamente después del login y puede dar falsos positivos)
+      const isStatusCheck = error.config?.url?.includes('/status') || 
+                           error.config?.url?.includes('trading-portal/status');
+      
+      if (!isStatusCheck) {
+        // Obtener la wallet actual del localStorage
+        const currentWallet = localStorage.getItem('jwt_wallet_address');
+        const errorMessage = error.response.data.message || 'Please connect the wallet registered with this account.';
+        
+        // Importar swal dinámicamente para evitar dependencias circulares
+        import('sweetalert').then(({ default: swal }) => {
+          swal({
+            title: 'Error - Wallet Incorrecta',
+            text: currentWallet 
+              ? `${errorMessage}\n\nWallet actual: ${currentWallet}\n\nPor favor conecta la wallet que usaste al registrarte.`
+              : errorMessage,
+            icon: 'error',
+            button: 'OK'
+          });
+          
+          // Asegurar que el swal tenga z-index alto
+          setTimeout(() => {
+            const swalContainer = document.querySelector('.swal2-container') || document.querySelector('.swal-overlay');
+            if (swalContainer) {
+              swalContainer.style.zIndex = '10000000';
+            }
+            const swalModal = document.querySelector('.swal-modal') || document.querySelector('.swal2-popup');
+            if (swalModal) {
+              swalModal.style.zIndex = '10000001';
+            }
+          }, 100);
+        });
+      }
+    }
+    
     return Promise.reject(error);
   }
 );

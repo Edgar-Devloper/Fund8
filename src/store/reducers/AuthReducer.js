@@ -5,6 +5,9 @@ import {
     LOGOUT_ACTION,
     SIGNUP_CONFIRMED_ACTION,
     SIGNUP_FAILED_ACTION,
+    TRADING_PORTAL_CREATED_ACTION,
+    TRADING_PORTAL_VERIFIED_ACTION,
+    TRADING_PORTAL_LOADED_ACTION,
 } from '../actions/AuthActions';
 
 const initialState = {
@@ -14,6 +17,12 @@ const initialState = {
         localId: '',
         expiresIn: '',
         refreshToken: '',
+    },
+    tradingPortal: {
+        hasPortalAccount: false,
+        fullName: '',
+        email: '',
+        isVerified: false,
     },
     errorMessage: '',
     successMessage: '',
@@ -52,6 +61,12 @@ export function AuthReducer(state = initialState, action) {
                 expiresIn: '',
                 refreshToken: '',
             },
+            tradingPortal: {
+                hasPortalAccount: false,
+                fullName: '',
+                email: '',
+                isVerified: false,
+            },
         };
     }
 
@@ -73,6 +88,41 @@ export function AuthReducer(state = initialState, action) {
             showLoading: action.payload,
         };
     }
+
+    if (action.type === TRADING_PORTAL_CREATED_ACTION) {
+        return {
+            ...state,
+            tradingPortal: {
+                hasPortalAccount: true,
+                fullName: action.payload.fullName || '',
+                email: action.payload.email || '',
+                isVerified: action.payload.isVerified || false,
+            },
+        };
+    }
+
+    if (action.type === TRADING_PORTAL_VERIFIED_ACTION) {
+        return {
+            ...state,
+            tradingPortal: {
+                ...state.tradingPortal,
+                isVerified: true,
+            },
+        };
+    }
+
+    if (action.type === TRADING_PORTAL_LOADED_ACTION) {
+        return {
+            ...state,
+            tradingPortal: {
+                hasPortalAccount: action.payload.hasPortalAccount !== undefined ? action.payload.hasPortalAccount : true,
+                fullName: action.payload.fullName || '',
+                email: action.payload.email || '',
+                isVerified: action.payload.isVerified !== undefined ? action.payload.isVerified : true,
+            },
+        };
+    }
+
     return state;
 }
 

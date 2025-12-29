@@ -38,6 +38,23 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
   const [loginSessionId, setLoginSessionId] = useState(null);
   const [messageToSign, setMessageToSign] = useState(null);
 
+  // Función helper para asegurar que swal tenga z-index alto
+  const showSwalWithHighZIndex = (swalConfig) => {
+    swal(swalConfig);
+    // Asegurar que el swal tenga z-index alto para aparecer por encima del modal
+    setTimeout(() => {
+      const swalContainer = document.querySelector('.swal2-container') || document.querySelector('.swal-overlay');
+      if (swalContainer) {
+        swalContainer.style.zIndex = '10000000';
+      }
+      // También buscar el swal-modal
+      const swalModal = document.querySelector('.swal-modal') || document.querySelector('.swal2-popup');
+      if (swalModal) {
+        swalModal.style.zIndex = '10000001';
+      }
+    }, 100);
+  };
+
   // Cargar email guardado si existe
   useEffect(() => {
     if (show) {
@@ -83,12 +100,17 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
     }
 
     if (!address) {
-      swal('Error', t('trading_portal.errors.wallet_required', 'Please connect your wallet first'), 'error');
+      showSwalWithHighZIndex({
+        title: 'Error',
+        text: t('trading_portal.errors.wallet_required', 'Please connect your wallet first'),
+        icon: 'error',
+        button: 'OK'
+      });
       return;
     }
 
     if (!signer) {
-      swal({
+      showSwalWithHighZIndex({
         title: 'Error',
         text: t('trading_portal.errors.signer_required', 'Wallet signer not available. Please reconnect your wallet.'),
         icon: 'error',
@@ -108,7 +130,6 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
 
     try {
       // Paso 1: Validar email y password
-      console.log('[TradingPortalLoginModal] Paso 1: Validando credenciales...');
       const loginResult = await login(email, password);
       
       if (!loginResult.success) {
@@ -116,18 +137,13 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       }
 
       // Paso 2: Obtener mensaje para firmar usando el loginSessionId del paso 1
-      console.log('[TradingPortalLoginModal] Paso 2: Obteniendo mensaje para firmar...');
-      console.log('[TradingPortalLoginModal] Respuesta del login:', loginResult.data);
-      
       // Extraer loginSessionId de la respuesta
       const sessionId = loginResult.data?.loginSessionId || loginResult.data?.data?.loginSessionId;
       
       if (!sessionId) {
-        console.error('[TradingPortalLoginModal] No se encontró loginSessionId en:', loginResult);
         throw new Error('No se recibió loginSessionId del servidor. Por favor intenta de nuevo.');
       }
       
-      console.log('[TradingPortalLoginModal] Usando loginSessionId:', sessionId);
       const nonceResult = await loginNonce(sessionId);
       
       if (!nonceResult.success || !nonceResult.data?.message) {
@@ -135,7 +151,6 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       }
 
       const msgToSign = nonceResult.data.message;
-      console.log('[TradingPortalLoginModal] Mensaje recibido:', msgToSign);
 
       // Guardar datos para el paso de firma
       setLoginSessionId(sessionId);
@@ -164,12 +179,23 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
         errorMessage = error;
       }
       
-      swal({
-        title: 'Error',
-        text: errorMessage,
-        icon: 'error',
-        button: 'OK'
-      });
+      // Si el error es de wallet mismatch, mostrar mensaje más claro
+      if (errorMessage?.toLowerCase().includes('wallet') || 
+          errorMessage?.toLowerCase().includes('registered')) {
+        showSwalWithHighZIndex({
+          title: 'Error - Wallet Incorrecta',
+          text: `${errorMessage}\n\nWallet actual conectada: ${address}\n\nPor favor conecta la wallet que usaste cuando creaste tu cuenta.`,
+          icon: 'error',
+          button: 'OK'
+        });
+      } else {
+        showSwalWithHighZIndex({
+          title: 'Error',
+          text: errorMessage,
+          icon: 'error',
+          button: 'OK'
+        });
+      }
       setLoading(false);
       dispatch(loadingToggleAction(false));
     }
@@ -185,12 +211,9 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
 
     try {
       // Paso 3: Firmar el mensaje con la wallet
-      console.log('[TradingPortalLoginModal] Paso 3: Solicitando firma del mensaje...');
       const signature = await signer.signMessage(messageToSign);
-      console.log('[TradingPortalLoginModal] Firma obtenida:', signature);
 
       // Paso 4: Verificar firma y obtener JWT usando el loginSessionId
-      console.log('[TradingPortalLoginModal] Paso 4: Verificando firma y obteniendo JWT...');
       const verifyResult = await loginVerify(loginSessionId, signature);
       
       if (!verifyResult.success || !verifyResult.token) {
@@ -205,6 +228,7 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
 
       // Actualizar estado de Trading Portal
       const portalData = {
+        hasPortalAccount: true, // IMPORTANTE: Agregar esto para que Redux sepa que tiene cuenta
         fullName: tradingPortal?.fullName || '',
         email: email,
         isVerified: true,
@@ -214,10 +238,7 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       
       // Guardar en localStorage para persistencia
       if (address) {
-        localStorage.setItem(`trading_portal_${address.toLowerCase()}`, JSON.stringify({
-          hasPortalAccount: true,
-          ...portalData,
-        }));
+        localStorage.setItem(`trading_portal_${address.toLowerCase()}`, JSON.stringify(portalData));
       }
 
       // Guardar email si "Remember me" está activado
@@ -241,7 +262,7 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
       
       // Mostrar mensaje de éxito después de cerrar el modal con z-index alto y cerrar automáticamente
       setTimeout(() => {
-        swal({
+        showSwalWithHighZIndex({
           title: 'Success',
           text: t('trading_portal.login_success', 'Login successful! You now have full access to the Trading Portal.'),
           icon: 'success',
@@ -249,14 +270,6 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
           timer: 3000, // Cerrar automáticamente después de 3 segundos
           timerProgressBar: true // Mostrar barra de progreso
         });
-        
-        // Asegurar que el swal tenga z-index alto
-        setTimeout(() => {
-          const swalContainer = document.querySelector('.swal2-container');
-          if (swalContainer) {
-            swalContainer.style.zIndex = '10000000';
-          }
-        }, 100);
       }, 300); // Pequeño delay para que el modal se cierre primero
     } catch (error) {
       console.error('[TradingPortalLoginModal] Login error:', error);
@@ -279,12 +292,23 @@ const TradingPortalLoginModal = ({ onClose, show }) => {
         errorMessage = error;
       }
       
-      swal({
-        title: 'Error',
-        text: errorMessage,
-        icon: 'error',
-        button: 'OK'
-      });
+      // Si el error es de wallet mismatch, mostrar mensaje más claro
+      if (errorMessage?.toLowerCase().includes('wallet') || 
+          errorMessage?.toLowerCase().includes('registered')) {
+        showSwalWithHighZIndex({
+          title: 'Error - Wallet Incorrecta',
+          text: `${errorMessage}\n\nWallet actual conectada: ${address}\n\nPor favor conecta la wallet que usaste cuando creaste tu cuenta.`,
+          icon: 'error',
+          button: 'OK'
+        });
+      } else {
+        showSwalWithHighZIndex({
+          title: 'Error',
+          text: errorMessage,
+          icon: 'error',
+          button: 'OK'
+        });
+      }
     } finally {
       setLoading(false);
       dispatch(loadingToggleAction(false));

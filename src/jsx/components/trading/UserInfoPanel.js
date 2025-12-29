@@ -92,7 +92,7 @@ const UserInfoPanel = () => {
           border: '1px solid #1e2541'
         }}>
           <span style={{ color: '#a0aec0', fontSize: '13px', fontWeight: '500' }}>
-            {t('user_info.balance_usdc', 'USDC Balance')}:
+            {t('user_info.balance_usdc', 'Balance USDC')}:
           </span>
           <span style={{ 
             color: '#ffffff', 

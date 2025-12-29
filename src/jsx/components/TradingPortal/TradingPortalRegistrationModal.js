@@ -116,15 +116,6 @@ const TradingPortalRegistrationModal = ({ onClose, show, forceShow = false, onRe
     setLoading(true);
     dispatch(loadingToggleAction(true));
 
-    // Log para debug
-    console.log('[TradingPortalRegistrationModal] Datos del formulario:', {
-      fullName,
-      email,
-      passwordLength: password?.length,
-      password: password ? '*'.repeat(password.length) : 'undefined',
-      address
-    });
-
     try {
       const result = await register(fullName, email, password, address);
       
